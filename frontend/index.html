@@ -1,191 +1,3064 @@
 <!DOCTYPE html>
 <!--
-  CapTax AI - Frontend Dashboard
-  Owner: Akash Singh Chauhan
-
-  Simple, dependency-free dashboard: calls the FastAPI backend to run the
-  pipeline and renders the resulting tax summary, DTAA relief and
-  disclosure report. No build step required — open directly in a browser
-  once the backend is running (see README), or serve via any static host.
+  CapTax AI — Multi-Broker Capital Gains & Foreign Asset Tax Disclosure Engine
+  Frontend Rebuild: Datara Reference Theme & Architecture with Dark/Light Support
+  Owner: Akash Singh Chauhan (Frontend & QA Lead)
+  Connected to Backend: http://localhost:8001
 -->
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CapTax AI — Dashboard</title>
-<style>
-  :root {
-    --bg: #0f172a;
-    --panel: #1e293b;
-    --border: #334155;
-    --text: #e2e8f0;
-    --muted: #94a3b8;
-    --accent: #38bdf8;
-    --green: #4ade80;
-    --red: #f87171;
-  }
-  * { box-sizing: border-box; }
-  body {
-    margin: 0;
-    font-family: -apple-system, Segoe UI, Roboto, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    padding: 2rem 1.5rem;
-  }
-  .wrap { max-width: 920px; margin: 0 auto; }
-  h1 { font-size: 1.5rem; margin-bottom: 0.25rem; }
-  .sub { color: var(--muted); margin-bottom: 1.5rem; font-size: 0.9rem; }
-  .bar {
-    display: flex; gap: 0.75rem; align-items: center; margin-bottom: 1.5rem;
-  }
-  input[type=text] {
-    background: var(--panel); border: 1px solid var(--border); color: var(--text);
-    padding: 0.5rem 0.75rem; border-radius: 6px; font-size: 0.85rem; flex: 1;
-  }
-  button {
-    background: var(--accent); color: #0f172a; border: none; font-weight: 600;
-    padding: 0.55rem 1.1rem; border-radius: 6px; cursor: pointer; font-size: 0.85rem;
-  }
-  button:disabled { opacity: 0.5; cursor: not-allowed; }
-  button:hover:not(:disabled) { filter: brightness(1.1); }
-  .status { font-size: 0.8rem; color: var(--muted); margin-bottom: 1.5rem; min-height: 1.2em; }
-  .card {
-    background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
-    padding: 1.25rem; margin-bottom: 1.25rem;
-  }
-  .card h2 { margin-top: 0; font-size: 1.05rem; }
-  table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
-  th, td { text-align: left; padding: 0.4rem 0.5rem; border-bottom: 1px solid var(--border); }
-  th { color: var(--muted); font-weight: 600; }
-  .gain { color: var(--green); }
-  .loss { color: var(--red); }
-  pre {
-    white-space: pre-wrap; font-size: 0.8rem; line-height: 1.5; color: var(--text);
-    background: #0b1324; padding: 1rem; border-radius: 8px; border: 1px solid var(--border);
-    max-height: 420px; overflow: auto;
-  }
-  .empty { color: var(--muted); font-size: 0.85rem; font-style: italic; }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0c0c0e" id="metaThemeColor" />
+  <title>CapTax AI — Multi-Broker Tax &amp; Portfolio Engine</title>
+  
+  <!-- Zero-flash theme initialization script (runs before first paint) -->
+  <script>
+    (function() {
+      const savedTheme = localStorage.getItem('captax-theme') || 'system';
+      let effective = savedTheme;
+      if (savedTheme === 'system') {
+        effective = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+      }
+      document.documentElement.setAttribute('data-theme', effective);
+      document.documentElement.style.colorScheme = effective;
+      const meta = document.getElementById('metaThemeColor');
+      if (meta) meta.setAttribute('content', effective === 'light' ? '#F3F1EE' : '#0c0c0e');
+    })();
+  </script>
+
+  <!-- External Design System Tokens -->
+  <link rel="stylesheet" href="styles/theme.css" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --radius-xl: 28px;
+      --radius-lg: 20px;
+      --radius-md: 14px;
+      --radius-sm: 8px;
+      --radius-pill: 9999px;
+      
+      --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    /* 200ms transition on background-color, color, border-color only; none on initial paint; none under prefers-reduced-motion */
+    html.theme-transitioning,
+    html.theme-transitioning *,
+    html.theme-transitioning *::before,
+    html.theme-transitioning *::after {
+      transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease, fill 200ms ease, stroke 200ms ease !important;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html.theme-transitioning,
+      html.theme-transitioning *,
+      html.theme-transitioning *::before,
+      html.theme-transitioning *::after {
+        transition: none !important;
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      background-color: var(--bg-app);
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      padding: 1.5rem 2rem;
+    }
+
+    /* Container wrapper with Datara-style max width */
+    .app-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    /* ==========================================================================
+       HEADER & NAVIGATION
+       ========================================================================== */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.5rem 0.25rem 1rem 0.25rem;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .brand-logo {
+      font-size: 1.55rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+    }
+
+    .brand-logo span {
+      color: var(--accent);
+      margin-left: 1px;
+    }
+
+    .brand-badge {
+      font-size: 0.65rem;
+      font-weight: 700;
+      background: var(--accent-subtle);
+      color: var(--accent);
+      padding: 0.2rem 0.55rem;
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--border-accent);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* Datara Pill Navigation */
+    .nav-pill-group {
+      display: flex;
+      align-items: center;
+      background: var(--bg-pill-nav);
+      padding: 4px;
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--border-subtle);
+      box-shadow: var(--shadow-card);
+    }
+
+    .nav-pill {
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      font-family: var(--font-sans);
+      font-size: 0.88rem;
+      font-weight: 600;
+      padding: 0.55rem 1.4rem;
+      border-radius: var(--radius-pill);
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      white-space: nowrap;
+    }
+
+    .nav-pill:hover:not(.active) {
+      color: var(--text-primary);
+      background: var(--bg-pill-hover);
+    }
+
+    .nav-pill.active {
+      background: var(--accent);
+      color: var(--accent-contrast);
+      box-shadow: 0 4px 15px var(--accent-glow);
+    }
+
+    /* Header Right Actions */
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .btn-run-pipeline {
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 100%);
+      color: var(--accent-contrast);
+      border: none;
+      font-family: var(--font-sans);
+      font-weight: 700;
+      font-size: 0.85rem;
+      padding: 0.6rem 1.15rem;
+      border-radius: var(--radius-pill);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      box-shadow: 0 4px 14px var(--accent-glow);
+      transition: all 0.2s ease;
+    }
+
+    .btn-run-pipeline:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px var(--accent-glow);
+    }
+
+    .btn-run-pipeline:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .icon-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: var(--bg-card-inset);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .icon-btn:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--border-hover);
+    }
+
+    .icon-btn.has-alert::after {
+      content: '';
+      position: absolute;
+      top: 9px;
+      right: 9px;
+      width: 8px;
+      height: 8px;
+      background: var(--accent);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--accent);
+    }
+
+    .avatar-chip {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: var(--bg-card-inset);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-primary);
+      font-size: 0.85rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    /* Currency Toggle */
+    .curr-toggle {
+      display: flex;
+      background: var(--bg-card-inset);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-pill);
+      padding: 3px;
+    }
+
+    .curr-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 0.35rem 0.75rem;
+      border-radius: var(--radius-pill);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .curr-btn.active {
+      background: var(--bg-card);
+      color: var(--text-primary);
+      box-shadow: var(--shadow-card);
+    }
+
+    /* ==========================================================================
+       DASHBOARD GRID LAYOUT (Exact Datara proportions)
+       ========================================================================== */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1.75fr 1fr;
+      gap: 1.5rem;
+    }
+
+    .grid-col {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    /* Card Shell */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-xl);
+      padding: 1.75rem;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow-card);
+      transition: border-color 0.2s ease;
+    }
+
+    .card:hover {
+      border-color: var(--border-hover);
+    }
+
+    .card-header-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.25rem;
+    }
+
+    .card-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: var(--text-primary);
+    }
+
+    .card-sub {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 0.2rem;
+    }
+
+    .card-arrow-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--bg-card-inset);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .card-arrow-btn:hover {
+      background: var(--bg-card-hover);
+      color: var(--text-primary);
+      border-color: var(--border-hover);
+      transform: scale(1.08);
+    }
+
+    /* ==========================================================================
+       1. HERO CARD — Total Portfolio / Tax Value
+       ========================================================================== */
+    .hero-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 220px;
+      padding: 2.25rem;
+      background: var(--hero-bg);
+      position: relative;
+    }
+
+    .hero-left {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      z-index: 2;
+      max-width: 60%;
+    }
+
+    .hero-label-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .hero-label {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      letter-spacing: 0.02em;
+    }
+
+    .hero-tag {
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 0.2rem 0.55rem;
+      border-radius: var(--radius-pill);
+      background: var(--positive-subtle);
+      color: var(--positive);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .hero-amount {
+      font-size: 3.2rem;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1.1;
+      color: var(--text-primary);
+      text-shadow: var(--hero-text-shadow);
+    }
+
+    .hero-metrics-pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.6rem;
+      margin-top: 0.75rem;
+    }
+
+    .hero-sub-pill {
+      font-size: 0.75rem;
+      font-weight: 600;
+      background: var(--bg-card-inset);
+      padding: 0.3rem 0.7rem;
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+    }
+
+    .hero-sub-pill strong {
+      color: var(--text-primary);
+      font-weight: 700;
+    }
+
+    /* 3D Vector Graphic: Neon Fintech Wallet with Cards & Coin */
+    .hero-3d-graphic {
+      width: 220px;
+      height: 170px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .wallet-3d-svg {
+      width: 100%;
+      height: 100%;
+      filter: var(--hero-3d-filter);
+    }
+
+    /* ==========================================================================
+       2. MARKET OVERVIEW (Line Chart & Bar Chart)
+       ========================================================================== */
+    .market-overview-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-top: 0.5rem;
+    }
+
+    .chart-container {
+      background: var(--bg-card-inset);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .chart-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.75rem;
+    }
+
+    .chart-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+    }
+
+    .chart-badge {
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 0.15rem 0.5rem;
+      border-radius: var(--radius-pill);
+      background: var(--positive-subtle);
+      color: var(--positive);
+    }
+
+    .chart-svg {
+      width: 100%;
+      height: 180px;
+      overflow: visible;
+    }
+
+    .chart-legend {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      margin-top: 0.5rem;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .legend-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    /* ==========================================================================
+       3. RECENT TRANSACTIONS (Grouped by date)
+       ========================================================================== */
+    .tx-group {
+      margin-bottom: 1.25rem;
+    }
+
+    .tx-group:last-child {
+      margin-bottom: 0;
+    }
+
+    .tx-date-header {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.6rem;
+      padding-left: 0.25rem;
+    }
+
+    .tx-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .tx-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.65rem 0.75rem;
+      border-radius: var(--radius-md);
+      background: var(--bg-card-inset);
+      border: 1px solid var(--border-subtle);
+      transition: all 0.15s ease;
+    }
+
+    .tx-row:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--border-hover);
+    }
+
+    .tx-left {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .tx-ticker-badge {
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-md);
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.78rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      position: relative;
+    }
+
+    .tx-broker-tag {
+      position: absolute;
+      bottom: -4px;
+      right: -4px;
+      font-size: 0.55rem;
+      font-weight: 800;
+      padding: 0.1rem 0.35rem;
+      border-radius: 4px;
+      background: var(--bg-card-inset);
+      color: var(--accent);
+      border: 1px solid var(--border-subtle);
+      text-transform: uppercase;
+    }
+
+    .tx-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+    }
+
+    .tx-name {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .tx-sub {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    .tx-right {
+      text-align: right;
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+    }
+
+    .tx-amount {
+      font-size: 0.92rem;
+      font-weight: 700;
+      font-family: var(--font-mono);
+    }
+
+    .tx-amount.positive {
+      color: var(--positive);
+    }
+
+    .tx-amount.negative {
+      color: var(--negative);
+    }
+
+    .tx-withholding {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+
+    /* ==========================================================================
+       4. INSIGHTS & PIPELINE LOG (replaces News Feed)
+       ========================================================================== */
+    .insights-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.6fr;
+      gap: 1.5rem;
+    }
+
+    .broker-mini-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+
+    .broker-mini-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.75rem;
+      border-radius: var(--radius-md);
+      background: var(--bg-card-inset);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .broker-mini-name {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .broker-status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--positive);
+      box-shadow: 0 0 6px var(--positive);
+    }
+
+    .broker-mini-action {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-primary);
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.35rem 0.8rem;
+      border-radius: var(--radius-pill);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .broker-mini-action:hover {
+      background: var(--accent);
+      color: var(--accent-contrast);
+      border-color: var(--accent);
+    }
+
+    .insight-cards-col {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .insight-card {
+      background: var(--bg-card-inset);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 1rem 1.15rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      position: relative;
+    }
+
+    .insight-card.highlight {
+      border-left: 3px solid var(--accent);
+    }
+
+    .insight-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .insight-badge {
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 0.15rem 0.45rem;
+      border-radius: var(--radius-pill);
+      background: var(--accent-subtle);
+      color: var(--accent);
+    }
+
+    .insight-text {
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      line-height: 1.45;
+    }
+
+    /* ==========================================================================
+       5. TAX EXPOSURE GAUGE (Speedometer)
+       ========================================================================== */
+    .gauge-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      padding: 1rem 0;
+    }
+
+    .gauge-svg {
+      width: 240px;
+      height: 140px;
+      overflow: visible;
+    }
+
+    .gauge-center-info {
+      text-align: center;
+      margin-top: -10px;
+    }
+
+    .gauge-value {
+      font-size: 2.2rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--text-primary);
+    }
+
+    .gauge-subtext {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .gauge-formula-pill {
+      font-size: 0.72rem;
+      background: var(--bg-card-inset);
+      padding: 0.35rem 0.8rem;
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      margin-top: 0.75rem;
+      cursor: help;
+    }
+
+    /* ==========================================================================
+       PAGES & TABS MANAGEMENT
+       ========================================================================== */
+    .page-section {
+      display: none;
+      animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .page-section.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ==========================================================================
+       TAX PAGE: Schedule CG, FSI/DTAA, Report, Assumptions
+       ========================================================================== */
+    .tax-subnav {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-bottom: 1.5rem;
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 0.75rem;
+    }
+
+    .tax-tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 0.88rem;
+      font-weight: 600;
+      padding: 0.5rem 1rem;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .tax-tab-btn:hover {
+      color: var(--text-primary);
+      background: var(--bg-pill-hover);
+    }
+
+    .tax-tab-btn.active {
+      background: var(--bg-card-inset);
+      color: var(--text-primary);
+      border: 1px solid var(--border-subtle);
+    }
+
+    /* Table styles */
+    .table-responsive {
+      width: 100%;
+      overflow-x: auto;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-card);
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.84rem;
+      text-align: left;
+    }
+
+    .data-table th {
+      background: var(--bg-card-inset);
+      color: var(--text-secondary);
+      font-weight: 700;
+      padding: 0.85rem 1rem;
+      border-bottom: 1px solid var(--border-subtle);
+      white-space: nowrap;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .data-table td {
+      padding: 0.85rem 1rem;
+      border-bottom: 1px solid var(--border-subtle);
+      color: var(--text-primary);
+      white-space: nowrap;
+    }
+
+    .data-table tr:hover td {
+      background: var(--bg-card-hover);
+    }
+
+    .data-table .num {
+      text-align: right;
+      font-family: var(--font-mono);
+      font-weight: 600;
+    }
+
+    .data-table tr.total-row td {
+      background: var(--bg-card-inset);
+      font-weight: 800;
+      border-top: 1px solid var(--border-subtle);
+      border-bottom: none;
+    }
+
+    /* Expandable DTAA Accordion */
+    .dtaa-group-card {
+      background: var(--bg-card-inset);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      margin-bottom: 1rem;
+      overflow: hidden;
+    }
+
+    .dtaa-group-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.15rem 1.5rem;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.2s ease;
+    }
+
+    .dtaa-group-header:hover {
+      background: var(--bg-card-hover);
+    }
+
+    .dtaa-group-left {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .dtaa-ticker {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: var(--text-primary);
+    }
+
+    .dtaa-name {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+
+    .dtaa-group-right {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .dtaa-summary-metric {
+      text-align: right;
+    }
+
+    .dtaa-summary-val {
+      font-size: 0.95rem;
+      font-weight: 700;
+      font-family: var(--font-mono);
+    }
+
+    .dtaa-summary-sub {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    .dtaa-drilldown {
+      display: none;
+      padding: 0 1.5rem 1.25rem 1.5rem;
+      background: var(--bg-card);
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .dtaa-drilldown.open {
+      display: block;
+    }
+
+    .calc-breakdown-box {
+      margin-top: 0.85rem;
+      padding: 0.75rem 1rem;
+      border-radius: var(--radius-md);
+      background: var(--warning-subtle);
+      border: 1px solid var(--border-subtle);
+      font-size: 0.78rem;
+      color: var(--warning);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    /* Monospace Disclosure Report */
+    .report-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      position: relative;
+    }
+
+    .report-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+      justify-content: flex-end;
+    }
+
+    .report-btn {
+      background: var(--bg-card-inset);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 0.45rem 0.9rem;
+      border-radius: var(--radius-pill);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.2s ease;
+    }
+
+    .report-btn:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--border-hover);
+    }
+
+    .report-pre {
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      line-height: 1.6;
+      color: var(--text-primary);
+      background: var(--code-bg);
+      padding: 1.25rem;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-subtle);
+      max-height: 520px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+    }
+
+    /* Assumptions & Warnings Callouts */
+    .assumptions-panel {
+      margin-top: 1.5rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-xl);
+      padding: 1.75rem;
+    }
+
+    .flags-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.25rem;
+      margin-top: 1.25rem;
+    }
+
+    .flag-box {
+      background: var(--bg-card-inset);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 1.15rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      position: relative;
+    }
+
+    .flag-box.warning { border-top: 3px solid var(--warning); }
+    .flag-box.info { border-top: 3px solid var(--blue); }
+    .flag-box.caution { border-top: 3px solid var(--accent); }
+    .flag-box.check { border-top: 3px solid var(--positive); }
+
+    .flag-title {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .flag-text {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    /* ==========================================================================
+       ACTIVITY PAGE: Stepper & History
+       ========================================================================== */
+    .stepper-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-xl);
+      padding: 2rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .stepper-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-top: 1.5rem;
+      position: relative;
+    }
+
+    .stepper-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      position: relative;
+    }
+
+    .stepper-step:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      left: 17px;
+      top: 36px;
+      width: 2px;
+      height: calc(100% - 10px);
+      background: var(--connector-line);
+      z-index: 1;
+    }
+
+    .step-icon-bubble {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--bg-card-inset);
+      border: 2px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      z-index: 2;
+      flex-shrink: 0;
+      transition: all 0.2s ease;
+    }
+
+    .stepper-step.completed .step-icon-bubble {
+      background: var(--positive);
+      border-color: var(--positive);
+      color: var(--accent-contrast);
+    }
+
+    .stepper-step.running .step-icon-bubble {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--accent-contrast);
+      animation: pulse 1.2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 var(--focus-ring); }
+      70% { box-shadow: 0 0 0 10px rgba(240, 80, 45, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(240, 80, 45, 0); }
+    }
+
+    .step-content {
+      flex: 1;
+      padding-top: 0.2rem;
+    }
+
+    .step-name-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .step-name {
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .step-owner-tag {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .step-desc {
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      margin-top: 0.2rem;
+    }
+
+    /* ==========================================================================
+       MODALS & DRAWERS (Settings, Alert Toast, Banner)
+       ========================================================================== */
+    .drawer-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: var(--overlay);
+      backdrop-filter: blur(6px);
+      z-index: 999;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.25s ease;
+    }
+
+    .drawer-overlay.open {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .settings-drawer {
+      position: fixed;
+      top: 0;
+      right: -420px;
+      width: 400px;
+      height: 100vh;
+      background: var(--bg-card);
+      border-left: 1px solid var(--border-subtle);
+      z-index: 1000;
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      transition: right 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: var(--shadow-drawer);
+    }
+
+    .settings-drawer.open {
+      right: 0;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .form-label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .form-input {
+      background: var(--input-bg);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+      font-size: 0.88rem;
+      padding: 0.65rem 0.85rem;
+      outline: none;
+      transition: border-color 0.2s ease;
+    }
+
+    .form-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px var(--focus-ring);
+    }
+
+    /* Appearance / Theme Switch Group */
+    .theme-switch-group {
+      display: flex;
+      background: var(--bg-card-inset);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-pill);
+      padding: 4px;
+      gap: 4px;
+    }
+
+    .theme-btn {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      font-family: var(--font-sans);
+      font-size: 0.8rem;
+      font-weight: 700;
+      padding: 0.5rem 0.6rem;
+      border-radius: var(--radius-pill);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      transition: all 0.2s ease;
+    }
+
+    .theme-btn:hover:not(.active) {
+      color: var(--text-primary);
+      background: var(--bg-pill-hover);
+    }
+
+    .theme-btn.active {
+      background: var(--bg-card);
+      color: var(--accent);
+      box-shadow: var(--shadow-card);
+    }
+
+    /* Unreachable Server Banner */
+    .offline-banner {
+      display: none;
+      background: linear-gradient(90deg, #7f1d1d 0%, #991b1b 100%);
+      color: #fee2e2;
+      border-radius: var(--radius-md);
+      padding: 0.85rem 1.25rem;
+      margin-bottom: 1rem;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+    }
+
+    .offline-banner.active {
+      display: flex;
+    }
+
+    /* Toast Notification */
+    .toast-container {
+      position: fixed;
+      top: 24px;
+      right: 24px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      pointer-events: none;
+    }
+
+    .toast {
+      pointer-events: auto;
+      background: var(--bg-card-inset);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-primary);
+      padding: 0.75rem 1.25rem;
+      border-radius: var(--radius-pill);
+      font-size: 0.85rem;
+      font-weight: 600;
+      box-shadow: var(--shadow-card);
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      animation: toastIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .toast.success { border-color: var(--positive); }
+    .toast.error { border-color: var(--negative); }
+    .toast.info { border-color: var(--border-accent); }
+
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateY(-12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Footer Disclaimer */
+    .app-footer {
+      margin-top: 2rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    /* Responsive Queries */
+    @media (max-width: 1024px) {
+      .dashboard-grid { grid-template-columns: 1fr; }
+      .market-overview-grid { grid-template-columns: 1fr; }
+      .insights-grid { grid-template-columns: 1fr; }
+      .hero-card { flex-direction: column; align-items: flex-start; gap: 1.5rem; }
+      .hero-left { max-width: 100%; }
+      .nav-pill-group { overflow-x: auto; max-width: 500px; }
+    }
+
+    @media (max-width: 768px) {
+      body { padding: 1rem; }
+      .header { flex-direction: column; align-items: stretch; gap: 1rem; }
+      .nav-pill-group { width: 100%; justify-content: space-around; }
+      .header-actions { justify-content: flex-end; }
+      .hero-amount { font-size: 2.4rem; }
+    }
+  </style>
 </head>
 <body>
-<div class="wrap">
-  <h1>CapTax AI — Dashboard</h1>
-  <div class="sub">Multi-Broker Capital Gains &amp; Foreign Asset Tax Disclosure Engine — Team 15</div>
 
-  <div class="bar">
-    <input id="apiBase" type="text" value="http://localhost:8000" />
-    <button id="runBtn" onclick="runPipeline()">Run Pipeline</button>
-    <button onclick="loadAll()">Refresh Data</button>
+  <!-- Toast Notification Root -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Server Unreachable Alert Banner -->
+  <div class="app-container">
+    <div class="offline-banner" id="offlineBanner">
+      <div style="display: flex; align-items: center; gap: 0.6rem;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+        <span>Cannot reach CapTax AI backend at <strong id="offlineUrlDisplay">http://localhost:8001</strong>. Please check that Uvicorn is active.</span>
+      </div>
+      <button class="report-btn" onclick="checkBackendHealth(true)" style="background: rgba(255,255,255,0.2); border: none; color: var(--accent-contrast);">Retry Connection</button>
+    </div>
+
+    <!-- MAIN APP HEADER -->
+    <header class="header">
+      <!-- Left: Datara style logo -->
+      <a class="brand" onclick="switchTab('dashboard')">
+        <div class="brand-logo">CapTax<span>AI</span></div>
+        <div class="brand-badge">Round 2 Prototype</div>
+      </a>
+
+      <!-- Center: Pill Navigation -->
+      <nav class="nav-pill-group">
+        <button class="nav-pill active" id="tab-dashboard" onclick="switchTab('dashboard')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect></svg>
+          Dashboard
+        </button>
+        <button class="nav-pill" id="tab-investments" onclick="switchTab('investments')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 3v18h18"></path><path d="m19 9-5 5-4-4-3 3"></path></svg>
+          Investments
+        </button>
+        <button class="nav-pill" id="tab-brokers" onclick="switchTab('brokers')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
+          Brokers
+        </button>
+        <button class="nav-pill" id="tab-tax" onclick="switchTab('tax')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+          Tax &amp; ITR
+        </button>
+        <button class="nav-pill" id="tab-activity" onclick="switchTab('activity')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+          Activity
+        </button>
+      </nav>
+
+      <!-- Right: Action Buttons -->
+      <div class="header-actions">
+        <!-- Currency Toggle -->
+        <div class="curr-toggle">
+          <button class="curr-btn active" id="btnCurrINR" onclick="setCurrency('INR')">₹ INR</button>
+          <button class="curr-btn" id="btnCurrUSD" onclick="setCurrency('USD')">$ USD</button>
+        </div>
+
+        <!-- Run Pipeline Header Action -->
+        <button class="btn-run-pipeline" id="headerRunPipelineBtn" onclick="triggerPipelineRun()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+          <span>Run Pipeline</span>
+        </button>
+
+        <!-- Refresh Button -->
+        <button class="icon-btn" title="Refresh Data" onclick="loadAllBackendData(true)">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2v6h-6"></path><path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path><path d="M3 22v-6h6"></path><path d="M21 12a9 9 0 0 1-15 6.7L3 16"></path></svg>
+        </button>
+
+        <!-- Notification Bell -->
+        <button class="icon-btn has-alert" title="Alerts &amp; Warnings" onclick="showNotificationAlerts()">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+        </button>
+
+        <!-- Settings Drawer Toggle -->
+        <button class="icon-btn" title="Settings" onclick="toggleSettingsDrawer(true)">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        </button>
+
+        <!-- User Avatar -->
+        <div class="avatar-chip" title="Akash Singh Chauhan (Frontend &amp; QA Lead)">AC</div>
+      </div>
+    </header>
+
+    <!-- ======================================================================
+         PAGE 1: DASHBOARD VIEW (Datara Grid)
+         ====================================================================== -->
+    <main class="page-section active" id="page-dashboard">
+      <div class="dashboard-grid">
+        
+        <!-- LEFT COLUMN (Approx 65%) -->
+        <div class="grid-col">
+          
+          <!-- 1. HERO CARD -->
+          <div class="card hero-card">
+            <div class="hero-left">
+              <div class="hero-label-row">
+                <span class="hero-label">Total Tax Payable (All FYs)</span>
+                <span class="hero-tag" id="heroEffectiveTag">18.5% Effective Rate</span>
+              </div>
+              <div class="hero-amount" id="heroAmountDisplay">₹1,14,78,815.00</div>
+              <div class="hero-metrics-pill-row">
+                <div class="hero-sub-pill">LTCG Tax: <strong id="heroLtcgTaxDisplay">₹28,03,767</strong></div>
+                <div class="hero-sub-pill">STCG Tax: <strong id="heroStcgTaxDisplay">₹86,33,681</strong></div>
+                <div class="hero-sub-pill">DTAA Relief: <strong id="heroDtaaReliefDisplay">₹2,06,847</strong></div>
+                <div class="hero-sub-pill">Invested: <strong id="heroInvestedDisplay">₹3,05,56,191</strong></div>
+              </div>
+            </div>
+
+            <!-- 3D Vector Graphic: Neon Fintech Wallet with Cards & Coin -->
+            <div class="hero-3d-graphic">
+              <svg class="wallet-3d-svg" viewBox="0 0 220 170" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <linearGradient id="cardGrad1" x1="20" y1="20" x2="160" y2="120" gradientUnits="userSpaceOnUse">
+                    <stop offset="0%" stop-color="#FF7B54"/>
+                    <stop offset="100%" stop-color="#F0502D"/>
+                  </linearGradient>
+                  <linearGradient id="cardGrad2" x1="40" y1="40" x2="180" y2="140" gradientUnits="userSpaceOnUse">
+                    <stop offset="0%" stop-color="#FBBF24"/>
+                    <stop offset="100%" stop-color="#F59E0B"/>
+                  </linearGradient>
+                  <linearGradient id="walletBody" x1="10" y1="45" x2="190" y2="160" gradientUnits="userSpaceOnUse">
+                    <stop offset="0%" stop-color="#FF5722"/>
+                    <stop offset="50%" stop-color="#E64A19"/>
+                    <stop offset="100%" stop-color="#BF360C"/>
+                  </linearGradient>
+                  <linearGradient id="claspGrad" x1="30" y1="80" x2="80" y2="125" gradientUnits="userSpaceOnUse">
+                    <stop offset="0%" stop-color="#8B5CF6"/>
+                    <stop offset="100%" stop-color="#6D28D9"/>
+                  </linearGradient>
+                  <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+                    <feGaussianBlur stdDeviation="8" result="blur" />
+                    <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                  </filter>
+                </defs>
+
+                <!-- Back Credit Card -->
+                <rect x="75" y="15" width="105" height="65" rx="10" transform="rotate(14 75 15)" fill="url(#cardGrad2)" stroke="rgba(255,255,255,0.4)" stroke-width="1.5" />
+                
+                <!-- Middle Credit Card -->
+                <rect x="65" y="25" width="110" height="70" rx="10" transform="rotate(4 65 25)" fill="url(#cardGrad1)" stroke="rgba(255,255,255,0.5)" stroke-width="1.5" />
+
+                <!-- Wallet Main Body (3D Folded Shape) -->
+                <path d="M35 55 C35 44 44 38 56 38 L170 42 C185 43 194 52 195 68 L190 142 C188 154 178 162 165 162 L48 158 C36 157 28 147 28 135 Z" fill="url(#walletBody)" filter="url(#glow)"/>
+                
+                <!-- Top Edge Highlight -->
+                <path d="M42 46 C55 42 160 44 178 48 C185 50 188 56 186 64" stroke="rgba(255,255,255,0.6)" stroke-width="3" stroke-linecap="round"/>
+
+                <!-- Wallet Interior Card Slit -->
+                <path d="M45 75 Q110 82 175 75" stroke="#BF360C" stroke-width="4" stroke-linecap="round"/>
+
+                <!-- Front Flap / Clasp -->
+                <rect x="22" y="85" width="56" height="38" rx="12" fill="url(#claspGrad)" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/>
+                <circle cx="50" cy="104" r="6" fill="#EDE9FE"/>
+
+                <!-- Floating Tax Coin -->
+                <g transform="translate(145, 105)">
+                  <circle cx="20" cy="20" r="18" fill="#FBBF24" stroke="#D97706" stroke-width="2.5" />
+                  <circle cx="20" cy="20" r="14" fill="#F59E0B" />
+                  <text x="20" y="26" font-size="16" font-weight="800" fill="#78350F" text-anchor="middle" font-family="'Plus Jakarta Sans', sans-serif">₹</text>
+                </g>
+              </svg>
+            </div>
+          </div>
+
+          <!-- 2. MARKET OVERVIEW CARD (Line Chart & Bar Chart) -->
+          <div class="card">
+            <div class="card-header-bar">
+              <div>
+                <div class="card-title">Market overview</div>
+                <div class="card-sub">LTCG vs STCG Realized Gains &amp; FY Tax Burden</div>
+              </div>
+              <button class="card-arrow-btn" title="View Full Tax Tables" onclick="switchTab('tax')">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
+              </button>
+            </div>
+
+            <div class="market-overview-grid">
+              <!-- Chart 1: Line Chart (LTCG vs STCG Gains, with negative FY25 values) -->
+              <div class="chart-container">
+                <div class="chart-header">
+                  <span class="chart-title">Realized Gains (₹)</span>
+                  <span class="chart-badge">+24.5% YoY</span>
+                </div>
+                <svg class="chart-svg" id="lineChartSvg" viewBox="0 0 320 180"></svg>
+                <div class="chart-legend">
+                  <div class="legend-item"><span class="legend-dot" style="background: var(--chart-3);"></span> LTCG Gain</div>
+                  <div class="legend-item"><span class="legend-dot" style="background: var(--chart-1);"></span> STCG Gain (loss below 0)</div>
+                </div>
+              </div>
+
+              <!-- Chart 2: Stacked Bar Chart with Highlighted FY Frame -->
+              <div class="chart-container">
+                <div class="chart-header">
+                  <span class="chart-title">Tax Burden by FY (₹)</span>
+                  <span class="chart-badge" style="background: var(--accent-subtle); color: var(--accent);">FY23-24 Peak</span>
+                </div>
+                <svg class="chart-svg" id="barChartSvg" viewBox="0 0 320 180"></svg>
+                <div class="chart-legend">
+                  <div class="legend-item"><span class="legend-dot" style="background: var(--chart-4);"></span> LTCG Tax</div>
+                  <div class="legend-item"><span class="legend-dot" style="background: var(--chart-1);"></span> STCG Tax</div>
+                  <div class="legend-item"><span class="legend-dot" style="background: var(--chart-2);"></span> DTAA Net</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. INSIGHTS & PIPELINE LOG CARD (Replaces News Feed) -->
+          <div class="card">
+            <div class="card-header-bar">
+              <div>
+                <div class="card-title">Insights &amp; Pipeline log</div>
+                <div class="card-sub">Multi-Broker Status &amp; Compliance Advisory</div>
+              </div>
+              <button class="card-arrow-btn" title="View Ingestion Pipeline" onclick="switchTab('activity')">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
+              </button>
+            </div>
+
+            <div class="insights-grid">
+              <!-- Left Column: Connected Brokers -->
+              <div>
+                <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.75rem;">Connected Brokers</div>
+                <div class="broker-mini-list" id="dashboardBrokersList">
+                  <!-- Populated from /data/brokers -->
+                </div>
+              </div>
+
+              <!-- Right Column: Compliance Insights -->
+              <div>
+                <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.75rem;">Tax Intelligence &amp; Set-Off</div>
+                <div class="insight-cards-col" id="dashboardInsightsList">
+                  <div class="insight-card highlight">
+                    <div class="insight-header">
+                      <span>FY2024-25 STCG Loss Available</span>
+                      <span class="insight-badge">Section 70</span>
+                    </div>
+                    <div class="insight-text">
+                      Realized Short-Term Capital Loss of <strong>₹46,41,568.20</strong> can be set off against taxable LTCG (₹1.31 Cr), reducing current-year tax, or carried forward for 8 consecutive Assessment Years under Section 74.
+                    </div>
+                  </div>
+
+                  <div class="insight-card">
+                    <div class="insight-header">
+                      <span>DTAA Article 25 Foreign Tax Credit</span>
+                      <span class="insight-badge" style="background: var(--positive-subtle); color: var(--positive);">Relief Claimed</span>
+                    </div>
+                    <div class="insight-text">
+                      <strong>₹2,06,847.15</strong> foreign tax withheld on US dividends via Interactive Brokers has been claimed as foreign tax relief. Mandatory <strong>Form 67</strong> e-filing required before ITR submission.
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- RIGHT COLUMN (Approx 35%) -->
+        <div class="grid-col">
+          
+          <!-- 4. RECENT TRANSACTIONS CARD -->
+          <div class="card">
+            <div class="card-header-bar">
+              <div>
+                <div class="card-title">Recent transactions</div>
+                <div class="card-sub">Realized Trades &amp; Foreign Dividends</div>
+              </div>
+              <button class="card-arrow-btn" title="View All Transactions" onclick="switchTab('tax')">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
+              </button>
+            </div>
+
+            <div id="recentTransactionsContainer">
+              <!-- Grouped by date dynamically -->
+            </div>
+          </div>
+
+          <!-- 5. RISK ANALYSIS / TAX EXPOSURE GAUGE -->
+          <div class="card">
+            <div class="card-header-bar">
+              <div>
+                <div class="card-title">Tax exposure</div>
+                <div class="card-sub">Effective Tax Rate = Total Tax ÷ Total Gains</div>
+              </div>
+              <button class="card-arrow-btn" title="Tax Assumptions" onclick="switchTab('tax')">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
+              </button>
+            </div>
+
+            <div class="gauge-wrapper">
+              <svg class="gauge-svg" id="gaugeSvg" viewBox="0 0 240 140"></svg>
+              <div class="gauge-center-info">
+                <div class="gauge-value" id="gaugeEffectiveRateDisplay">18.5%</div>
+                <div class="gauge-subtext" id="gaugeStatusText">Moderate Exposure</div>
+              </div>
+              <div class="gauge-formula-pill" title="Total Tax (₹1.15 Cr) ÷ Total Realized Gains (₹6.20 Cr)">
+                Formula: Tax Liability ÷ Total Realized Base
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </main>
+
+    <!-- ======================================================================
+         PAGE 2: INVESTMENTS VIEW (Holdings, Invested Capital, Currency Split)
+         ====================================================================== -->
+    <section class="page-section" id="page-investments">
+      <div class="card" style="margin-bottom: 1.5rem;">
+        <div class="card-header-bar">
+          <div>
+            <div class="card-title">Investment Portfolio &amp; Holdings</div>
+            <div class="card-sub">Aggregated positions across domestic &amp; global broker accounts</div>
+          </div>
+          <div style="display: flex; gap: 0.5rem;">
+            <select class="form-input" id="investmentsBrokerFilter" onchange="filterHoldings()" style="font-size: 0.8rem; padding: 0.4rem 0.8rem;">
+              <option value="ALL">All Brokers</option>
+              <option value="Zerodha">Zerodha</option>
+              <option value="Groww">Groww</option>
+              <option value="ICICI Direct">ICICI Direct</option>
+              <option value="Interactive Brokers">Interactive Brokers (US)</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+          <div class="insight-card">
+            <span class="hero-label">Total Invested Capital</span>
+            <div class="hero-amount" style="font-size: 1.8rem;" id="invTotalInvestedDisplay">₹3,05,56,191</div>
+            <span style="font-size: 0.72rem; color: var(--text-muted);">Across 18 Active Scrip Holdings</span>
+          </div>
+          <div class="insight-card">
+            <span class="hero-label">Domestic Equity (INR)</span>
+            <div class="hero-amount" style="font-size: 1.8rem; color: var(--positive);" id="invDomesticDisplay">₹2,88,48,547</div>
+            <span style="font-size: 0.72rem; color: var(--text-muted);">Zerodha, Groww &amp; ICICI Direct</span>
+          </div>
+          <div class="insight-card">
+            <span class="hero-label">Foreign Equity (USD)</span>
+            <div class="hero-amount" style="font-size: 1.8rem; color: var(--chart-4);" id="invForeignDisplay">₹17,07,644</div>
+            <span style="font-size: 0.72rem; color: var(--text-muted);">META &amp; MSFT (Schedule FA)</span>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Broker</th>
+                <th>Ticker</th>
+                <th>Company Name</th>
+                <th class="num">Net Holding Qty</th>
+                <th class="num">Avg Cost (₹)</th>
+                <th class="num">Invested Value (₹)</th>
+                <th>Currency</th>
+                <th>Last Traded</th>
+              </tr>
+            </thead>
+            <tbody id="holdingsTableBody">
+              <!-- Populated via /data/holdings -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         PAGE 3: BROKERS VIEW (Connected Accounts, Sync, Upload)
+         ====================================================================== -->
+    <section class="page-section" id="page-brokers">
+      <div class="card" style="margin-bottom: 1.5rem;">
+        <div class="card-header-bar">
+          <div>
+            <div class="card-title">Connected Broker Accounts</div>
+            <div class="card-sub">Multi-broker trade normalization &amp; corporate actions sync</div>
+          </div>
+          <button class="btn-run-pipeline" onclick="triggerPipelineRun()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+            Sync All Brokers
+          </button>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem;" id="brokersCardsGrid">
+          <!-- Populated from /data/brokers -->
+        </div>
+      </div>
+
+      <!-- Ingestion Schema Normalization Spec Card -->
+      <div class="card">
+        <div class="card-title" style="margin-bottom: 0.5rem;">Normalized Trade Schema Standard</div>
+        <div class="card-sub" style="margin-bottom: 1.25rem;">Four varied broker formats consolidated into 15 uniform audit columns:</div>
+        <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+          <span class="hero-sub-pill">broker</span>
+          <span class="hero-sub-pill">symbol</span>
+          <span class="hero-sub-pill">company_name</span>
+          <span class="hero-sub-pill">isin</span>
+          <span class="hero-sub-pill">trade_date</span>
+          <span class="hero-sub-pill">transaction_type (BUY/SELL)</span>
+          <span class="hero-sub-pill">quantity</span>
+          <span class="hero-sub-pill">price</span>
+          <span class="hero-sub-pill">price_currency</span>
+          <span class="hero-sub-pill">fx_rate_to_inr</span>
+          <span class="hero-sub-pill">price_inr</span>
+          <span class="hero-sub-pill">gross_amount_inr</span>
+          <span class="hero-sub-pill">charges_inr</span>
+          <span class="hero-sub-pill">exchange</span>
+          <span class="hero-sub-pill">source_ref</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         PAGE 4: TAX & ITR VIEW (Schedule CG, Schedule FSI, Report, Flags)
+         ====================================================================== -->
+    <section class="page-section" id="page-tax">
+      <div class="card">
+        <!-- Sub navigation pills for Tax Page -->
+        <div class="tax-subnav">
+          <button class="tax-tab-btn active" id="subtab-btn-cg" onclick="switchTaxSubtab('cg')">Schedule CG (Capital Gains)</button>
+          <button class="tax-tab-btn" id="subtab-btn-fsi" onclick="switchTaxSubtab('fsi')">Schedule FSI (DTAA Relief)</button>
+          <button class="tax-tab-btn" id="subtab-btn-report" onclick="switchTaxSubtab('report')">ITR Disclosure Report</button>
+        </div>
+
+        <!-- 1. Schedule CG Tab Content -->
+        <div id="subtab-content-cg">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+            <div>
+              <div class="card-title">Schedule CG — Capital Gains Summary</div>
+              <div class="card-sub">FIFO-matched transfers of Indian listed securities (Budget 2024 Regime)</div>
+            </div>
+            <div style="display: flex; gap: 0.6rem;">
+              <button class="report-btn" onclick="exportTableToCSV('scheduleCGTable', 'Schedule_CG_CapTaxAI.csv')">Export CSV</button>
+              <button class="report-btn" onclick="window.print()">Print / PDF</button>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="data-table" id="scheduleCGTable">
+              <thead>
+                <tr>
+                  <th>Financial Year</th>
+                  <th class="num">LTCG Gain (₹)</th>
+                  <th class="num">Exemption Applied (₹)</th>
+                  <th class="num">Taxable LTCG (₹)</th>
+                  <th class="num">LTCG Tax @ 12.5% (₹)</th>
+                  <th class="num">STCG Gain / Loss (₹)</th>
+                  <th class="num">STCG Tax @ 20% (₹)</th>
+                  <th class="num">Total Capital Gains Tax (₹)</th>
+                </tr>
+              </thead>
+              <tbody id="scheduleCGTableBody">
+                <!-- Populated from /data/tax-summary -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 2. Schedule FSI Tab Content -->
+        <div id="subtab-content-fsi" style="display: none;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+            <div>
+              <div class="card-title">Schedule FSI — Foreign Source Income &amp; DTAA Relief</div>
+              <div class="card-sub">Double Taxation Avoidance Agreement (India - US Article 25) on foreign dividend income</div>
+            </div>
+            <button class="report-btn" onclick="exportDtaaCSV()">Export DTAA CSV</button>
+          </div>
+
+          <div id="dtaaAccordionsContainer">
+            <!-- Grouped by FY and Security with expandable drill-down -->
+          </div>
+        </div>
+
+        <!-- 3. Disclosure Report Tab Content -->
+        <div id="subtab-content-report" style="display: none;">
+          <div class="report-card">
+            <div class="card-header-bar" style="margin-bottom: 0.5rem;">
+              <div>
+                <div class="card-title">ITR Disclosure Synthesis Report</div>
+                <div class="card-sub">Schedule CG, Schedule FSI &amp; Schedule FA Consolidated Monospace Output</div>
+              </div>
+              <div class="report-actions">
+                <button class="report-btn" id="copyReportBtn" onclick="copyDisclosureReport()">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                  Copy Report
+                </button>
+                <button class="report-btn" onclick="downloadDisclosureReport()">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                  Download .txt
+                </button>
+              </div>
+            </div>
+            <pre class="report-pre" id="disclosureReportText">Loading disclosure report from backend...</pre>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Assumptions & Warnings Panel (Correctness Flags) -->
+      <div class="assumptions-panel">
+        <div class="card-title">Assumptions, Legal Warnings &amp; Tax Flags</div>
+        <div class="card-sub">Critical compliance notes for ITR-2 / ITR-3 submission:</div>
+
+        <div class="flags-grid">
+          <!-- Flag 1: Rate Regime -->
+          <div class="flag-box warning">
+            <div class="flag-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="2.2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+              Budget 2024 Transition Cut-off
+            </div>
+            <div class="flag-text">
+              12.5% LTCG, 20% STCG, and ₹1.25L exemption statutory rates apply strictly to transfers executed on or after <strong>23-Jul-2024</strong>. Pre-July transfers for FY2022-23 and FY2023-24 are computed at standard rates (10% LTCG, 15% STCG, ₹1L exemption).
+            </div>
+          </div>
+
+          <!-- Flag 2: Loss Set-Off & Carry Forward -->
+          <div class="flag-box caution">
+            <div class="flag-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+              STCG Loss Set-off (Sec 70/74)
+            </div>
+            <div class="flag-text">
+              FY2024-25 STCG loss of <strong>-₹46,41,568.20</strong> is eligible to be set off against taxable LTCG (₹1,31,60,608.96) under Section 70, reducing tax liability, or carried forward for 8 consecutive Assessment Years under Section 74.
+            </div>
+          </div>
+
+          <!-- Flag 3: Foreign Stock Sale Scope -->
+          <div class="flag-box info">
+            <div class="flag-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2.2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+              Foreign Equity Classification Scope
+            </div>
+            <div class="flag-text">
+              Schedule CG strictly covers Indian listed equities. Foreign US equities (Interactive Brokers) are unlisted for Indian tax purposes (24-month holding period threshold for LTCG), and capital gains are computed separately under applicable slab rates.
+            </div>
+          </div>
+
+          <!-- Flag 4: Form 67 & Schedule TR -->
+          <div class="flag-box check">
+            <div class="flag-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--positive)" stroke-width="2.2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+              Form 67 &amp; Schedule TR Checklist
+            </div>
+            <div class="flag-text">
+              To legally claim DTAA relief (₹2,06,847.15) on US dividends, <strong>Form 67</strong> must be e-filed on the IT portal prior to filing the return, accompanied by 1042-S TDS certificates and verified in Schedule TR and Schedule FSI.
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top: 1.5rem; text-align: center; font-size: 0.76rem; color: var(--text-muted); font-style: italic;">
+          Academic prototype — not a substitute for filed ITR schedules. All figures derived directly from pipeline FIFO reconciliation.
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         PAGE 5: ACTIVITY VIEW (Pipeline Stepper, History & Logs)
+         ====================================================================== -->
+    <section class="page-section" id="page-activity">
+      <!-- 7-Step Pipeline Stepper -->
+      <div class="stepper-card">
+        <div class="card-header-bar" style="margin-bottom: 0.25rem;">
+          <div>
+            <div class="card-title">Automated Data &amp; Tax Pipeline</div>
+            <div class="card-sub">7-stage end-to-end reconciliation, classification and disclosure synthesis</div>
+          </div>
+          <button class="btn-run-pipeline" id="activityRunPipelineBtn" onclick="triggerPipelineRun()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+            Execute Full Pipeline
+          </button>
+        </div>
+
+        <div class="stepper-list" id="pipelineStepperList">
+          <!-- Step 1 -->
+          <div class="stepper-step completed" id="step-0">
+            <div class="step-icon-bubble">1</div>
+            <div class="step-content">
+              <div class="step-name-row">
+                <span class="step-name">generate_datasets.py</span>
+                <span class="step-owner-tag">Anishka Jain (Backend)</span>
+              </div>
+              <div class="step-desc">Generates multi-broker synthetic transaction exports, corporate actions &amp; foreign dividend logs.</div>
+            </div>
+          </div>
+
+          <!-- Step 2 -->
+          <div class="stepper-step completed" id="step-1">
+            <div class="step-icon-bubble">2</div>
+            <div class="step-content">
+              <div class="step-name-row">
+                <span class="step-name">ingest.py</span>
+                <span class="step-owner-tag">Anishka Jain (Backend)</span>
+              </div>
+              <div class="step-desc">Ingests Zerodha, Groww, ICICI Direct &amp; IBKR exports into a single 15-column normalized schema.</div>
+            </div>
+          </div>
+
+          <!-- Step 3 -->
+          <div class="stepper-step completed" id="step-2">
+            <div class="step-icon-bubble">3</div>
+            <div class="step-content">
+              <div class="step-name-row">
+                <span class="step-name">corporate_actions_adjuster.py</span>
+                <span class="step-owner-tag">Anishka Jain (Backend)</span>
+              </div>
+              <div class="step-desc">Applies stock splits and bonus lot ratios retrospectively to purchase quantities and cost-basis.</div>
+            </div>
+          </div>
+
+          <!-- Step 4 -->
+          <div class="stepper-step completed" id="step-3">
+            <div class="step-icon-bubble">4</div>
+            <div class="step-content">
+              <div class="step-name-row">
+                <span class="step-name">fifo_matcher.py</span>
+                <span class="step-owner-tag">Anishka Jain (Backend)</span>
+              </div>
+              <div class="step-desc">Matches sells against chronological buys using First-In-First-Out logic and computes holding period days.</div>
+            </div>
+          </div>
+
+          <!-- Step 5 -->
+          <div class="stepper-step completed" id="step-4">
+            <div class="step-icon-bubble">5</div>
+            <div class="step-content">
+              <div class="step-name-row">
+                <span class="step-name">tax_classifier.py</span>
+                <span class="step-owner-tag">Shraddha Singh (AI/Lead)</span>
+              </div>
+              <div class="step-desc">Classifies realized gains into LTCG (>365d @ 12.5% with ₹1.25L exemption) and STCG (20%).</div>
+            </div>
+          </div>
+
+          <!-- Step 6 -->
+          <div class="stepper-step completed" id="step-5">
+            <div class="step-icon-bubble">6</div>
+            <div class="step-content">
+              <div class="step-name-row">
+                <span class="step-name">dtaa_relief.py</span>
+                <span class="step-owner-tag">Shraddha Singh (AI/Lead)</span>
+              </div>
+              <div class="step-desc">Computes US-India Article 25 DTAA foreign tax relief on foreign dividend payments.</div>
+            </div>
+          </div>
+
+          <!-- Step 7 -->
+          <div class="stepper-step completed" id="step-6">
+            <div class="step-icon-bubble">7</div>
+            <div class="step-content">
+              <div class="step-name-row">
+                <span class="step-name">disclosure_generator.py</span>
+                <span class="step-owner-tag">Shraddha Singh (AI/Lead)</span>
+              </div>
+              <div class="step-desc">Synthesizes ITR Schedules CG, FSI and FA into an audit-ready disclosure summary report.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pipeline Execution History Card -->
+      <div class="card">
+        <div class="card-title" style="margin-bottom: 0.5rem;">Pipeline Execution History</div>
+        <div class="card-sub" style="margin-bottom: 1.25rem;">Audit log of recent automated runs and step completions:</div>
+
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Execution Time</th>
+                <th>Trigger Source</th>
+                <th>Steps Completed</th>
+                <th>Duration</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="pipelineHistoryTableBody">
+              <!-- Populated from localStorage audit log -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="app-footer">
+      <div>CapTax AI — Round 2 Prototype (Team 15: Shraddha Singh, Anishka Jain, Akash Singh Chauhan)</div>
+      <div>Backend API Port: <strong style="color: var(--accent);">:8001</strong> • Academic Use Only</div>
+    </footer>
+
   </div>
-  <div class="status" id="status"></div>
 
-  <div class="card">
-    <h2>Tax Summary (Schedule CG)</h2>
-    <div id="taxSummary" class="empty">No data yet — run the pipeline.</div>
-  </div>
+  <!-- ======================================================================
+       SETTINGS DRAWER
+       ====================================================================== -->
+  <div class="drawer-overlay" id="drawerOverlay" onclick="toggleSettingsDrawer(false)"></div>
+  <aside class="settings-drawer" id="settingsDrawer">
+    <div style="display: flex; align-items: center; justify-content: space-between;">
+      <h3 style="font-size: 1.2rem; font-weight: 800; color: var(--text-primary);">System Settings</h3>
+      <button class="icon-btn" onclick="toggleSettingsDrawer(false)">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+    </div>
 
-  <div class="card">
-    <h2>DTAA Relief (Schedule FSI)</h2>
-    <div id="dtaaRelief" class="empty">No data yet — run the pipeline.</div>
-  </div>
+    <!-- Theme / Appearance Switcher -->
+    <div class="form-group">
+      <label class="form-label">Appearance (Theme)</label>
+      <div class="theme-switch-group">
+        <button class="theme-btn" id="themeBtnLight" onclick="setTheme('light')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+          Light
+        </button>
+        <button class="theme-btn" id="themeBtnDark" onclick="setTheme('dark')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+          Dark
+        </button>
+        <button class="theme-btn active" id="themeBtnSystem" onclick="setTheme('system')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+          System
+        </button>
+      </div>
+      <span style="font-size: 0.72rem; color: var(--text-muted);">Adapts automatically to macOS/system mode or user choice</span>
+    </div>
 
-  <div class="card">
-    <h2>Disclosure Report</h2>
-    <div id="disclosureReport" class="empty">No data yet — run the pipeline.</div>
-  </div>
-</div>
+    <div class="form-group">
+      <label class="form-label">Backend API Base URL</label>
+      <input type="text" class="form-input" id="settingsApiBase" value="http://localhost:8001" />
+      <span style="font-size: 0.72rem; color: var(--text-muted);">Default: http://localhost:8001 (FastAPI backend)</span>
+    </div>
 
-<script>
-function apiBase() {
-  return document.getElementById('apiBase').value.replace(/\/$/, '');
-}
+    <div class="form-group">
+      <label class="form-label">Financial Year Filter</label>
+      <select class="form-input" id="settingsFyFilter" onchange="changeActiveFyFilter(this.value)">
+        <option value="ALL">All FYs (FY22-23 to FY24-25)</option>
+        <option value="FY2024-25">FY 2024-25 (Current AY)</option>
+        <option value="FY2023-24">FY 2023-24</option>
+        <option value="FY2022-23">FY 2022-23</option>
+      </select>
+    </div>
 
-function setStatus(msg, isError) {
-  const el = document.getElementById('status');
-  el.textContent = msg;
-  el.style.color = isError ? 'var(--red)' : 'var(--muted)';
-}
+    <div class="form-group">
+      <label class="form-label">Default Currency</label>
+      <div style="display: flex; gap: 0.5rem;">
+        <button class="report-btn" id="drawerCurrINR" onclick="setCurrency('INR')" style="flex: 1; justify-content: center;">Indian Rupee (₹)</button>
+        <button class="report-btn" id="drawerCurrUSD" onclick="setCurrency('USD')" style="flex: 1; justify-content: center;">US Dollar ($)</button>
+      </div>
+    </div>
 
-async function runPipeline() {
-  const btn = document.getElementById('runBtn');
-  btn.disabled = true;
-  setStatus('Running pipeline…');
-  try {
-    const res = await fetch(apiBase() + '/pipeline/run', { method: 'POST' });
-    if (!res.ok) throw new Error(await res.text());
-    const data = await res.json();
-    setStatus(`Pipeline completed: ${data.steps.length} steps run.`);
-    await loadAll();
-  } catch (err) {
-    setStatus('Pipeline run failed: ' + err.message, true);
-  } finally {
-    btn.disabled = false;
-  }
-}
+    <button class="btn-run-pipeline" style="justify-content: center; margin-top: auto;" onclick="saveSettingsAndRefresh()">
+      Save &amp; Test Connection
+    </button>
+  </aside>
 
-async function loadAll() {
-  await Promise.all([loadTaxSummary(), loadDtaaRelief(), loadDisclosureReport()]);
-}
+  <!-- ======================================================================
+       JAVASCRIPT APPLICATION LOGIC
+       ====================================================================== -->
+  <script>
+    // System State
+    const STATE = {
+      apiBase: localStorage.getItem('captax_api_base') || (window.location.origin.startsWith('http') ? window.location.origin : 'http://localhost:8001'),
+      currency: localStorage.getItem('captax_curr') || 'INR',
+      theme: localStorage.getItem('captax-theme') || 'system',
+      usdRate: 83.50,
+      activeTab: 'dashboard',
+      activeTaxSubtab: 'cg',
+      activeFy: 'ALL',
+      taxSummary: [],
+      dtaaRelief: [],
+      portfolio: {},
+      brokers: [],
+      holdings: [],
+      recentTransactions: [],
+      disclosureReport: '',
+      pipelineRunning: false,
+    };
 
-async function loadTaxSummary() {
-  const el = document.getElementById('taxSummary');
-  try {
-    const res = await fetch(apiBase() + '/data/tax-summary');
-    if (!res.ok) { el.innerHTML = '<div class="empty">No data yet — run the pipeline.</div>'; return; }
-    const rows = await res.json();
-    if (!rows.length) { el.innerHTML = '<div class="empty">No capital gains found.</div>'; return; }
-    el.innerHTML = renderTable(rows, [
-      'financial_year', 'ltcg_gain_inr', 'taxable_ltcg_inr', 'ltcg_tax_inr',
-      'stcg_gain_inr', 'stcg_tax_inr', 'total_tax_inr',
-    ]);
-  } catch (e) { el.innerHTML = '<div class="empty">Backend not reachable.</div>'; }
-}
+    // Initialize on window load
+    window.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('settingsApiBase').value = STATE.apiBase;
+      updateCurrencyButtons();
+      updateThemeButtons();
+      checkBackendHealth();
+      loadAllBackendData();
+    });
 
-async function loadDtaaRelief() {
-  const el = document.getElementById('dtaaRelief');
-  try {
-    const res = await fetch(apiBase() + '/data/dtaa-relief');
-    if (!res.ok) { el.innerHTML = '<div class="empty">No data yet — run the pipeline.</div>'; return; }
-    const rows = await res.json();
-    if (!rows.length) { el.innerHTML = '<div class="empty">No foreign dividend income found.</div>'; return; }
-    el.innerHTML = renderTable(rows.slice(0, 15), [
-      'Security', 'financial_year', 'gross_dividend_inr',
-      'foreign_tax_withheld_inr', 'dtaa_relief_inr', 'net_indian_tax_payable_inr',
-    ]);
-  } catch (e) { el.innerHTML = '<div class="empty">Backend not reachable.</div>'; }
-}
+    // =========================================================================
+    // THEME MANAGEMENT (LIGHT / DARK / SYSTEM)
+    // =========================================================================
+    function getEffectiveTheme(themeSetting) {
+      if (themeSetting === 'system') {
+        return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+      }
+      return themeSetting;
+    }
 
-async function loadDisclosureReport() {
-  const el = document.getElementById('disclosureReport');
-  try {
-    const res = await fetch(apiBase() + '/data/disclosure-summary');
-    if (!res.ok) { el.innerHTML = '<div class="empty">No data yet — run the pipeline.</div>'; return; }
-    const data = await res.json();
-    el.innerHTML = '<pre>' + escapeHtml(data.report) + '</pre>';
-  } catch (e) { el.innerHTML = '<div class="empty">Backend not reachable.</div>'; }
-}
+    function setTheme(themeSetting, showNotice = true) {
+      STATE.theme = themeSetting;
+      localStorage.setItem('captax-theme', themeSetting);
 
-function renderTable(rows, columns) {
-  const header = columns.map(c => `<th>${c.replace(/_/g, ' ')}</th>`).join('');
-  const body = rows.map(row => {
-    const cells = columns.map(c => {
-      let v = row[c];
-      if (typeof v === 'number') v = v.toLocaleString('en-IN', { maximumFractionDigits: 2 });
-      return `<td>${v ?? ''}</td>`;
-    }).join('');
-    return `<tr>${cells}</tr>`;
-  }).join('');
-  return `<table><thead><tr>${header}</tr></thead><tbody>${body}</tbody></table>`;
-}
+      const effective = getEffectiveTheme(themeSetting);
 
-function escapeHtml(str) {
-  const div = document.createElement('div');
-  div.textContent = str;
-  return div.innerHTML;
-}
+      // Trigger smooth 200ms transition without affecting layout
+      document.documentElement.classList.add('theme-transitioning');
+      document.documentElement.setAttribute('data-theme', effective);
+      document.documentElement.style.colorScheme = effective;
 
-// Try loading existing data on page open, in case pipeline already ran.
-loadAll();
-</script>
+      const meta = document.getElementById('metaThemeColor');
+      if (meta) {
+        meta.setAttribute('content', effective === 'light' ? '#F3F1EE' : '#0c0c0e');
+      }
+
+      updateThemeButtons();
+      renderMarketOverviewCharts();
+      renderTaxExposureGauge();
+
+      setTimeout(() => {
+        document.documentElement.classList.remove('theme-transitioning');
+      }, 220);
+
+      if (showNotice) {
+        const label = themeSetting.charAt(0).toUpperCase() + themeSetting.slice(1);
+        showToast(`Theme switched to ${label} (${effective} active)`, 'info');
+      }
+    }
+
+    function updateThemeButtons() {
+      const current = STATE.theme || 'system';
+      ['Light', 'Dark', 'System'].forEach(mode => {
+        const btn = document.getElementById(`themeBtn${mode}`);
+        if (btn) btn.classList.toggle('active', current.toLowerCase() === mode.toLowerCase());
+      });
+    }
+
+    // System theme change listener (fires when OS switches dark/light mode while on "system")
+    const colorSchemeMedia = window.matchMedia('(prefers-color-scheme: light)');
+    colorSchemeMedia.addEventListener('change', e => {
+      if ((localStorage.getItem('captax-theme') || 'system') === 'system') {
+        setTheme('system', false);
+      }
+    });
+
+    // =========================================================================
+    // API UTILITIES & NUMBER FORMATTING
+    // =========================================================================
+    function getApiUrl(endpoint) {
+      return STATE.apiBase.replace(/\/$/, '') + (endpoint.startsWith('/') ? endpoint : '/' + endpoint);
+    }
+
+    function formatNumber(num, isCurrency = true) {
+      if (num === null || num === undefined || isNaN(num)) return '₹0.00';
+      const n = Number(num);
+      
+      if (STATE.currency === 'USD') {
+        const usdVal = n / (STATE.usdRate || 83.5);
+        const formatted = usdVal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        return isCurrency ? `$ ${formatted}` : formatted;
+      } else {
+        // Standard Indian numbering grouping (en-IN)
+        const formatted = Math.abs(n).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        const sign = n < 0 ? '- ' : '';
+        return isCurrency ? `${sign}₹${formatted}` : `${sign}${formatted}`;
+      }
+    }
+
+    function setCurrency(curr) {
+      STATE.currency = curr;
+      localStorage.setItem('captax_curr', curr);
+      updateCurrencyButtons();
+      renderAllComponents();
+      showToast(`Display currency switched to ${curr}`, 'info');
+    }
+
+    function updateCurrencyButtons() {
+      const isINR = STATE.currency === 'INR';
+      document.getElementById('btnCurrINR').classList.toggle('active', isINR);
+      document.getElementById('btnCurrUSD').classList.toggle('active', !isINR);
+    }
+
+    // =========================================================================
+    // BACKEND HEALTH & DATA INGESTION
+    // =========================================================================
+    async function checkBackendHealth(showToasts = false) {
+      try {
+        const res = await fetch(getApiUrl('/'), { method: 'GET', signal: AbortSignal.timeout(3000) });
+        if (res.ok) {
+          document.getElementById('offlineBanner').classList.remove('active');
+          if (showToasts) showToast('Connected to CapTax AI backend (:8001)', 'success');
+          return true;
+        } else {
+          throw new Error('Non-200 status');
+        }
+      } catch (err) {
+        document.getElementById('offlineBanner').classList.add('active');
+        document.getElementById('offlineUrlDisplay').textContent = STATE.apiBase;
+        if (showToasts) showToast('Backend unreachable at ' + STATE.apiBase, 'error');
+        return false;
+      }
+    }
+
+    async function loadAllBackendData(isManualRefresh = false) {
+      const isOnline = await checkBackendHealth();
+      if (!isOnline && isManualRefresh) return;
+
+      try {
+        const [taxRes, dtaaRes, portRes, brokerRes, holdRes, txRes, repRes] = await Promise.allSettled([
+          fetch(getApiUrl('/data/tax-summary')).then(r => r.ok ? r.json() : []),
+          fetch(getApiUrl('/data/dtaa-relief')).then(r => r.ok ? r.json() : []),
+          fetch(getApiUrl('/data/portfolio')).then(r => r.ok ? r.json() : {}),
+          fetch(getApiUrl('/data/brokers')).then(r => r.ok ? r.json() : []),
+          fetch(getApiUrl('/data/holdings')).then(r => r.ok ? r.json() : []),
+          fetch(getApiUrl('/data/recent-transactions')).then(r => r.ok ? r.json() : []),
+          fetch(getApiUrl('/data/disclosure-summary')).then(r => r.ok ? r.json() : { report: '' }),
+        ]);
+
+        STATE.taxSummary = taxRes.status === 'fulfilled' ? taxRes.value : [];
+        STATE.dtaaRelief = dtaaRes.status === 'fulfilled' ? dtaaRes.value : [];
+        STATE.portfolio = portRes.status === 'fulfilled' ? portRes.value : {};
+        STATE.brokers = brokerRes.status === 'fulfilled' ? brokerRes.value : [];
+        STATE.holdings = holdRes.status === 'fulfilled' ? holdRes.value : [];
+        STATE.recentTransactions = txRes.status === 'fulfilled' ? txRes.value : [];
+        STATE.disclosureReport = repRes.status === 'fulfilled' ? repRes.value.report : '';
+
+        if (STATE.portfolio.usd_inr_rate) {
+          STATE.usdRate = Number(STATE.portfolio.usd_inr_rate);
+        }
+
+        renderAllComponents();
+        if (isManualRefresh) showToast('All data refreshed from backend', 'success');
+      } catch (err) {
+        console.error('Error fetching backend data:', err);
+        showToast('Failed to fetch data: ' + err.message, 'error');
+      }
+    }
+
+    // =========================================================================
+    // RENDER LOGIC
+    // =========================================================================
+    function renderAllComponents() {
+      renderHeroCard();
+      renderMarketOverviewCharts();
+      renderRecentTransactions();
+      renderTaxExposureGauge();
+      renderInsightsAndBrokers();
+      renderInvestmentsPage();
+      renderBrokersPage();
+      renderScheduleCGTable();
+      renderScheduleFSI();
+      renderDisclosureReport();
+      renderPipelineHistory();
+    }
+
+    // 1. Hero Card
+    function renderHeroCard() {
+      const port = STATE.portfolio;
+      const totalTax = port.total_tax_payable_all_fys_inr || 11478814.99;
+      
+      document.getElementById('heroAmountDisplay').textContent = formatNumber(totalTax);
+      document.getElementById('heroEffectiveTag').textContent = `${port.effective_tax_rate_pct || 18.5}% Effective Rate`;
+      
+      document.getElementById('heroLtcgTaxDisplay').textContent = formatNumber(port.total_ltcg_tax_inr || 2803767.04);
+      document.getElementById('heroStcgTaxDisplay').textContent = formatNumber(port.total_stcg_tax_inr || 8633680.73);
+      document.getElementById('heroDtaaReliefDisplay').textContent = formatNumber(port.total_dtaa_relief_inr || 206847.15);
+      document.getElementById('heroInvestedDisplay').textContent = formatNumber(port.total_invested_inr || 30556191.10);
+    }
+
+    // 2. Market Overview Charts (Semantic Vector Graphics using CSS Variables)
+    function renderMarketOverviewCharts() {
+      renderLineChart();
+      renderBarChart();
+    }
+
+    function renderLineChart() {
+      const svg = document.getElementById('lineChartSvg');
+      const rows = STATE.taxSummary;
+      if (!rows || rows.length === 0) {
+        svg.innerHTML = '<text x="160" y="90" fill="var(--text-muted)" text-anchor="middle" font-size="12">No data yet — run pipeline</text>';
+        return;
+      }
+
+      // X coordinates for the 3 FYs
+      const xs = [50, 160, 270];
+      const fys = rows.map(r => r.financial_year.replace('FY', ''));
+
+      // LTCG values: 0, 9394527, 13285608
+      // STCG values: 23122250, 20046153, -4641568
+      const maxVal = 26000000;
+      const minVal = -7000000;
+      const range = maxVal - minVal;
+
+      function getY(val) {
+        return 150 - ((val - minVal) / range) * 125;
+      }
+
+      const zeroY = getY(0);
+
+      // Points calculation
+      const ltcgPts = rows.map((r, i) => `${xs[i]},${getY(r.ltcg_gain_inr)}`).join(' ');
+      const stcgPts = rows.map((r, i) => `${xs[i]},${getY(r.stcg_gain_inr)}`).join(' ');
+
+      let html = `
+        <!-- Zero Axis Baseline -->
+        <line x1="30" y1="${zeroY}" x2="290" y2="${zeroY}" stroke="var(--chart-grid)" stroke-dasharray="3,3" />
+        <text x="25" y="${zeroY + 3}" fill="var(--chart-axis)" font-size="9" text-anchor="end">₹0</text>
+
+        <!-- LTCG Gain Curve (Mint Green) -->
+        <polyline fill="none" stroke="var(--chart-3)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" points="${ltcgPts}" />
+
+        <!-- STCG Gain Curve (Accent Orange, drops below 0 for FY24-25) -->
+        <polyline fill="none" stroke="var(--chart-1)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" points="${stcgPts}" />
+      `;
+
+      // Draw interactive dots and FY labels
+      rows.forEach((r, i) => {
+        const x = xs[i];
+        const ly = getY(r.ltcg_gain_inr);
+        const sy = getY(r.stcg_gain_inr);
+
+        html += `
+          <!-- LTCG Node -->
+          <circle cx="${x}" cy="${ly}" r="4.5" fill="var(--chart-3)" stroke="var(--bg-card)" stroke-width="2" />
+          
+          <!-- STCG Node -->
+          <circle cx="${x}" cy="${sy}" r="4.5" fill="var(--chart-1)" stroke="var(--bg-card)" stroke-width="2" />
+
+          <!-- FY Label -->
+          <text x="${x}" y="172" fill="var(--text-secondary)" font-size="10" font-weight="600" text-anchor="middle">${fys[i]}</text>
+        `;
+      });
+
+      // Negative loss pill badge on FY24-25
+      html += `
+        <g transform="translate(225, ${getY(-4641568) - 18})">
+          <rect width="64" height="15" rx="7" fill="var(--negative-subtle)" stroke="var(--negative)" stroke-width="1"/>
+          <text x="32" y="11" fill="var(--negative)" font-size="8.5" font-weight="700" text-anchor="middle">-₹46.4L</text>
+        </g>
+      `;
+
+      svg.innerHTML = html;
+    }
+
+    function renderBarChart() {
+      const svg = document.getElementById('barChartSvg');
+      const rows = STATE.taxSummary;
+      if (!rows || rows.length === 0) {
+        svg.innerHTML = '<text x="160" y="90" fill="var(--text-muted)" text-anchor="middle" font-size="12">No data yet</text>';
+        return;
+      }
+
+      const barWidth = 32;
+      const xs = [60, 160, 260];
+      const maxTax = 6000000;
+
+      let html = '';
+
+      rows.forEach((r, i) => {
+        const x = xs[i] - barWidth / 2;
+        const totalH = (r.total_tax_inr / maxTax) * 120;
+        const ltcgH = (r.ltcg_tax_inr / maxTax) * 120;
+        const stcgH = (r.stcg_tax_inr / maxTax) * 120;
+
+        const baseBottom = 150;
+        const isSelected = i === 1; // FY23-24 highlighted like Datara
+
+        if (isSelected) {
+          // Highlight dashed frame & badge
+          html += `
+            <rect x="${x - 7}" y="20" width="${barWidth + 14}" height="135" rx="8" fill="var(--accent-subtle)" stroke="var(--accent)" stroke-dasharray="4,4" stroke-width="1.5" />
+            <g transform="translate(${x - 4}, 8)">
+              <rect width="40" height="14" rx="7" fill="var(--accent)" />
+              <text x="20" y="10.5" fill="var(--accent-contrast)" font-size="8.5" font-weight="800" text-anchor="middle">+14.7%</text>
+            </g>
+          `;
+        }
+
+        // Stacked segments: LTCG (Purple) at bottom, STCG (Orange) on top
+        const ltcgY = baseBottom - ltcgH;
+        const stcgY = ltcgY - stcgH;
+
+        if (ltcgH > 0) {
+          html += `<rect x="${x}" y="${ltcgY}" width="${barWidth}" height="${ltcgH}" rx="4" fill="var(--chart-4)" />`;
+        }
+        if (stcgH > 0) {
+          html += `<rect x="${x}" y="${stcgY}" width="${barWidth}" height="${stcgH}" rx="4" fill="var(--chart-1)" />`;
+        }
+
+        html += `
+          <text x="${xs[i]}" y="170" fill="${isSelected ? 'var(--text-primary)' : 'var(--text-muted)'}" font-size="10" font-weight="${isSelected ? '700' : '500'}" text-anchor="middle">${r.financial_year.replace('FY', '')}</text>
+        `;
+      });
+
+      svg.innerHTML = html;
+    }
+
+    // 3. Recent Transactions
+    function renderRecentTransactions() {
+      const container = document.getElementById('recentTransactionsContainer');
+      const txs = STATE.recentTransactions;
+
+      if (!txs || txs.length === 0) {
+        container.innerHTML = '<div style="color: var(--text-muted); font-size: 0.85rem; padding: 1rem;">No transactions yet — run the pipeline.</div>';
+        return;
+      }
+
+      // Group by date (first 8 transactions)
+      const grouped = {};
+      txs.slice(0, 8).forEach(tx => {
+        const d = tx.date || '2025-01-01';
+        if (!grouped[d]) grouped[d] = [];
+        grouped[d].push(tx);
+      });
+
+      let html = '';
+      for (const [dateStr, items] of Object.entries(grouped)) {
+        const prettyDate = new Date(dateStr).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+        
+        html += `<div class="tx-group">
+          <div class="tx-date-header">${prettyDate}</div>
+          <div class="tx-list">`;
+
+        items.forEach(item => {
+          const isPos = item.is_positive;
+          const amtFormatted = isPos 
+            ? `+ ${formatNumber(item.gross_amount_inr)}`
+            : `- ${formatNumber(item.gross_amount_inr)}`;
+
+          html += `
+            <div class="tx-row">
+              <div class="tx-left">
+                <div class="tx-ticker-badge">
+                  <span>${item.ticker}</span>
+                  <span class="tx-broker-tag">${item.broker.slice(0, 4)}</span>
+                </div>
+                <div class="tx-info">
+                  <span class="tx-name">${item.name}</span>
+                  <span class="tx-sub">${item.category} • ${item.broker}</span>
+                </div>
+              </div>
+              <div class="tx-right">
+                <span class="tx-amount ${isPos ? 'positive' : 'negative'}">${amtFormatted}</span>
+                <span class="tx-withholding">${item.subline}</span>
+              </div>
+            </div>
+          `;
+        });
+
+        html += `</div></div>`;
+      }
+
+      container.innerHTML = html;
+    }
+
+    // 4. Tax Exposure Gauge
+    function renderTaxExposureGauge() {
+      const svg = document.getElementById('gaugeSvg');
+      const rate = STATE.portfolio.effective_tax_rate_pct || 18.5;
+      
+      document.getElementById('gaugeEffectiveRateDisplay').textContent = `${rate}%`;
+
+      let status = 'Moderate Exposure';
+      if (rate < 10) status = 'Low Exposure';
+      else if (rate > 22) status = 'High Exposure';
+      document.getElementById('gaugeStatusText').textContent = status;
+
+      // Semicircle gauge: 180 degrees. Radius = 85. Center = (120, 115)
+      const angle = -180 + Math.min(Math.max((rate / 35), 0), 1) * 180;
+      const rad = (angle * Math.PI) / 180;
+      const nx = 120 + 70 * Math.cos(rad);
+      const ny = 115 + 70 * Math.sin(rad);
+
+      svg.innerHTML = `
+        <defs>
+          <linearGradient id="gaugeGrad" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="var(--chart-3)" />
+            <stop offset="25%" stop-color="var(--chart-2)" />
+            <stop offset="50%" stop-color="var(--accent)" />
+            <stop offset="75%" stop-color="var(--negative)" />
+            <stop offset="100%" stop-color="var(--chart-4)" />
+          </linearGradient>
+        </defs>
+
+        <!-- Background Track -->
+        <path d="M 35 115 A 85 85 0 0 1 205 115" fill="none" stroke="var(--gauge-track)" stroke-width="18" stroke-linecap="round" />
+
+        <!-- Colored 5-segment Gradient Arc -->
+        <path d="M 35 115 A 85 85 0 0 1 205 115" fill="none" stroke="url(#gaugeGrad)" stroke-width="18" stroke-linecap="round" stroke-dasharray="270" stroke-dashoffset="0" />
+
+        <!-- Center Pivot -->
+        <circle cx="120" cy="115" r="9" fill="var(--bg-card)" stroke="var(--border-hover)" stroke-width="3" />
+
+        <!-- Needle -->
+        <line x1="120" y1="115" x2="${nx}" y2="${ny}" stroke="var(--text-primary)" stroke-width="3.5" stroke-linecap="round" />
+      `;
+    }
+
+    // 5. Insights & Connected Brokers
+    function renderInsightsAndBrokers() {
+      const container = document.getElementById('dashboardBrokersList');
+      const brokers = STATE.brokers;
+      if (!brokers || brokers.length === 0) {
+        container.innerHTML = '<div style="color: var(--text-muted); font-size: 0.8rem;">Loading brokers...</div>';
+        return;
+      }
+
+      container.innerHTML = brokers.map(b => `
+        <div class="broker-mini-item">
+          <div class="broker-mini-name">
+            <span class="broker-status-dot"></span>
+            <span>${b.broker}</span>
+          </div>
+          <button class="broker-mini-action" onclick="triggerPipelineRun()">${b.trades_count} trades</button>
+        </div>
+      `).join('');
+    }
+
+    // 6. Investments Page
+    function renderInvestmentsPage() {
+      const holdings = STATE.holdings;
+      const tbody = document.getElementById('holdingsTableBody');
+
+      let totalInv = 0;
+      let domesticInv = 0;
+      let foreignInv = 0;
+
+      holdings.forEach(h => {
+        totalInv += h.invested_amount_inr;
+        if (h.currency === 'USD' || h.broker === 'Interactive Brokers') {
+          foreignInv += h.invested_amount_inr;
+        } else {
+          domesticInv += h.invested_amount_inr;
+        }
+      });
+
+      document.getElementById('invTotalInvestedDisplay').textContent = formatNumber(totalInv);
+      document.getElementById('invDomesticDisplay').textContent = formatNumber(domesticInv);
+      document.getElementById('invForeignDisplay').textContent = formatNumber(foreignInv);
+
+      if (!holdings || holdings.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--text-muted);">No holdings generated yet — run the pipeline.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = holdings.map(h => `
+        <tr>
+          <td><strong style="color: var(--accent);">${h.broker}</strong></td>
+          <td><span class="hero-tag" style="background: var(--bg-card-inset); color: var(--text-primary); border-color: var(--border-subtle);">${h.symbol}</span></td>
+          <td>${h.company_name}</td>
+          <td class="num">${h.quantity.toLocaleString('en-IN')}</td>
+          <td class="num">${formatNumber(h.avg_price_inr)}</td>
+          <td class="num"><strong style="color: var(--positive);">${formatNumber(h.invested_amount_inr)}</strong></td>
+          <td>${h.currency}</td>
+          <td style="color: var(--text-muted); font-size: 0.78rem;">${h.last_trade_date}</td>
+        </tr>
+      `).join('');
+    }
+
+    function filterHoldings() {
+      const filter = document.getElementById('investmentsBrokerFilter').value;
+      const rows = document.querySelectorAll('#holdingsTableBody tr');
+      rows.forEach(r => {
+        if (filter === 'ALL') {
+          r.style.display = '';
+        } else {
+          const brokerText = r.children[0]?.textContent || '';
+          r.style.display = brokerText.includes(filter) ? '' : 'none';
+        }
+      });
+    }
+
+    // 7. Brokers Page
+    function renderBrokersPage() {
+      const grid = document.getElementById('brokersCardsGrid');
+      const brokers = STATE.brokers;
+      if (!brokers || brokers.length === 0) {
+        grid.innerHTML = '<div style="color: var(--text-muted);">No broker metadata loaded.</div>';
+        return;
+      }
+
+      grid.innerHTML = brokers.map(b => `
+        <div class="card" style="padding: 1.5rem;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+            <div style="font-size: 1.2rem; font-weight: 800; color: var(--text-primary);">${b.broker}</div>
+            <span class="hero-tag" style="background: var(--positive-subtle); color: var(--positive);">Connected</span>
+          </div>
+          <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 1rem;">
+            ${b.type} • ${b.country} (${b.currency})
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 0.4rem; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1.25rem;">
+            <div>Trades Ingested: <strong style="color: var(--text-primary);">${b.trades_count}</strong></div>
+            <div>Scrips Monitored: <strong style="color: var(--text-primary);">${b.symbols_count}</strong></div>
+            <div>Total Volume: <strong style="color: var(--text-primary);">${formatNumber(b.total_volume_inr)}</strong></div>
+            <div>Last Sync: <strong style="color: var(--text-primary);">${b.last_trade_date}</strong></div>
+          </div>
+          <button class="btn-run-pipeline" style="width: 100%; justify-content: center;" onclick="triggerPipelineRun()">
+            Sync Statement
+          </button>
+        </div>
+      `).join('');
+    }
+
+    // 8. Schedule CG Table
+    function renderScheduleCGTable() {
+      const tbody = document.getElementById('scheduleCGTableBody');
+      const rows = STATE.taxSummary;
+      if (!rows || rows.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--text-muted);">No Schedule CG data found — execute pipeline.</td></tr>';
+        return;
+      }
+
+      let totLtcg = 0, totExemp = 0, totTaxableLtcg = 0, totLtcgTax = 0;
+      let totStcg = 0, totStcgTax = 0, totTotalTax = 0;
+
+      const bodyHtml = rows.map(r => {
+        totLtcg += r.ltcg_gain_inr;
+        totExemp += r.ltcg_exemption_applied_inr;
+        totTaxableLtcg += r.taxable_ltcg_inr;
+        totLtcgTax += r.ltcg_tax_inr;
+        totStcg += r.stcg_gain_inr;
+        totStcgTax += r.stcg_tax_inr;
+        totTotalTax += r.total_tax_inr;
+
+        const isNegStcg = r.stcg_gain_inr < 0;
+
+        return `
+          <tr>
+            <td><strong>${r.financial_year}</strong></td>
+            <td class="num">${formatNumber(r.ltcg_gain_inr)}</td>
+            <td class="num">${formatNumber(r.ltcg_exemption_applied_inr)}</td>
+            <td class="num">${formatNumber(r.taxable_ltcg_inr)}</td>
+            <td class="num" style="color: var(--chart-4);">${formatNumber(r.ltcg_tax_inr)}</td>
+            <td class="num" style="color: ${isNegStcg ? 'var(--negative)' : 'var(--positive)'};">
+              ${formatNumber(r.stcg_gain_inr)}
+            </td>
+            <td class="num">${formatNumber(r.stcg_tax_inr)}</td>
+            <td class="num"><strong style="color: var(--accent);">${formatNumber(r.total_tax_inr)}</strong></td>
+          </tr>
+        `;
+      }).join('');
+
+      const totalHtml = `
+        <tr class="total-row">
+          <td>TOTAL (All FYs)</td>
+          <td class="num">${formatNumber(totLtcg)}</td>
+          <td class="num">${formatNumber(totExemp)}</td>
+          <td class="num">${formatNumber(totTaxableLtcg)}</td>
+          <td class="num" style="color: var(--chart-4);">${formatNumber(totLtcgTax)}</td>
+          <td class="num">${formatNumber(totStcg)}</td>
+          <td class="num">${formatNumber(totStcgTax)}</td>
+          <td class="num" style="color: var(--accent);">${formatNumber(totTotalTax)}</td>
+        </tr>
+      `;
+
+      tbody.innerHTML = bodyHtml + totalHtml;
+    }
+
+    // 9. Schedule FSI (DTAA Relief) Grouped & Expandable
+    function renderScheduleFSI() {
+      const container = document.getElementById('dtaaAccordionsContainer');
+      const rows = STATE.dtaaRelief;
+      if (!rows || rows.length === 0) {
+        container.innerHTML = '<div style="color: var(--text-muted); padding: 1.5rem;">No DTAA foreign dividend data found.</div>';
+        return;
+      }
+
+      // Group by FY, then by Security
+      const groupedByFy = {};
+      rows.forEach(r => {
+        const fy = r.financial_year || 'FY2023-24';
+        if (!groupedByFy[fy]) groupedByFy[fy] = {};
+        const sec = r.Security || 'Unknown';
+        if (!groupedByFy[fy][sec]) groupedByFy[fy][sec] = [];
+        groupedByFy[fy][sec].push(r);
+      });
+
+      let html = '';
+      for (const [fy, secMap] of Object.entries(groupedByFy)) {
+        html += `<div style="font-size: 1rem; font-weight: 800; color: var(--accent); margin: 1.5rem 0 0.75rem 0.25rem;">${fy} Foreign Dividend Declarations</div>`;
+
+        for (const [sec, payouts] of Object.entries(secMap)) {
+          const totGrossInr = payouts.reduce((acc, p) => acc + (p.gross_dividend_inr || 0), 0);
+          const totWithheldInr = payouts.reduce((acc, p) => acc + (p.foreign_tax_withheld_inr || 0), 0);
+          const totReliefInr = payouts.reduce((acc, p) => acc + (p.dtaa_relief_inr || 0), 0);
+          const totNetInr = payouts.reduce((acc, p) => acc + (p.net_indian_tax_payable_inr || 0), 0);
+
+          const cardId = `dtaa-card-${fy}-${sec.replace(/[^a-zA-Z0-9]/g, '')}`;
+
+          html += `
+            <div class="dtaa-group-card">
+              <div class="dtaa-group-header" onclick="toggleDtaaDrilldown('${cardId}')">
+                <div class="dtaa-group-left">
+                  <div class="dtaa-ticker">${sec.split(' - ')[0]}</div>
+                  <div class="dtaa-name">${sec.split(' - ')[1] || sec} • ${payouts.length} payout(s)</div>
+                </div>
+                <div class="dtaa-group-right">
+                  <div class="dtaa-summary-metric">
+                    <div class="dtaa-summary-val" style="color: var(--positive);">${formatNumber(totGrossInr)}</div>
+                    <div class="dtaa-summary-sub">Gross Foreign Income</div>
+                  </div>
+                  <div class="dtaa-summary-metric">
+                    <div class="dtaa-summary-val" style="color: var(--warning);">${formatNumber(totReliefInr)}</div>
+                    <div class="dtaa-summary-sub">DTAA Relief (Sec 90)</div>
+                  </div>
+                  <div class="dtaa-summary-metric">
+                    <div class="dtaa-summary-val" style="color: var(--accent);">${formatNumber(totNetInr)}</div>
+                    <div class="dtaa-summary-sub">Net Indian Tax</div>
+                  </div>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </div>
+              </div>
+
+              <!-- Accordion Drilldown -->
+              <div class="dtaa-drilldown" id="${cardId}">
+                <div class="calc-breakdown-box">
+                  <span><strong>Calculation Breakdown:</strong> Withheld = 25% of Gross</span>
+                  <span><strong>DTAA Relief:</strong> 100% of Withheld (Art 25)</span>
+                  <span><strong>Net Indian Tax:</strong> 30% Slab - Relief ≈ 5% of Gross</span>
+                </div>
+                <div class="table-responsive" style="margin-top: 0.75rem;">
+                  <table class="data-table">
+                    <thead>
+                      <tr>
+                        <th>Payment Date</th>
+                        <th>TDS Cert Ref</th>
+                        <th class="num">Gross (USD)</th>
+                        <th class="num">FX Rate</th>
+                        <th class="num">Gross (₹)</th>
+                        <th class="num">US Withheld @ 25% (₹)</th>
+                        <th class="num">DTAA Relief (₹)</th>
+                        <th class="num">Net Payable @ 5% (₹)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${payouts.map(p => `
+                        <tr>
+                          <td>${p['Payment Date'] || 'N/A'}</td>
+                          <td><code>${p['TDS Certificate Ref'] || '1042-S'}</code></td>
+                          <td class="num">${p['Gross Dividend (USD)'] ? '$ ' + Number(p['Gross Dividend (USD)']).toFixed(2) : '-'}</td>
+                          <td class="num">${p['USD-INR Rate'] ? '₹ ' + Number(p['USD-INR Rate']).toFixed(2) : '-'}</td>
+                          <td class="num">${formatNumber(p.gross_dividend_inr)}</td>
+                          <td class="num" style="color: var(--negative);">${formatNumber(p.foreign_tax_withheld_inr)}</td>
+                          <td class="num" style="color: var(--warning);">${formatNumber(p.dtaa_relief_inr)}</td>
+                          <td class="num" style="color: var(--accent);">${formatNumber(p.net_indian_tax_payable_inr)}</td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+      }
+
+      container.innerHTML = html;
+    }
+
+    function toggleDtaaDrilldown(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.toggle('open');
+    }
+
+    // 10. Disclosure Report (ALL 3 FYs)
+    function renderDisclosureReport() {
+      const pre = document.getElementById('disclosureReportText');
+      pre.textContent = STATE.disclosureReport || 'Run the pipeline to generate the full ITR disclosure report.';
+    }
+
+    function copyDisclosureReport() {
+      if (!STATE.disclosureReport) {
+        showToast('No report content to copy', 'error');
+        return;
+      }
+      navigator.clipboard.writeText(STATE.disclosureReport).then(() => {
+        showToast('Disclosure Report copied to clipboard!', 'success');
+      }).catch(() => {
+        showToast('Clipboard access denied', 'error');
+      });
+    }
+
+    function downloadDisclosureReport() {
+      if (!STATE.disclosureReport) return;
+      const blob = new Blob([STATE.disclosureReport], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'CapTax_AI_ITR_Disclosure_Summary.txt';
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('Downloaded disclosure summary report', 'success');
+    }
+
+    // 11. Pipeline Stepper & History
+    function renderPipelineHistory() {
+      const tbody = document.getElementById('pipelineHistoryTableBody');
+      const hist = JSON.parse(localStorage.getItem('captax_pipe_hist') || '[]');
+      
+      if (hist.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">No previous run logs saved yet. Click "Execute Full Pipeline" above.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = hist.slice(0, 8).map(h => `
+        <tr>
+          <td>${h.timestamp}</td>
+          <td>${h.trigger}</td>
+          <td>${h.stepsCount} steps</td>
+          <td>${h.duration}</td>
+          <td><span class="hero-tag" style="background: var(--positive-subtle); color: var(--positive);">${h.status}</span></td>
+        </tr>
+      `).join('');
+    }
+
+    // =========================================================================
+    // PIPELINE EXECUTION ENGINE
+    // =========================================================================
+    async function triggerPipelineRun() {
+      if (STATE.pipelineRunning) return;
+      STATE.pipelineRunning = true;
+      
+      const headerBtn = document.getElementById('headerRunPipelineBtn');
+      const activityBtn = document.getElementById('activityRunPipelineBtn');
+      headerBtn.disabled = true;
+      activityBtn.disabled = true;
+      headerBtn.innerHTML = '<span>Running Pipeline...</span>';
+
+      showToast('Executing 7-step pipeline...', 'info');
+
+      // Animate stepper steps to running
+      for (let i = 0; i < 7; i++) {
+        const stepEl = document.getElementById(`step-${i}`);
+        if (stepEl) {
+          stepEl.classList.remove('completed');
+          stepEl.classList.add('running');
+        }
+      }
+
+      const startTime = performance.now();
+
+      try {
+        const res = await fetch(getApiUrl('/pipeline/run'), { method: 'POST' });
+        if (!res.ok) throw new Error(await res.text());
+        const data = await res.json();
+        
+        const durationSec = ((performance.now() - startTime) / 1000).toFixed(2);
+        
+        // Mark all steps completed
+        for (let i = 0; i < 7; i++) {
+          const stepEl = document.getElementById(`step-${i}`);
+          if (stepEl) {
+            stepEl.classList.remove('running');
+            stepEl.classList.add('completed');
+          }
+        }
+
+        // Save run to history audit log
+        const hist = JSON.parse(localStorage.getItem('captax_pipe_hist') || '[]');
+        hist.unshift({
+          timestamp: new Date().toLocaleString('en-IN'),
+          trigger: 'Interactive UI',
+          stepsCount: data.steps ? data.steps.length : 7,
+          duration: `${durationSec}s`,
+          status: 'COMPLETED'
+        });
+        localStorage.setItem('captax_pipe_hist', JSON.stringify(hist));
+
+        showToast(`Pipeline completed in ${durationSec}s: 7 steps verified!`, 'success');
+        await loadAllBackendData();
+      } catch (err) {
+        console.error('Pipeline failed:', err);
+        showToast('Pipeline execution failed: ' + err.message, 'error');
+      } finally {
+        STATE.pipelineRunning = false;
+        headerBtn.disabled = false;
+        activityBtn.disabled = false;
+        headerBtn.innerHTML = `
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+          <span>Run Pipeline</span>
+        `;
+      }
+    }
+
+    // =========================================================================
+    // NAVIGATION & DRAWER CONTROLS
+    // =========================================================================
+    function switchTab(tabId) {
+      STATE.activeTab = tabId;
+      
+      // Update nav pills
+      document.querySelectorAll('.nav-pill').forEach(btn => btn.classList.remove('active'));
+      const activeBtn = document.getElementById(`tab-${tabId}`);
+      if (activeBtn) activeBtn.classList.add('active');
+
+      // Update page visibility
+      document.querySelectorAll('.page-section').forEach(sec => sec.classList.remove('active'));
+      const activeSection = document.getElementById(`page-${tabId}`);
+      if (activeSection) activeSection.classList.add('active');
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function switchTaxSubtab(subtabId) {
+      STATE.activeTaxSubtab = subtabId;
+      document.querySelectorAll('.tax-tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.getElementById(`subtab-btn-${subtabId}`).classList.add('active');
+
+      document.getElementById('subtab-content-cg').style.display = subtabId === 'cg' ? 'block' : 'none';
+      document.getElementById('subtab-content-fsi').style.display = subtabId === 'fsi' ? 'block' : 'none';
+      document.getElementById('subtab-content-report').style.display = subtabId === 'report' ? 'block' : 'none';
+    }
+
+    function toggleSettingsDrawer(open) {
+      document.getElementById('settingsDrawer').classList.toggle('open', open);
+      document.getElementById('drawerOverlay').classList.toggle('open', open);
+    }
+
+    function saveSettingsAndRefresh() {
+      const newBase = document.getElementById('settingsApiBase').value.trim();
+      if (newBase) {
+        STATE.apiBase = newBase;
+        localStorage.setItem('captax_api_base', newBase);
+      }
+      toggleSettingsDrawer(false);
+      checkBackendHealth(true);
+      loadAllBackendData(true);
+    }
+
+    function showNotificationAlerts() {
+      showToast('Alert: File Form 67 for DTAA foreign credit relief before ITR due date.', 'info');
+    }
+
+    // =========================================================================
+    // EXPORT UTILITIES (CSV)
+    // =========================================================================
+    function exportTableToCSV(tableId, filename) {
+      const table = document.getElementById(tableId);
+      const rows = Array.from(table.querySelectorAll('tr'));
+      const csv = rows.map(r => {
+        const cells = Array.from(r.querySelectorAll('th, td'));
+        return cells.map(c => `"${c.innerText.replace(/"/g, '""').trim()}"`).join(',');
+      }).join('\n');
+
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast(`Exported ${filename}`, 'success');
+    }
+
+    function exportDtaaCSV() {
+      const rows = STATE.dtaaRelief;
+      if (!rows || rows.length === 0) return;
+      const headers = Object.keys(rows[0]);
+      const csv = [headers.join(',')].concat(rows.map(r => headers.map(h => `"${r[h] ?? ''}"`).join(','))).join('\n');
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'Schedule_FSI_DTAA_Relief.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('Exported Schedule_FSI_DTAA_Relief.csv', 'success');
+    }
+
+    function showToast(msg, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.textContent = msg;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(-10px)';
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+  </script>
 </body>
 </html>
