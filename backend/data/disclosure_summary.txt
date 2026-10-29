@@ -1,0 +1,55 @@
+======================================================================
+CapTax AI — Simplified Tax Disclosure Summary
+(Academic prototype — not a substitute for filed ITR schedules)
+======================================================================
+
+--- Schedule CG: Capital Gains (Indian equity, FIFO-matched) ---
+
+FY2022-23
+  LTCG (gain before exemption): Rs. 0.0
+  LTCG exemption applied:       Rs. 0
+  Taxable LTCG:                 Rs. 0.0  @ 12.5% -> Rs. 0.0
+  STCG (taxable):                Rs. 23,122,250.1  @ 20%   -> Rs. 4,624,450.02
+  Total capital gains tax:       Rs. 4,624,450.02
+
+FY2023-24
+  LTCG (gain before exemption): Rs. 9,394,527.37
+  LTCG exemption applied:       Rs. 125,000
+  Taxable LTCG:                 Rs. 9,269,527.37  @ 12.5% -> Rs. 1,158,690.92
+  STCG (taxable):                Rs. 20,046,153.54  @ 20%   -> Rs. 4,009,230.71
+  Total capital gains tax:       Rs. 5,167,921.63
+
+FY2024-25
+  LTCG (gain before exemption): Rs. 13,285,608.96
+  LTCG exemption applied:       Rs. 125,000
+  Taxable LTCG:                 Rs. 13,160,608.96  @ 12.5% -> Rs. 1,645,076.12
+  STCG (taxable):                Rs. -4,641,568.2  @ 20%   -> Rs. 0.0
+  Total capital gains tax:       Rs. 1,645,076.12
+
+--- Schedule FSI: Foreign Source Income & DTAA Relief ---
+
+FY2022-23
+  Gross foreign dividend income: Rs. 287,933.03
+  Tax withheld abroad (US):      Rs. 71,984.28
+  DTAA relief (Sec 90, Art 25):  Rs. 71,984.28
+  Net Indian tax payable:        Rs. 14,395.62
+
+FY2023-24
+  Gross foreign dividend income: Rs. 352,128.19
+  Tax withheld abroad (US):      Rs. 88,031.64
+  DTAA relief (Sec 90, Art 25):  Rs. 88,031.64
+  Net Indian tax payable:        Rs. 17,606.82
+
+FY2024-25
+  Gross foreign dividend income: Rs. 187,320.0
+  Tax withheld abroad (US):      Rs. 46,831.23
+  DTAA relief (Sec 90, Art 25):  Rs. 46,831.23
+  Net Indian tax payable:        Rs. 9,364.78
+
+--- Schedule FA: Foreign Assets Held (US equity, net positive holdings) ---
+  META     Meta Platforms Inc        net holding: 62 units
+  MSFT     Microsoft Corp            net holding: 205 units
+
+======================================================================
+NOTE: Grandfathering (31-Jan-2018 FMV) not yet applied — see v2 backlog.
+======================================================================

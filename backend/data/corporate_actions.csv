@@ -1,0 +1,26 @@
+Ticker/Symbol,Company,Action Type,Ex-Date,Ratio/Detail,Record Date,Market
+META,Meta Platforms Inc,Dividend,2024-03-06,Dividend INR 9.01/share,2024-03-08,US
+BHARTIARTL,Bharti Airtel Ltd,Split,2023-11-05,Stock split 1:2,2023-11-07,NSE/BSE
+AAPL,Apple Inc,Split,2023-02-28,Stock split 1:10,2023-03-02,US
+ITC,ITC Ltd,Bonus,2023-07-06,Bonus issue 1:2,2023-07-08,NSE/BSE
+ITC,ITC Ltd,Dividend,2024-07-17,Dividend INR 26.15/share,2024-07-19,NSE/BSE
+RELIANCE,Reliance Industries Ltd,Rights,2022-12-27,Rights issue 1:4,2022-12-29,NSE/BSE
+RELIANCE,Reliance Industries Ltd,Bonus,2023-08-30,Bonus issue 1:2,2023-09-01,NSE/BSE
+HINDUNILVR,Hindustan Unilever Ltd,Dividend,2024-08-15,Dividend INR 44.88/share,2024-08-17,NSE/BSE
+WIPRO,Wipro Ltd,Rights,2023-08-30,Rights issue 1:4,2023-09-01,NSE/BSE
+GOOGL,Alphabet Inc Class A,Dividend,2025-03-02,Dividend INR 41.39/share,2025-03-04,US
+AAPL,Apple Inc,Split,2022-04-16,Stock split 1:10,2022-04-18,US
+WIPRO,Wipro Ltd,Dividend,2023-12-03,Dividend INR 34.54/share,2023-12-05,NSE/BSE
+AMZN,Amazon.com Inc,Split,2024-02-18,Stock split 1:5,2024-02-20,US
+TATAMOTORS,Tata Motors Ltd,Dividend,2023-09-17,Dividend INR 33.15/share,2023-09-19,NSE/BSE
+HINDUNILVR,Hindustan Unilever Ltd,Bonus,2023-02-02,Bonus issue 1:2,2023-02-04,NSE/BSE
+LT,Larsen & Toubro Ltd,Split,2024-07-06,Stock split 1:10,2024-07-08,NSE/BSE
+TATAMOTORS,Tata Motors Ltd,Bonus,2022-05-23,Bonus issue 1:2,2022-05-25,NSE/BSE
+AMZN,Amazon.com Inc,Dividend,2023-09-14,Dividend INR 45.44/share,2023-09-16,US
+AAPL,Apple Inc,Rights,2022-06-12,Rights issue 1:4,2022-06-14,US
+TATAMOTORS,Tata Motors Ltd,Bonus,2025-03-30,Bonus issue 1:2,2025-04-01,NSE/BSE
+AMZN,Amazon.com Inc,Dividend,2025-02-02,Dividend INR 15.71/share,2025-02-04,US
+SBIN,State Bank of India,Bonus,2023-11-23,Bonus issue 1:1,2023-11-25,NSE/BSE
+AMZN,Amazon.com Inc,Bonus,2023-09-12,Bonus issue 1:2,2023-09-14,US
+TSLA,Tesla Inc,Bonus,2024-02-17,Bonus issue 1:2,2024-02-19,US
+INFY,Infosys Ltd,Bonus,2024-03-28,Bonus issue 1:1,2024-03-30,NSE/BSE
