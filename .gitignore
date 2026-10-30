@@ -3,5 +3,10 @@ __pycache__/
 *.pyc
 .DS_Store
 node_modules/
+*.zip
+__MACOSX/
+docs/hero-screenshots/
+.pytest_cache/
+*.log
 
 
