@@ -111,4 +111,66 @@ Reconstructed according to the Datara reference design:
   - `Activity`: 7-step pipeline visual stepper and execution audit logs.
 - **Zero Fake Data**: Every metric, table cell, and chart node is wired dynamically to real endpoints on `:8001`.
 - For detailed route-to-component mappings, see [`docs/ui-data-map.md`](docs/ui-data-map.md).
- 
+
+---
+
+## 9. System Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      Frontend (Static HTML/JS)               │
+│  landing.html  →  login.html  →  index.html (SPA dashboard)  │
+│  frontend/js/auth.js — session, route guard, authFetch       │
+└───────────────────────┬─────────────────────────────────────┘
+                        │ HTTP (fetch, credentials: 'include')
+                        ▼
+┌─────────────────────────────────────────────────────────────┐
+│                  Backend: FastAPI / Uvicorn (:8001)          │
+│  app.py — auth (bcrypt + signed cookie), 7-step pipeline,   │
+│           /api/health, /api/run-pipeline, /api/tax-summary,  │
+│           /api/dtaa-relief, /api/disclosure-summary          │
+└──┬──────────────┬──────────────┬────────────────────────────┘
+   │              │              │
+   ▼              ▼              ▼
+ingest.py   fifo_matcher.py  corporate_actions_adjuster.py
+(normalize  (FIFO cost-basis  (split/bonus lot adjustment,
+ 4 brokers)  matching)         cost-basis preserved)
+                │
+                ▼
+┌─────────────────────────────────────────────────────────────┐
+│                      AI/ML Layer (aiml/)                     │
+│  tax_classifier.py      — LTCG/STCG classification + FY tax │
+│  dtaa_relief.py         — India-US DTAA Article 10(2) relief │
+│  disclosure_generator.py — ITR Schedule CG/FA/FSI text dump  │
+└─────────────────────────────────────────────────────────────┘
+                │
+                ▼
+        backend/data/*.csv   (normalized_trades, realized_gains,
+                              classified_gains, tax_summary, …)
+```
+
+### Data Flow (per pipeline run)
+1. `ingest.py` reads raw broker CSVs → `normalized_trades.csv`
+2. `corporate_actions_adjuster.py` adjusts BUY lots → `adjusted_trades.csv`
+3. `fifo_matcher.py` matches sells against adjusted lots → `realized_gains.csv`
+4. `tax_classifier.py` labels LTCG/STCG → `classified_gains.csv`, `tax_summary.csv`
+5. `dtaa_relief.py` computes DTAA relief on foreign dividends → `dtaa_relief.csv`
+6. `disclosure_generator.py` generates full ITR disclosure text → `disclosure_summary.txt`
+
+---
+
+## 10. Known Limitations (v1 — Academic Scope)
+
+These are intentional simplifications for the Round 2 prototype.
+Each is flagged as a v2 / Round 3 item:
+
+| # | Limitation | Impact | Planned Fix |
+|---|---|---|---|
+| 1 | **No grandfathering (31-Jan-2018 FMV)** | LTCG on pre-2018 lots is overstated | Apply FMV from NSE/BSE data in v2 |
+| 2 | **LTCG exemption applied annually, not lot-by-lot** | Minor under-tax for mixed LTCG lots across FYs | Lot-by-lot exemption waterfall in v2 |
+| 3 | **FIFO is global, not per-Demat account** | If the user holds the same scrip in multiple Demat accounts, cost basis may be incorrect | Per-Demat account FIFO in v2 |
+| 4 | **STCG losses not offset against LTCG** | Total tax may be overstated when STCG losses exist | Set-off and carry-forward logic in v2 |
+| 5 | **Rights issue applications ignored** | Cost basis of rights shares is not tracked | Treat as fresh BUY lot in v2 |
+| 6 | **Single admin user, no multi-tenant** | Only one set of credentials; no per-user data isolation | JWT-based multi-user auth in v2 |
+| 7 | **Flat DTAA withholding rate (25%)** | India-US DTAA rate varies by holding % and treaty article | Article-specific rate lookup in v2 |
+| 8 | **No surcharge / health & education cess** | Actual tax liability is slightly higher than computed | Add 4% cess and applicable surcharge in v2 |
