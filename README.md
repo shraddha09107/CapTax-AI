@@ -39,15 +39,21 @@ intentionally simple so it's easy to deepen before Round 3.
 
 ### Prerequisites
 - Python 3.10+
-- Dependencies: `fastapi`, `uvicorn`, `pandas` (installed in `.venv`)
+- Dependencies: `fastapi`, `uvicorn`, `pandas`, `numpy`, `pydantic`, `bcrypt`, `itsdangerous`, `pytest` (specified in `requirements.txt`)
 
 ### Start Backend & Frontend
 Run from the project root:
 ```bash
 # 1. Activate virtual environment
+# On macOS / Linux:
 source .venv/bin/activate
+# On Windows (PowerShell):
+.\.venv\Scripts\Activate.ps1
 
-# 2. Start the FastAPI + Uvicorn server on port 8001
+# 2. Install dependencies (if setting up fresh)
+pip install -r requirements.txt
+
+# 3. Start the FastAPI + Uvicorn server on port 8001
 cd backend
 uvicorn app:app --host 0.0.0.0 --port 8001 --reload
 ```
@@ -56,6 +62,7 @@ uvicorn app:app --host 0.0.0.0 --port 8001 --reload
 - **Public Landing Site**: [http://localhost:8001/](http://localhost:8001/)
 - **Sign In Page**: [http://localhost:8001/login](http://localhost:8001/login)
 - **Protected Dashboard**: [http://localhost:8001/app](http://localhost:8001/app) (or `/dashboard`)
+- **Health Check Probe**: [http://localhost:8001/api/health](http://localhost:8001/api/health)
 - **Interactive API Docs (Swagger)**: [http://localhost:8001/docs](http://localhost:8001/docs)
 
 ---
