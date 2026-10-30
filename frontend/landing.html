@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<!--
+  CapTax AI — Public Landing Page
+  Academic prototype — not a substitute for filed ITR schedules.
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0c0c0e" id="metaThemeColor" />
+  <title>CapTax AI — Multi-Broker Capital Gains & DTAA Tax Disclosure</title>
+  <meta name="description" content="CapTax AI consolidates broker statements from Zerodha, Groww, ICICI Direct and Interactive Brokers, runs FIFO capital-gains matching, computes DTAA relief, and generates Schedule CG, Schedule FSI and your disclosure report — automatically." />
+  <meta property="og:title" content="CapTax AI — Every Dollar. Every Rupee. Every Disclosure." />
+  <meta property="og:description" content="Automated multi-broker capital gains and DTAA tax disclosure for NRIs and Indian residents." />
+  <meta property="og:type" content="website" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23F0502D'/><text x='16' y='22' font-size='18' text-anchor='middle' fill='white' font-weight='bold'>₹</text></svg>" />
+
+  <!-- Zero-flash theme init (before first paint) -->
+  <script>
+    (function() {
+      const s = localStorage.getItem('captax-theme') || 'system';
+      const e = s === 'system' ? (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark') : s;
+      document.documentElement.setAttribute('data-theme', e);
+      document.documentElement.style.colorScheme = e;
+      const m = document.getElementById('metaThemeColor');
+      if (m) m.setAttribute('content', e === 'light' ? '#F3F1EE' : '#0c0c0e');
+    })();
+  </script>
+
+  <link rel="stylesheet" href="/static/styles/theme.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --radius-xl: 28px; --radius-lg: 20px; --radius-md: 14px;
+      --radius-sm: 8px;  --radius-pill: 9999px;
+      --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    html.theme-transitioning, html.theme-transitioning *, html.theme-transitioning *::before, html.theme-transitioning *::after {
+      transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease !important;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html.theme-transitioning, html.theme-transitioning *, html.theme-transitioning *::before, html.theme-transitioning *::after {
+        transition: none !important;
+      }
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg-app);
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+      overflow-x: hidden;
+    }
+
+    /* ── NAVBAR ── */
+    .navbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; gap: 1rem;
+      padding: 0.85rem 2rem;
+      transition: background 200ms ease, backdrop-filter 200ms ease, box-shadow 200ms ease;
+    }
+    .navbar.scrolled {
+      background: rgba(var(--bg-card-rgb, 18,18,20), 0.85);
+      backdrop-filter: blur(16px) saturate(1.6);
+      box-shadow: 0 1px 0 var(--border-subtle);
+    }
+    [data-theme="light"] .navbar.scrolled { background: rgba(255,255,255,0.82); }
+
+    .nav-logo { display: flex; align-items: center; gap: 0.5rem; text-decoration: none; }
+    .nav-logo-mark { width: 32px; height: 32px; background: var(--accent); border-radius: 8px; display: grid; place-items: center; color: #fff; font-weight: 800; font-size: 1rem; flex-shrink: 0; }
+    .nav-logo-text { font-weight: 800; font-size: 1.05rem; color: var(--text-primary); }
+
+    .nav-links { display: flex; align-items: center; gap: 0.25rem; margin: 0 auto; }
+    .nav-links a { padding: 0.4rem 0.85rem; border-radius: var(--radius-pill); font-size: 0.875rem; font-weight: 500; color: var(--text-secondary); text-decoration: none; transition: color 150ms, background 150ms; }
+    .nav-links a:hover { color: var(--text-primary); background: var(--bg-pill-hover); }
+
+    .nav-actions { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
+    .btn-ghost { background: none; border: none; cursor: pointer; padding: 0.4rem 0.85rem; border-radius: var(--radius-pill); font-size: 0.875rem; font-weight: 500; color: var(--text-secondary); font-family: var(--font-sans); transition: color 150ms; }
+    .btn-ghost:hover { color: var(--text-primary); }
+    .btn-primary { background: var(--accent); color: #fff; border: none; cursor: pointer; padding: 0.5rem 1.2rem; border-radius: var(--radius-pill); font-size: 0.875rem; font-weight: 600; font-family: var(--font-sans); transition: background 150ms, transform 80ms; text-decoration: none; }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-primary:active { transform: scale(0.97); }
+
+    .theme-btn { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--border-subtle); background: var(--bg-card); cursor: pointer; display: grid; place-items: center; color: var(--text-secondary); transition: color 150ms, background 150ms; }
+    .theme-btn:hover { color: var(--text-primary); background: var(--bg-card-hover); }
+
+    .hamburger { display: none; background: none; border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 0.4rem; cursor: pointer; color: var(--text-secondary); }
+
+    /* Mobile nav drawer */
+    .mobile-drawer {
+      display: none; position: fixed; inset: 0; z-index: 99;
+      background: var(--overlay); opacity: 0; pointer-events: none;
+      transition: opacity 200ms;
+    }
+    .mobile-drawer.open { display: block; opacity: 1; pointer-events: all; }
+    .mobile-drawer-panel {
+      position: absolute; top: 0; right: 0; width: 280px; height: 100%;
+      background: var(--bg-card); padding: 5rem 1.5rem 2rem;
+      display: flex; flex-direction: column; gap: 0.5rem;
+      transform: translateX(100%); transition: transform 200ms ease;
+    }
+    .mobile-drawer.open .mobile-drawer-panel { transform: translateX(0); }
+    .mobile-drawer a { padding: 0.75rem 1rem; border-radius: var(--radius-md); color: var(--text-secondary); text-decoration: none; font-weight: 500; }
+    .mobile-drawer a:hover { background: var(--bg-card-inset); color: var(--text-primary); }
+
+    /* ── HERO FULL BLEED ── */
+    .hero-section {
+      position: relative;
+      min-height: 100svh;
+      width: 100%;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      /* Bottom blends into --bg-app token via a pseudo-element overlay instead of mask
+         (mask was causing the grey smudge because the mask alpha-composites against page BG) */
+    }
+    /* Smooth fade overlay at bottom — reads the actual page background token */
+    .hero-section::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 18%;
+      background: linear-gradient(to bottom, transparent 0%, var(--bg-app) 100%);
+      z-index: 3;
+      pointer-events: none;
+    }
+
+    /* Full-bleed 3D Canvas Canvas */
+    .hero-canvas-container {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      pointer-events: all;
+      /* Horizontal alpha mask: fade left edge so canvas never hard-clips text column */
+      -webkit-mask-image: linear-gradient(to right, transparent 0%, transparent 15%, black 42%, black 100%);
+      mask-image: linear-gradient(to right, transparent 0%, transparent 15%, black 42%, black 100%);
+    }
+    .hero-canvas-container canvas {
+      width: 100% !important;
+      height: 100% !important;
+      display: block;
+    }
+
+    .hero {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 7.5rem 2rem 5rem;
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      align-items: center;
+      min-height: 100svh;
+      pointer-events: none;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 3;
+      pointer-events: all;
+      max-width: 640px;
+      padding: 2.5rem 3rem 2.5rem 0;
+      border-radius: var(--radius-xl);
+      background: radial-gradient(ellipse at 25% 50%, rgba(12, 12, 14, 0.65) 0%, transparent 80%);
+    }
+    [data-theme="light"] .hero-content {
+      background: radial-gradient(ellipse at 25% 50%, rgba(243, 241, 238, 0.80) 0%, transparent 80%);
+    }
+
+    .hero-eyebrow { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.35rem 0.95rem; border-radius: var(--radius-pill); background: var(--accent-subtle); border: 1px solid var(--border-accent); color: var(--accent); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 1.5rem; }
+    .hero-title { font-size: clamp(2.4rem, 5vw, 4.2rem); font-weight: 900; line-height: 1.08; letter-spacing: -0.035em; margin-bottom: 1.25rem; }
+    .hero-title em { font-style: normal; color: var(--accent); }
+    .hero-sub { font-size: clamp(1rem, 1.8vw, 1.2rem); color: var(--text-secondary); line-height: 1.6; max-width: 44ch; margin-bottom: 2rem; }
+    .hero-ctas { display: flex; align-items: center; gap: 0.85rem; flex-wrap: wrap; }
+    .btn-secondary { background: var(--bg-card); border: 1px solid var(--border-subtle); color: var(--text-primary); padding: 0.6rem 1.4rem; border-radius: var(--radius-pill); font-size: 0.9rem; font-weight: 600; cursor: pointer; font-family: var(--font-sans); transition: background 150ms, border-color 150ms; text-decoration: none; }
+    .btn-secondary:hover { background: var(--bg-card-inset); border-color: var(--border-hover); }
+    .btn-lg { padding: 0.75rem 1.75rem; font-size: 1rem; }
+
+    .hero-stats { display: flex; gap: 2.5rem; margin-top: 2.5rem; padding-top: 2rem; border-top: 1px solid var(--border-subtle); }
+    .stat { }
+    .stat-value { font-size: 1.7rem; font-weight: 800; color: var(--neutral); }
+    .stat-label { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.15rem; font-weight: 500; }
+
+    /* Pause Animation Toggle in Corner */
+    .hero-pause-btn {
+      position: absolute;
+      bottom: 2rem;
+      right: 2rem;
+      z-index: 10;
+      pointer-events: all;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-pill);
+      padding: 0.4rem 0.85rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      transition: all 150ms ease;
+    }
+    .hero-pause-btn:hover {
+      color: var(--text-primary);
+      border-color: var(--accent);
+    }
+
+    /* ── SECTIONS ── */
+    section { padding: 5rem 2rem; max-width: 1400px; margin: 0 auto; }
+    .section-label { font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); margin-bottom: 0.75rem; }
+    .section-title { font-size: clamp(1.8rem, 3.5vw, 2.6rem); font-weight: 800; letter-spacing: -0.025em; line-height: 1.15; margin-bottom: 1rem; }
+    .section-sub { color: var(--text-secondary); font-size: 1.05rem; line-height: 1.65; max-width: 60ch; }
+
+    /* Trust strip */
+    .trust-strip { text-align: center; padding: 3rem 2rem; border-top: 1px solid var(--border-subtle); border-bottom: 1px solid var(--border-subtle); max-width: 100%; }
+    .trust-label { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1.5rem; font-weight: 500; }
+    .brokers-row { display: flex; align-items: center; justify-content: center; gap: 1rem; flex-wrap: wrap; }
+    .broker-chip { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-radius: var(--radius-pill); background: var(--bg-card); border: 1px solid var(--border-subtle); font-size: 0.875rem; font-weight: 600; color: var(--brand-name); transition: border-color 150ms; }
+    .broker-chip:hover { border-color: var(--accent); }
+    .broker-icon { width: 22px; height: 22px; border-radius: 50%; background: var(--bg-card-inset); display: grid; place-items: center; font-size: 0.7rem; font-weight: 700; }
+
+    /* Problem section */
+    .problem-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: center; }
+    .pain-list { display: flex; flex-direction: column; gap: 1rem; margin-top: 1.5rem; }
+    .pain-item { display: flex; gap: 0.85rem; align-items: flex-start; padding: 1rem; background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); }
+    .pain-icon { width: 36px; height: 36px; border-radius: var(--radius-sm); background: var(--negative-subtle); color: var(--loss); display: grid; place-items: center; font-size: 1rem; flex-shrink: 0; }
+    .pain-text strong { display: block; font-weight: 600; margin-bottom: 0.2rem; color: var(--text-primary); }
+    .pain-text span { font-size: 0.875rem; color: var(--text-secondary); }
+
+    .solution-visual { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-xl); padding: 1.5rem; }
+    .mini-pipeline { display: flex; flex-direction: column; gap: 0.5rem; }
+    .pipeline-step { display: flex; align-items: center; gap: 0.85rem; padding: 0.75rem; border-radius: var(--radius-md); background: var(--bg-card-inset); }
+    .ps-num { width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 0.75rem; font-weight: 700; display: grid; place-items: center; flex-shrink: 0; }
+    .ps-text { font-size: 0.85rem; color: var(--text-primary); font-weight: 500; }
+    .ps-status { margin-left: auto; font-size: 0.72rem; color: var(--profit); font-weight: 600; }
+    .pipeline-connector { width: 2px; height: 16px; background: var(--border-subtle); margin-left: 13px; }
+
+    /* How it works */
+    .steps-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-top: 3rem; }
+    .step-card { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-xl); padding: 1.5rem; position: relative; overflow: hidden; transition: border-color 200ms; }
+    .step-card:hover { border-color: var(--accent); }
+    .step-number { font-size: 4rem; font-weight: 900; color: var(--accent); opacity: 0.08; position: absolute; top: 0.5rem; right: 1rem; line-height: 1; }
+    .step-icon { width: 44px; height: 44px; border-radius: var(--radius-md); background: var(--accent-subtle); color: var(--accent); display: grid; place-items: center; font-size: 1.25rem; margin-bottom: 1rem; }
+    .step-title { font-weight: 700; margin-bottom: 0.5rem; }
+    .step-desc { font-size: 0.875rem; color: var(--text-secondary); line-height: 1.55; }
+
+    /* Feature grid */
+    .feature-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1rem; margin-top: 3rem; }
+    .feature-card { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-xl); padding: 1.25rem; transition: border-color 200ms, transform 150ms; }
+    .feature-card:hover { border-color: var(--border-accent); transform: translateY(-2px); }
+    .feature-icon { font-size: 1.5rem; margin-bottom: 0.75rem; }
+    .feature-title { font-weight: 700; margin-bottom: 0.35rem; font-size: 0.95rem; }
+    .feature-desc { font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5; }
+
+    /* Comparison table */
+    .comparison-wrapper { overflow-x: auto; margin-top: 3rem; }
+    .comparison-table { width: 100%; border-collapse: separate; border-spacing: 0; border-radius: var(--radius-lg); overflow: hidden; border: 1px solid var(--border-subtle); }
+    .comparison-table th { padding: 0.9rem 1rem; background: var(--bg-card-inset); font-size: 0.8rem; font-weight: 700; text-align: center; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--border-subtle); }
+    .comparison-table th:first-child { text-align: left; }
+    .comparison-table th.highlighted { color: var(--accent); background: var(--accent-subtle); }
+    .comparison-table td { padding: 0.85rem 1rem; font-size: 0.875rem; border-bottom: 1px solid var(--border-subtle); vertical-align: middle; }
+    .comparison-table tr:last-child td { border-bottom: none; }
+    .comparison-table td:not(:first-child) { text-align: center; }
+    .comparison-table td.highlighted { background: var(--accent-subtle); }
+    .check { color: var(--profit); font-size: 1rem; }
+    .cross { color: var(--loss); font-size: 1rem; }
+    .partial { color: var(--warning); font-size: 0.8rem; }
+
+    /* Live preview / sample dashboard */
+    .preview-wrapper { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-xl); padding: 1.5rem; margin-top: 3rem; overflow: hidden; position: relative; }
+    .sample-badge { position: absolute; top: 1.2rem; right: 1.2rem; background: var(--warning-subtle); color: var(--warning); border: 1px solid var(--warning); border-radius: var(--radius-pill); padding: 0.25rem 0.75rem; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+    .preview-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+    .preview-card { background: var(--bg-card-inset); border-radius: var(--radius-lg); padding: 1rem; }
+    .preview-label { font-size: 0.75rem; color: var(--text-muted); font-weight: 500; margin-bottom: 0.4rem; }
+    .preview-value { font-size: 1.4rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+    .preview-change { font-size: 0.75rem; margin-top: 0.25rem; font-weight: 600; }
+    .fy-tabs { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+    .fy-tab { padding: 0.3rem 0.75rem; border-radius: var(--radius-pill); font-size: 0.78rem; font-weight: 600; cursor: pointer; border: 1px solid var(--border-subtle); background: var(--bg-card-inset); color: var(--text-muted); transition: all 150ms; }
+    .fy-tab.active { background: var(--accent); color: #fff; border-color: transparent; }
+
+    /* DTAA worked example */
+    .dtaa-example { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-xl); padding: 2rem; margin-top: 3rem; }
+    .dtaa-title { font-weight: 700; font-size: 1.1rem; margin-bottom: 1.5rem; }
+    .dtaa-row { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid var(--border-subtle); font-size: 0.9rem; }
+    .dtaa-row:last-child { border-bottom: none; }
+    .dtaa-row strong { color: var(--text-secondary); }
+    .dtaa-row span { font-weight: 700; font-variant-numeric: tabular-nums; }
+    .dtaa-formula { margin-top: 1rem; padding: 0.75rem; background: var(--bg-card-inset); border-radius: var(--radius-md); font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-secondary); }
+
+    /* FAQ */
+    .faq-list { display: flex; flex-direction: column; gap: 0.75rem; margin-top: 2.5rem; }
+    .faq-item { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); overflow: hidden; }
+    .faq-q { width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 1.1rem 1.25rem; background: none; border: none; cursor: pointer; font-family: var(--font-sans); font-size: 0.95rem; font-weight: 600; color: var(--text-primary); text-align: left; gap: 1rem; }
+    .faq-q:hover { background: var(--bg-card-inset); }
+    .faq-chevron { flex-shrink: 0; transition: transform 200ms; color: var(--text-muted); }
+    .faq-item.open .faq-chevron { transform: rotate(180deg); }
+    .faq-a { max-height: 0; overflow: hidden; transition: max-height 300ms ease; }
+    .faq-item.open .faq-a { max-height: 400px; }
+    .faq-a-inner { padding: 0 1.25rem 1.1rem; color: var(--text-secondary); font-size: 0.875rem; line-height: 1.65; }
+
+    /* CTA band */
+    .cta-band { background: var(--bg-card); border-top: 1px solid var(--border-subtle); border-bottom: 1px solid var(--border-subtle); text-align: center; padding: 5rem 2rem; }
+    .cta-band h2 { font-size: clamp(1.6rem, 3vw, 2.4rem); font-weight: 800; letter-spacing: -0.025em; margin-bottom: 0.75rem; }
+    .cta-band p { color: var(--text-secondary); margin-bottom: 2rem; font-size: 1rem; }
+
+    /* Footer */
+    footer { padding: 2.5rem 2rem; text-align: center; border-top: 1px solid var(--border-subtle); }
+    .footer-logo { display: inline-flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; text-decoration: none; color: var(--text-primary); font-weight: 800; }
+    .footer-links { display: flex; justify-content: center; gap: 1.5rem; margin: 0.75rem 0; flex-wrap: wrap; }
+    .footer-links a { font-size: 0.82rem; color: var(--text-muted); text-decoration: none; }
+    .footer-links a:hover { color: var(--text-primary); }
+    .footer-disclaimer { font-size: 0.76rem; color: var(--text-muted); max-width: 60ch; margin: 0.75rem auto 0; line-height: 1.5; }
+
+    /* Scroll reveal */
+    .reveal { opacity: 0; transform: translateY(28px); transition: opacity 500ms ease, transform 500ms ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    @media (prefers-reduced-motion: reduce) { .reveal { opacity: 1; transform: none; transition: none; } }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .steps-grid { grid-template-columns: repeat(2, 1fr); }
+      .problem-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 768px) {
+      .hero { grid-template-columns: 1fr; padding: 6rem 1rem 3rem; }
+      .hero-3d { height: 320px; }
+      .nav-links { display: none; }
+      .hamburger { display: flex; }
+      .steps-grid { grid-template-columns: 1fr; }
+      .preview-grid { grid-template-columns: 1fr 1fr; }
+      .hero-stats { flex-direction: column; gap: 1rem; }
+    }
+    @media (max-width: 480px) {
+      .preview-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── NAVBAR ── -->
+<nav class="navbar" id="navbar" role="navigation" aria-label="Main navigation">
+  <a href="/" class="nav-logo" aria-label="CapTax AI home">
+    <span class="nav-logo-mark" aria-hidden="true">₹</span>
+    <span class="nav-logo-text">CapTax AI</span>
+  </a>
+
+  <div class="nav-links" role="list">
+    <a href="#features" role="listitem">Features</a>
+    <a href="#how-it-works" role="listitem">How it works</a>
+    <a href="#nri" role="listitem">For NRIs</a>
+    <a href="#faq" role="listitem">FAQ</a>
+  </div>
+
+  <div class="nav-actions">
+    <button class="theme-btn" id="themeToggle" aria-label="Toggle colour theme" title="Toggle theme">
+      <svg id="themeIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+      </svg>
+    </button>
+    <a href="/login" class="btn-ghost" id="navLoginBtn">Log in</a>
+    <a href="/login" class="btn-primary" id="navCta">Get started</a>
+    <button class="hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+  </div>
+</nav>
+
+<!-- Mobile drawer -->
+<div class="mobile-drawer" id="mobileDrawer" role="dialog" aria-modal="true" aria-label="Mobile navigation">
+  <div class="mobile-drawer-panel">
+    <a href="#features" onclick="closeMobileMenu()">Features</a>
+    <a href="#how-it-works" onclick="closeMobileMenu()">How it works</a>
+    <a href="#nri" onclick="closeMobileMenu()">For NRIs</a>
+    <a href="#faq" onclick="closeMobileMenu()">FAQ</a>
+    <hr style="border-color:var(--border-subtle);margin:0.5rem 0">
+    <a href="/login" onclick="closeMobileMenu()" style="color:var(--accent);font-weight:700">Log in →</a>
+  </div>
+</div>
+
+<!-- ── HERO FULL BLEED ── -->
+<main>
+<section class="hero-section" aria-label="CapTax AI Hero Showcase">
+  <!-- Full-bleed 3D Background Canvas -->
+  <div class="hero-canvas-container" id="hero3d" aria-hidden="true"></div>
+
+  <!-- Hero Content Grid -->
+  <div class="hero">
+    <div class="hero-content">
+      <div class="hero-eyebrow">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor"><circle cx="5" cy="5" r="5"/></svg>
+        MULTI-BROKER • DTAA-AWARE • ACADEMIC PROTOTYPE
+      </div>
+      <h1 class="hero-title" id="hero-title">
+        Every dollar.<br>Every rupee.<br><em>Every disclosure.</em>
+      </h1>
+      <p class="hero-sub">
+        CapTax AI consolidates broker statements, runs FIFO capital-gains matching, computes DTAA relief under the US–India treaty, and generates Schedule CG, Schedule FSI, and your disclosure report — automatically.
+      </p>
+      <div class="hero-ctas">
+        <a href="/login" class="btn-primary btn-lg">Get started</a>
+        <a href="#how-it-works" class="btn-secondary btn-lg">See how it works</a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat">
+          <div class="stat-value" id="heroFYs">3</div>
+          <div class="stat-label">Financial years covered</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value" id="heroBrokers">4</div>
+          <div class="stat-label">Brokers supported</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value" id="heroSteps">7</div>
+          <div class="stat-label">Pipeline steps, automated</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pause Animation Control -->
+  <button class="hero-pause-btn" id="heroPauseBtn" aria-label="Pause background animation" title="Pause 3D animation">
+    <svg id="pauseIcon" width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+    <span id="pauseText">Pause</span>
+  </button>
+</section>
+
+<!-- ── TRUST STRIP ── -->
+<div class="trust-strip">
+  <p class="trust-label">Works with statements from brokers your backend supports</p>
+  <div class="brokers-row" role="list">
+    <div class="broker-chip" role="listitem">
+      <div class="broker-icon">Z</div>
+      <span>Zerodha</span>
+    </div>
+    <div class="broker-chip" role="listitem">
+      <div class="broker-icon">G</div>
+      <span>Groww</span>
+    </div>
+    <div class="broker-chip" role="listitem">
+      <div class="broker-icon">I</div>
+      <span>ICICI Direct</span>
+    </div>
+    <div class="broker-chip" role="listitem">
+      <div class="broker-icon">IB</div>
+      <span>Interactive Brokers</span>
+    </div>
+  </div>
+</div>
+
+<!-- ── PROBLEM ── -->
+<section id="nri" aria-labelledby="problem-title">
+  <div class="problem-grid">
+    <div>
+      <p class="section-label">The challenge</p>
+      <h2 class="section-title" id="problem-title">Tax compliance shouldn't require a PhD in spreadsheets</h2>
+      <p class="section-sub">NRIs and Indian residents with foreign equity holdings face a maze of rules — multiple brokers, FIFO matching, STCG vs LTCG, currency conversion, DTAA relief calculations, and Schedule FSI / TR / Form 67 filing requirements. One mistake can mean penalties.</p>
+      <div class="pain-list">
+        <div class="pain-item">
+          <div class="pain-icon" aria-hidden="true">📊</div>
+          <div class="pain-text"><strong>Multiple broker formats</strong><span>Each broker exports trades in a different CSV format with different column names and date formats.</span></div>
+        </div>
+        <div class="pain-item">
+          <div class="pain-icon" aria-hidden="true">🔄</div>
+          <div class="pain-text"><strong>FIFO is complex with corporate actions</strong><span>Stock splits, bonuses and mergers affect the cost basis — spreadsheets break silently.</span></div>
+        </div>
+        <div class="pain-item">
+          <div class="pain-icon" aria-hidden="true">🌐</div>
+          <div class="pain-text"><strong>DTAA relief needs per-dividend calculation</strong><span>Each US dividend has different withholding, and the India-US DTAA limits your credit precisely.</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="solution-visual">
+      <p style="font-weight:700;margin-bottom:1rem">The 7-step CapTax AI pipeline</p>
+      <div class="mini-pipeline" id="miniPipeline">
+        <!-- populated by JS -->
+        <div class="pipeline-step"><div class="ps-num">1</div><div class="ps-text">generate_datasets.py</div><div class="ps-status">✓ Done</div></div>
+        <div class="pipeline-connector"></div>
+        <div class="pipeline-step"><div class="ps-num">2</div><div class="ps-text">ingest.py</div><div class="ps-status">✓ Done</div></div>
+        <div class="pipeline-connector"></div>
+        <div class="pipeline-step"><div class="ps-num">3</div><div class="ps-text">corporate_actions_adjuster.py</div><div class="ps-status">✓ Done</div></div>
+        <div class="pipeline-connector"></div>
+        <div class="pipeline-step"><div class="ps-num">4</div><div class="ps-text">fifo_matcher.py</div><div class="ps-status">✓ Done</div></div>
+        <div class="pipeline-connector"></div>
+        <div class="pipeline-step"><div class="ps-num">5</div><div class="ps-text">tax_classifier.py</div><div class="ps-status">✓ Done</div></div>
+        <div class="pipeline-connector"></div>
+        <div class="pipeline-step"><div class="ps-num">6</div><div class="ps-text">dtaa_relief.py</div><div class="ps-status">✓ Done</div></div>
+        <div class="pipeline-connector"></div>
+        <div class="pipeline-step"><div class="ps-num">7</div><div class="ps-text">disclosure_generator.py</div><div class="ps-status">✓ Done</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── HOW IT WORKS ── -->
+<section id="how-it-works" aria-labelledby="hiw-title">
+  <div style="text-align:center;max-width:60ch;margin:0 auto 0.5rem">
+    <p class="section-label">How it works</p>
+    <h2 class="section-title" id="hiw-title">Four steps from raw statements to a disclosure-ready report</h2>
+  </div>
+  <div class="steps-grid">
+    <div class="step-card reveal">
+      <span class="step-number" aria-hidden="true">01</span>
+      <div class="step-icon" aria-hidden="true">📂</div>
+      <h3 class="step-title">Connect & upload statements</h3>
+      <p class="step-desc">Upload trade statements from Zerodha, Groww, ICICI Direct and Interactive Brokers. The pipeline normalises all formats into a unified schema.</p>
+    </div>
+    <div class="step-card reveal">
+      <span class="step-number" aria-hidden="true">02</span>
+      <div class="step-icon" aria-hidden="true">⚙️</div>
+      <h3 class="step-title">7-step pipeline runs</h3>
+      <p class="step-desc">Ingestion → corporate action adjustment → FIFO matching → tax classification → DTAA relief computation → disclosure generation. All automated.</p>
+    </div>
+    <div class="step-card reveal">
+      <span class="step-number" aria-hidden="true">03</span>
+      <div class="step-icon" aria-hidden="true">📋</div>
+      <h3 class="step-title">Schedule CG & FSI computed</h3>
+      <p class="step-desc">LTCG at 12.5% (₹1,25,000 exemption), STCG at 20%, DTAA relief per security per financial year — with a visible calculation breakdown on every row.</p>
+    </div>
+    <div class="step-card reveal">
+      <span class="step-number" aria-hidden="true">04</span>
+      <div class="step-icon" aria-hidden="true">📄</div>
+      <h3 class="step-title">Disclosure report ready</h3>
+      <p class="step-desc">Export your Schedule CG, Schedule FSI and a detailed disclosure summary as CSV or PDF. Plain-text copy preserved for ITR attachment.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── FEATURES ── -->
+<section id="features" aria-labelledby="feat-title">
+  <p class="section-label">Features</p>
+  <h2 class="section-title" id="feat-title">Everything your accountant wishes you had</h2>
+  <div class="feature-grid">
+    <div class="feature-card reveal"><div class="feature-icon">🏦</div><h3 class="feature-title">Multi-broker consolidation</h3><p class="feature-desc">Unify trades from Indian and US brokers into a single normalised dataset.</p></div>
+    <div class="feature-card reveal"><div class="feature-icon">💱</div><h3 class="feature-title">Multi-currency (USD ↔ INR)</h3><p class="feature-desc">All foreign amounts converted at RBI rates for accurate INR-denominated gains.</p></div>
+    <div class="feature-card reveal"><div class="feature-icon">📐</div><h3 class="feature-title">FIFO capital gains by FY</h3><p class="feature-desc">Strict First-In First-Out matching with corporate action adjustments, per financial year.</p></div>
+    <div class="feature-card reveal"><div class="feature-icon">⚖️</div><h3 class="feature-title">LTCG / STCG split</h3><p class="feature-desc">Automatic classification with ₹1,25,000 LTCG exemption and correct rate application.</p></div>
+    <div class="feature-card reveal"><div class="feature-icon">🌐</div><h3 class="feature-title">DTAA relief per security</h3><p class="feature-desc">Visible breakdown: gross dividend → 25% withholding → DTAA credit → net Indian tax.</p></div>
+    <div class="feature-card reveal"><div class="feature-icon">📑</div><h3 class="feature-title">Disclosure report export</h3><p class="feature-desc">Schedule CG, Schedule FSI, and plain-text disclosure summary in one click.</p></div>
+    <div class="feature-card reveal"><div class="feature-icon">📊</div><h3 class="feature-title">Tax-exposure gauge</h3><p class="feature-desc">Effective tax rate gauge (total tax ÷ total gains) per selected financial year.</p></div>
+    <div class="feature-card reveal"><div class="feature-icon">🌗</div><h3 class="feature-title">Light & dark themes</h3><p class="feature-desc">Warm off-white light mode and Datara dark mode — your preference, persisted across sessions.</p></div>
+  </div>
+</section>
+
+<!-- ── COMPARISON ── -->
+<section aria-labelledby="compare-title">
+  <p class="section-label">Why it's better</p>
+  <h2 class="section-title" id="compare-title">A tool built for the actual problem</h2>
+  <p class="section-sub">Spreadsheets and generic portfolio trackers weren't designed for DTAA schedules or Indian tax rules. Here's a factual comparison.</p>
+  <div class="comparison-wrapper">
+    <table class="comparison-table" role="table">
+      <thead>
+        <tr>
+          <th scope="col">Capability</th>
+          <th scope="col">Manual spreadsheets</th>
+          <th scope="col">Generic portfolio tracker</th>
+          <th scope="col" class="highlighted">CapTax AI</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Tax-aware FIFO matching</td>
+          <td><span class="partial" aria-label="Partial">Manual effort</span></td>
+          <td><span class="cross" aria-label="No">✗</span></td>
+          <td class="highlighted"><span class="check" aria-label="Yes">✓</span></td>
+        </tr>
+        <tr>
+          <td>Corporate action adjustments</td>
+          <td><span class="cross" aria-label="No">✗</span></td>
+          <td><span class="partial" aria-label="Partial">Some</span></td>
+          <td class="highlighted"><span class="check" aria-label="Yes">✓</span></td>
+        </tr>
+        <tr>
+          <td>DTAA / Schedule FSI support</td>
+          <td><span class="cross" aria-label="No">✗</span></td>
+          <td><span class="cross" aria-label="No">✗</span></td>
+          <td class="highlighted"><span class="check" aria-label="Yes">✓</span></td>
+        </tr>
+        <tr>
+          <td>Rate-by-date currency handling</td>
+          <td><span class="partial" aria-label="Partial">Lookup required</span></td>
+          <td><span class="partial" aria-label="Partial">Varies</span></td>
+          <td class="highlighted"><span class="check" aria-label="Yes">✓</span></td>
+        </tr>
+        <tr>
+          <td>Auditable calculation breakdown</td>
+          <td><span class="partial" aria-label="Partial">If you build it</span></td>
+          <td><span class="cross" aria-label="No">✗</span></td>
+          <td class="highlighted"><span class="check" aria-label="Yes">✓</span></td>
+        </tr>
+        <tr>
+          <td>One-click 7-step pipeline</td>
+          <td><span class="cross" aria-label="No">✗</span></td>
+          <td><span class="cross" aria-label="No">✗</span></td>
+          <td class="highlighted"><span class="check" aria-label="Yes">✓</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ── LIVE PREVIEW ── -->
+<section aria-labelledby="preview-title">
+  <p class="section-label">Live preview</p>
+  <h2 class="section-title" id="preview-title">See what your dashboard looks like</h2>
+  <p class="section-sub">The numbers below are sample data — clearly labelled. Your real data comes only after you log in and run the pipeline.</p>
+  <div class="preview-wrapper">
+    <span class="sample-badge">Sample data</span>
+    <div class="fy-tabs" role="tablist" aria-label="Financial year">
+      <button class="fy-tab active" role="tab" aria-selected="true" onclick="setFY('FY2022-23',this)">FY 2022–23</button>
+      <button class="fy-tab" role="tab" aria-selected="false" onclick="setFY('FY2023-24',this)">FY 2023–24</button>
+      <button class="fy-tab" role="tab" aria-selected="false" onclick="setFY('FY2024-25',this)">FY 2024–25</button>
+    </div>
+    <div class="preview-grid">
+      <div class="preview-card">
+        <div class="preview-label">LTCG Gain</div>
+        <div class="preview-value" id="pLtcg" style="color:var(--profit)">—</div>
+        <div class="preview-change" style="color:var(--text-muted)" id="pLtcgNote"></div>
+      </div>
+      <div class="preview-card">
+        <div class="preview-label">STCG Gain</div>
+        <div class="preview-value" id="pStcg">—</div>
+        <div class="preview-change" id="pStcgNote"></div>
+      </div>
+      <div class="preview-card">
+        <div class="preview-label">Total Tax</div>
+        <div class="preview-value" id="pTax" style="color:var(--neutral)">—</div>
+        <div class="preview-change" style="color:var(--text-muted)" id="pTaxNote"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── DTAA WORKED EXAMPLE ── -->
+<section aria-labelledby="dtaa-title">
+  <p class="section-label">DTAA explained</p>
+  <h2 class="section-title" id="dtaa-title">A worked example: US dividend, Indian tax</h2>
+  <p class="section-sub">Here is how CapTax AI computes Schedule FSI for a single dividend payout, using sample numbers.</p>
+  <div class="dtaa-example">
+    <p class="dtaa-title">TSLA — Tesla Inc • Sample dividend payout</p>
+    <div class="dtaa-row">
+      <strong>Gross dividend (USD 1,000 × ₹83.50)</strong>
+      <span style="color:var(--profit)">+ ₹83,500</span>
+    </div>
+    <div class="dtaa-row">
+      <strong>Foreign tax withheld (25% US withholding)</strong>
+      <span style="color:var(--neutral)">₹20,875</span>
+    </div>
+    <div class="dtaa-row">
+      <strong>Indian tax (30% of gross)</strong>
+      <span style="color:var(--neutral)">₹25,050</span>
+    </div>
+    <div class="dtaa-row">
+      <strong>DTAA relief (= foreign tax withheld, capped at Indian tax)</strong>
+      <span style="color:var(--profit)">− ₹20,875</span>
+    </div>
+    <div class="dtaa-row" style="font-weight:700;font-size:1rem">
+      <strong style="color:var(--text-primary)">Net Indian tax payable</strong>
+      <span style="color:var(--neutral)">₹4,175</span>
+    </div>
+    <div class="dtaa-formula">
+      Net Indian tax = (Gross × 30%) − min(Gross × 25%, Gross × 30%)
+      &nbsp;&nbsp;≈ 5% of gross dividend
+    </div>
+  </div>
+</section>
+
+<!-- ── SECURITY ── -->
+<section id="security" aria-labelledby="sec-title">
+  <p class="section-label">Security & privacy</p>
+  <h2 class="section-title" id="sec-title">What we actually do to protect your data</h2>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:1rem;margin-top:2rem">
+    <div class="feature-card reveal"><div class="feature-icon">🍪</div><h3 class="feature-title">httpOnly session cookies</h3><p class="feature-desc">Sessions are stored as signed, httpOnly, SameSite=lax cookies — not accessible to JavaScript, protecting against XSS.</p></div>
+    <div class="feature-card reveal"><div class="feature-icon">🔐</div><h3 class="feature-title">Hashed credentials</h3><p class="feature-desc">Passwords are stored only as bcrypt salted hashes. Plaintext never appears anywhere in the codebase or logs.</p></div>
+    <div class="feature-card reveal"><div class="feature-icon">🛡️</div><h3 class="feature-title">Rate-limited login</h3><p class="feature-desc">5 failed attempts trigger a 60-second lockout. Generic error messages give no hint about which field was wrong.</p></div>
+    <div class="feature-card reveal"><div class="feature-icon">🖥️</div><h3 class="feature-title">Local processing</h3><p class="feature-desc">All pipeline steps run locally on your machine. Your trade data does not leave your server.</p></div>
+  </div>
+</section>
+
+<!-- ── FAQ ── -->
+<section id="faq" aria-labelledby="faq-title">
+  <div style="max-width:680px;margin:0 auto">
+    <p class="section-label">FAQ</p>
+    <h2 class="section-title" id="faq-title">Frequently asked questions</h2>
+    <div class="faq-list" id="faqList">
+      <div class="faq-item">
+        <button class="faq-q" aria-expanded="false">
+          What brokers does CapTax AI support?
+          <svg class="faq-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="faq-a" role="region"><div class="faq-a-inner">CapTax AI supports Zerodha, Groww, ICICI Direct and Interactive Brokers — the four brokers whose statement formats the pipeline normalises. No other broker integrations exist in this version.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" aria-expanded="false">
+          Does it file my ITR for me?
+          <svg class="faq-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="faq-a" role="region"><div class="faq-a-inner">No. CapTax AI is an academic prototype that computes and presents the Schedule CG, Schedule FSI and disclosure report. You must manually carry these numbers into your ITR form or provide them to your CA. It is not a substitute for filed ITR schedules.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" aria-expanded="false">
+          How does FIFO matching work?
+          <svg class="faq-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="faq-a" role="region"><div class="faq-a-inner">When you sell shares, the pipeline matches them against your oldest buy lots first (FIFO). Corporate actions like stock splits and bonuses are adjusted in the adjusted_trades.csv step before matching, so the cost basis reflects the real economic position.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" aria-expanded="false">
+          What is the DTAA rate used?
+          <svg class="faq-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="faq-a" role="region"><div class="faq-a-inner">The pipeline uses the India–USA DTAA treaty rate of 25% withholding on dividends. The DTAA relief equals the foreign tax withheld (capped at the Indian tax liability), resulting in a net Indian tax of approximately 5% of gross for a 30% Indian rate.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" aria-expanded="false">
+          Is my trade data sent to any server?
+          <svg class="faq-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="faq-a" role="region"><div class="faq-a-inner">All pipeline steps run on your own machine at http://localhost:8001. No trade data is transmitted to external servers. The 3D coin hero on this page loads Three.js from unpkg.com CDN, which is the only external network request.</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── CTA BAND ── -->
+<div class="cta-band">
+  <h2>Ready to untangle your taxes?</h2>
+  <p>Log in, run the 7-step pipeline, and get your Schedule CG and FSI in minutes.</p>
+  <a href="/login" class="btn-primary btn-lg">Get started free</a>
+</div>
+
+<!-- ── FOOTER ── -->
+<footer role="contentinfo">
+  <a href="/" class="footer-logo">
+    <span style="width:24px;height:24px;background:var(--accent);border-radius:6px;display:grid;place-items:center;color:#fff;font-size:0.8rem;font-weight:800" aria-hidden="true">₹</span>
+    CapTax AI
+  </a>
+  <div class="footer-links">
+    <a href="#features">Features</a>
+    <a href="#how-it-works">How it works</a>
+    <a href="#faq">FAQ</a>
+    <a href="/login">Log in</a>
+    <a href="/app">Dashboard</a>
+  </div>
+  <p class="footer-disclaimer">
+    Academic prototype — not a substitute for filed ITR schedules. Team 15.<br>
+    All calculations are for informational purposes only. Verify with a qualified tax advisor before filing.
+  </p>
+</footer>
+</main>
+
+<script type="module">
+  import { getSession, applyTheme } from '/static/js/auth.js';
+
+  const API = window.CAPTAX_API_BASE || 'http://localhost:8001';
+
+  // Check session — update nav CTA if logged in
+  getSession().then(s => {
+    if (s.authenticated) {
+      const cta = document.getElementById('navCta');
+      const login = document.getElementById('navLoginBtn');
+      if (cta) { cta.textContent = 'Open dashboard'; cta.href = '/app'; }
+      if (login) { login.style.display = 'none'; }
+    }
+  });
+
+  // Theme toggle with smooth 3D crossfade
+  document.getElementById('themeToggle')?.addEventListener('click', () => {
+    const current = document.documentElement.getAttribute('data-theme') || 'dark';
+    const next = current === 'dark' ? 'light' : 'dark';
+    applyTheme(next);
+    if (window._coinScene) window._coinScene.updateTheme(next);
+  });
+
+  // Pause / Play animation control
+  const pauseBtn = document.getElementById('heroPauseBtn');
+  pauseBtn?.addEventListener('click', () => {
+    if (window._coinScene) {
+      const isPaused = window._coinScene.togglePause();
+      document.getElementById('pauseText').textContent = isPaused ? 'Play' : 'Pause';
+      document.getElementById('pauseIcon').innerHTML = isPaused
+        ? '<polygon points="5 3 19 12 5 21 5 3"></polygon>'
+        : '<rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect>';
+    }
+  });
+
+  // Derive stats dynamically from config / backend
+  const updateHeroStats = async () => {
+    try {
+      const resSummary = await fetch('/data/tax-summary', { credentials: 'include' });
+      if (resSummary.ok) {
+        const rows = await resSummary.json();
+        if (Array.isArray(rows) && rows.length > 0) {
+          const el = document.getElementById('heroFYs');
+          if (el) el.textContent = rows.length;
+        }
+      }
+    } catch {}
+
+    try {
+      const resBrokers = await fetch('/data/brokers', { credentials: 'include' });
+      if (resBrokers.ok) {
+        const brokers = await resBrokers.json();
+        if (Array.isArray(brokers) && brokers.length > 0) {
+          const el = document.getElementById('heroBrokers');
+          if (el) el.textContent = brokers.length;
+        }
+      }
+    } catch {}
+  };
+  updateHeroStats();
+
+  // Lazy-load 3D scene after initial DOM paint to protect LCP
+  const hero3d = document.getElementById('hero3d');
+  const init3D = () => {
+    import('/static/js/three-coins.js')
+      .then(({ initCoinScene }) => {
+        const theme = document.documentElement.getAttribute('data-theme') || 'dark';
+        return initCoinScene(hero3d, { theme });
+      })
+      .then(scene => {
+        if (scene) {
+          window._coinScene = scene;
+        }
+      })
+      .catch(err => {
+        console.warn('[Landing] 3D Hero initialization fallback:', err);
+      });
+  };
+
+  if ('requestIdleCallback' in window) {
+    requestIdleCallback(() => init3D(), { timeout: 800 });
+  } else {
+    setTimeout(init3D, 100);
+  }
+
+  // Navbar scroll behaviour
+  const navbar = document.getElementById('navbar');
+  window.addEventListener('scroll', () => {
+    navbar.classList.toggle('scrolled', window.scrollY > 40);
+  }, { passive: true });
+
+  // Mobile menu
+  const hamburger = document.getElementById('hamburger');
+  const drawer = document.getElementById('mobileDrawer');
+  hamburger?.addEventListener('click', () => {
+    const open = !drawer.classList.contains('open');
+    drawer.classList.toggle('open', open);
+    hamburger.setAttribute('aria-expanded', open);
+  });
+  drawer?.addEventListener('click', e => {
+    if (e.target === drawer) closeMobileMenu();
+  });
+  window.closeMobileMenu = () => {
+    drawer.classList.remove('open');
+    hamburger?.setAttribute('aria-expanded', 'false');
+  };
+
+  // Scroll reveal
+  const revealObserver = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); revealObserver.unobserve(e.target); } });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+  // FAQ accordion
+  document.querySelectorAll('.faq-q').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const item = btn.closest('.faq-item');
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item.open').forEach(i => {
+        i.classList.remove('open');
+        i.querySelector('.faq-q').setAttribute('aria-expanded', 'false');
+      });
+      if (!isOpen) {
+        item.classList.add('open');
+        btn.setAttribute('aria-expanded', 'true');
+      }
+    });
+  });
+
+  // Sample data preview
+  const SAMPLE = {
+    'FY2022-23': { ltcg: 0, stcg: 23122250.10, tax: 4624450.02, ltcgNote: 'Below LTCG exemption', stcgNote: '', taxNote: 'STCG @ 20%' },
+    'FY2023-24': { ltcg: 9394527.37, stcg: 20046153.54, tax: 5167921.63, ltcgNote: '₹1.25L exemption applied', stcgNote: '', taxNote: 'LTCG + STCG' },
+    'FY2024-25': { ltcg: 13285608.96, stcg: -4641568.20, tax: 1645076.12, ltcgNote: '', stcgNote: 'Loss — carry forward available', taxNote: 'LTCG only (STCG loss)' },
+  };
+  const fmt = v => '₹' + Math.abs(v).toLocaleString('en-IN', { maximumFractionDigits: 0 });
+
+  window.setFY = (fy, btn) => {
+    document.querySelectorAll('.fy-tab').forEach(b => { b.classList.remove('active'); b.setAttribute('aria-selected','false'); });
+    btn.classList.add('active'); btn.setAttribute('aria-selected','true');
+    const d = SAMPLE[fy];
+    if (!d) return;
+    const pLtcg = document.getElementById('pLtcg');
+    const pStcg = document.getElementById('pStcg');
+    const pTax  = document.getElementById('pTax');
+    pLtcg.textContent = fmt(d.ltcg);
+    pLtcg.style.color = d.ltcg > 0 ? 'var(--profit)' : 'var(--neutral)';
+    pStcg.textContent = (d.stcg < 0 ? '−' : '+') + fmt(d.stcg);
+    pStcg.style.color = d.stcg > 0 ? 'var(--profit)' : d.stcg < 0 ? 'var(--loss)' : 'var(--neutral)';
+    pTax.textContent = fmt(d.tax);
+    document.getElementById('pLtcgNote').textContent = d.ltcgNote;
+    document.getElementById('pStcgNote').textContent = d.stcgNote;
+    document.getElementById('pTaxNote').textContent = d.taxNote;
+  };
+  window.setFY('FY2022-23', document.querySelector('.fy-tab'));
+
+
+</script>
+</body>
+</html>
+

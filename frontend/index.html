@@ -256,6 +256,45 @@
       justify-content: center;
       cursor: pointer;
       user-select: none;
+      transition: border-color 150ms ease, background 150ms ease;
+    }
+    .avatar-chip:hover {
+      border-color: var(--accent);
+      background: var(--bg-card-hover);
+    }
+    .user-dropdown {
+      position: absolute;
+      top: 50px;
+      right: 0;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 0.75rem;
+      box-shadow: var(--shadow-card);
+      min-width: 190px;
+      z-index: 100;
+      display: none;
+    }
+    .user-dropdown.active {
+      display: block;
+    }
+
+    /* Global Colour Semantics — Step 5 */
+    .brand-name {
+      color: var(--brand-name) !important;
+      font-weight: 600;
+    }
+    .money-profit {
+      color: var(--profit) !important;
+      font-weight: 600;
+    }
+    .money-loss {
+      color: var(--loss) !important;
+      font-weight: 600;
+    }
+    .money-neutral {
+      color: var(--neutral) !important;
+      font-weight: 600;
     }
 
     /* Currency Toggle */
@@ -1461,8 +1500,23 @@
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
         </button>
 
-        <!-- User Avatar -->
-        <div class="avatar-chip" title="Akash Singh Chauhan (Frontend &amp; QA Lead)">AC</div>
+        <!-- User Avatar & Dropdown -->
+        <div class="avatar-chip-container" style="position: relative;">
+          <div class="avatar-chip" id="avatarChip" title="Account Menu" onclick="toggleUserDropdown(event)">AC</div>
+          <div class="user-dropdown" id="userDropdown">
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.2rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;">Signed in as</div>
+            <div style="font-size: 0.9rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.75rem;" id="userDisplayId">admin</div>
+            <hr style="border: 0; border-top: 1px solid var(--border-subtle); margin-bottom: 0.5rem;" />
+            <a href="/" style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.84rem; color: var(--text-secondary); text-decoration: none; padding: 0.4rem 0.5rem; border-radius: var(--radius-sm); margin-bottom: 0.25rem;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+              Landing Page
+            </a>
+            <button onclick="handleLogout()" style="width: 100%; display: flex; align-items: center; gap: 0.5rem; text-align: left; background: none; border: none; font-size: 0.84rem; color: var(--negative); font-weight: 600; cursor: pointer; padding: 0.4rem 0.5rem; border-radius: var(--radius-sm);">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+              Log out
+            </button>
+          </div>
+        </div>
       </div>
     </header>
 
@@ -2159,13 +2213,57 @@
     };
 
     // Initialize on window load
-    window.addEventListener('DOMContentLoaded', () => {
+    window.addEventListener('DOMContentLoaded', async () => {
       document.getElementById('settingsApiBase').value = STATE.apiBase;
       updateCurrencyButtons();
       updateThemeButtons();
+
+      // Auth Check for Protected App Area
+      try {
+        const authRes = await fetch(getApiUrl('/auth/me'), {
+          credentials: 'include',
+          headers: { 'Accept': 'application/json' }
+        });
+        if (!authRes.ok && authRes.status === 401) {
+          const next = encodeURIComponent(window.location.pathname || '/app');
+          window.location.replace(`/login?next=${next}`);
+          return;
+        }
+        if (authRes.ok) {
+          const uData = await authRes.json();
+          const disp = document.getElementById('userDisplayId');
+          if (disp && uData.id) disp.textContent = uData.id;
+        }
+      } catch (err) {
+        console.warn('Auth check skipped (backend unreachable or offline):', err);
+      }
+
       checkBackendHealth();
       loadAllBackendData();
     });
+
+    function toggleUserDropdown(event) {
+      if (event) event.stopPropagation();
+      const dd = document.getElementById('userDropdown');
+      if (dd) dd.classList.toggle('active');
+    }
+
+    window.addEventListener('click', () => {
+      const dd = document.getElementById('userDropdown');
+      if (dd) dd.classList.remove('active');
+    });
+
+    async function handleLogout() {
+      try {
+        await fetch(getApiUrl('/auth/logout'), {
+          method: 'POST',
+          credentials: 'include'
+        });
+      } catch (e) {
+        console.error('Logout error:', e);
+      }
+      window.location.replace('/');
+    }
 
     // =========================================================================
     // THEME MANAGEMENT (LIGHT / DARK / SYSTEM)
@@ -2230,6 +2328,40 @@
       return STATE.apiBase.replace(/\/$/, '') + (endpoint.startsWith('/') ? endpoint : '/' + endpoint);
     }
 
+    async function apiFetch(endpoint, options = {}) {
+      const url = getApiUrl(endpoint);
+      const res = await fetch(url, {
+        ...options,
+        credentials: 'include',
+        headers: {
+          'Accept': 'application/json',
+          ...(options.headers || {})
+        }
+      });
+      if (res.status === 401) {
+        showToast('Session expired — please log in again', 'error');
+        const next = encodeURIComponent(window.location.pathname || '/app');
+        setTimeout(() => window.location.replace(`/login?next=${next}`), 1200);
+        throw new Error('Unauthorized — session expired');
+      }
+      return res;
+    }
+
+    function renderBrand(name) {
+      return `<span class="brand-name">${name}</span>`;
+    }
+
+    function renderMoney(val, isTaxOrWithheld = false) {
+      const n = Number(val) || 0;
+      if (isTaxOrWithheld || n === 0) {
+        return `<span class="money-neutral">${formatNumber(n)}</span>`;
+      }
+      if (n > 0) {
+        return `<span class="money-profit">+ ${formatNumber(n)}</span>`;
+      }
+      return `<span class="money-loss">− ${formatNumber(Math.abs(n))}</span>`;
+    }
+
     function formatNumber(num, isCurrency = true) {
       if (num === null || num === undefined || isNaN(num)) return '₹0.00';
       const n = Number(num);
@@ -2287,13 +2419,13 @@
 
       try {
         const [taxRes, dtaaRes, portRes, brokerRes, holdRes, txRes, repRes] = await Promise.allSettled([
-          fetch(getApiUrl('/data/tax-summary')).then(r => r.ok ? r.json() : []),
-          fetch(getApiUrl('/data/dtaa-relief')).then(r => r.ok ? r.json() : []),
-          fetch(getApiUrl('/data/portfolio')).then(r => r.ok ? r.json() : {}),
-          fetch(getApiUrl('/data/brokers')).then(r => r.ok ? r.json() : []),
-          fetch(getApiUrl('/data/holdings')).then(r => r.ok ? r.json() : []),
-          fetch(getApiUrl('/data/recent-transactions')).then(r => r.ok ? r.json() : []),
-          fetch(getApiUrl('/data/disclosure-summary')).then(r => r.ok ? r.json() : { report: '' }),
+          apiFetch('/data/tax-summary').then(r => r.ok ? r.json() : []),
+          apiFetch('/data/dtaa-relief').then(r => r.ok ? r.json() : []),
+          apiFetch('/data/portfolio').then(r => r.ok ? r.json() : {}),
+          apiFetch('/data/brokers').then(r => r.ok ? r.json() : []),
+          apiFetch('/data/holdings').then(r => r.ok ? r.json() : []),
+          apiFetch('/data/recent-transactions').then(r => r.ok ? r.json() : []),
+          apiFetch('/data/disclosure-summary').then(r => r.ok ? r.json() : { report: '' }),
         ]);
 
         STATE.taxSummary = taxRes.status === 'fulfilled' ? taxRes.value : [];
@@ -2920,7 +3052,7 @@
       const startTime = performance.now();
 
       try {
-        const res = await fetch(getApiUrl('/pipeline/run'), { method: 'POST' });
+        const res = await apiFetch('/pipeline/run', { method: 'POST' });
         if (!res.ok) throw new Error(await res.text());
         const data = await res.json();
         

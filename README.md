@@ -53,13 +53,47 @@ uvicorn app:app --host 0.0.0.0 --port 8001 --reload
 ```
 
 ### Access URLs
-- **Datara Frontend UI**: [http://localhost:8001/dashboard](http://localhost:8001/dashboard)
+- **Public Landing Site**: [http://localhost:8001/](http://localhost:8001/)
+- **Sign In Page**: [http://localhost:8001/login](http://localhost:8001/login)
+- **Protected Dashboard**: [http://localhost:8001/app](http://localhost:8001/app) (or `/dashboard`)
 - **Interactive API Docs (Swagger)**: [http://localhost:8001/docs](http://localhost:8001/docs)
-- **API Status Root**: [http://localhost:8001/](http://localhost:8001/)
 
 ---
 
-## 7. Frontend Architecture (Datara Theme)
+## 7. Run, Log In, and Change Credentials
+
+### Default Development Credentials
+| Role | Account ID | Default Password | Session TTL |
+|---|---|---|---|
+| Admin | `admin` | `@Admin123` | 8 Hours (Signed `httpOnly` Cookie) |
+
+- **Rate Limiting**: 5 failed consecutive attempts trigger an automatic 60-second lockout per ID.
+- **Security Guarantee**: Passwords are never stored in plaintext. The backend evaluates bcrypt salted hashes (`ADMIN_PASSWORD_HASH`), and frontend assets do not contain credentials.
+
+### Changing Credentials for Production Deployment
+Before deploying or sharing access beyond development, set environment variables:
+```bash
+# Generate a new bcrypt hash for your secret password
+python3 -c "import bcrypt; print(bcrypt.hashpw(b'YourSecurePasswordHere', bcrypt.gensalt()).decode())"
+
+# Export custom environment variables
+export ADMIN_ID="your_custom_admin_id"
+export ADMIN_PASSWORD_HASH="<generated_bcrypt_hash>"
+export SESSION_SECRET="<generate_a_random_32_byte_secret>"
+
+# Start the server
+uvicorn app:app --host 0.0.0.0 --port 8001
+```
+
+### Running the Verification Suite
+To verify the complete pipeline, authentication barriers, and DTAA calculation outputs:
+```bash
+python3 scripts/verify_pipeline.py
+```
+
+---
+
+## 8. Frontend Architecture (Datara Theme)
 Reconstructed according to the Datara reference design:
 - **Design Tokens**: Near-black canvas (`#0c0c0e`), dark glass cards (`#121214`), orange-red active pill accent (`#F0502D`), 24px-28px radius, vector 3D asset graphic.
 - **Top Pill Navigation**:
