@@ -2397,8 +2397,13 @@
     // =========================================================================
     async function checkBackendHealth(showToasts = false) {
       try {
-        const res = await fetch(getApiUrl('/'), { method: 'GET', signal: AbortSignal.timeout(3000) });
-        if (res.ok) {
+        let res;
+        try {
+          res = await fetch(getApiUrl('/api/health'), { method: 'GET', signal: AbortSignal.timeout(3000) });
+        } catch (_) {
+          res = await fetch(getApiUrl('/'), { method: 'GET', signal: AbortSignal.timeout(3000) });
+        }
+        if (res && res.ok) {
           document.getElementById('offlineBanner').classList.remove('active');
           if (showToasts) showToast('Connected to CapTax AI backend (:8001)', 'success');
           return true;
