@@ -17,18 +17,36 @@ Writes: ./data/dtaa_relief.csv
 """
 
 from pathlib import Path
+from typing import Any, Optional
 import pandas as pd
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "backend" / "data"
 
-ASSUMED_INDIAN_SLAB_RATE = 0.30  # configurable: taxpayer's applicable slab rate
+ASSUMED_INDIAN_SLAB_RATE: float = 0.30  # configurable: taxpayer's applicable slab rate
+
+
+def _parse_payment_date(val: Any) -> pd.Timestamp:
+    """Parse payment date supporting multiple standard formats."""
+    try:
+        return pd.to_datetime(val, format="%m/%d/%Y")
+    except Exception:
+        return pd.to_datetime(val, errors="coerce")
 
 
 def compute_relief(df: pd.DataFrame) -> pd.DataFrame:
+    """Compute DTAA foreign dividend tax relief under India-US DTAA (Art. 25 & Sec 90/91).
+    
+    Relief = min(Foreign Tax Withheld, Indian Tax Liability on Foreign Dividend).
+    Net Indian Tax = Indian Tax Liability - DTAA Relief.
+    """
+    if df.empty:
+        return pd.DataFrame()
+
     out = df.copy()
-    out["Payment Date"] = pd.to_datetime(out["Payment Date"], format="%m/%d/%Y")
+    out["Payment Date"] = out["Payment Date"].apply(_parse_payment_date)
     out["financial_year"] = out["Payment Date"].apply(
         lambda d: f"FY{d.year - (0 if d.month >= 4 else 1)}-{str(d.year + (1 if d.month >= 4 else 0))[-2:]}"
+        if pd.notna(d) else "Unknown"
     )
 
     out["gross_dividend_inr"] = (out["Gross Dividend (USD)"] * out["USD-INR Rate"]).round(2)

@@ -15,6 +15,7 @@ Writes: ./data/disclosure_summary.txt
 """
 
 from pathlib import Path
+from typing import List
 import pandas as pd
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "backend" / "data"
@@ -84,7 +85,7 @@ def main():
     report = render_report(tax_summary, dtaa, fa_holdings)
 
     out_path = DATA_DIR / "disclosure_summary.txt"
-    out_path.write_text(report)
+    out_path.write_text(report, encoding="utf-8")
     print(report)
     print(f"\nWrote {out_path}")
 
