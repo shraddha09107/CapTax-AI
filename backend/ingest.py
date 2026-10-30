@@ -21,16 +21,22 @@ Writes: ./data/normalized_trades.csv
 """
 
 from pathlib import Path
+from typing import Callable, Dict, List
 import pandas as pd
 
 DATA_DIR = Path(__file__).parent / "data"
 
-UNIFIED_COLUMNS = [
+UNIFIED_COLUMNS: List[str] = [
     "broker", "symbol", "company_name", "isin", "trade_date",
     "transaction_type", "quantity", "price", "price_currency",
     "fx_rate_to_inr", "price_inr", "gross_amount_inr", "charges_inr",
     "exchange", "source_ref",
 ]
+
+
+class DataValidationError(Exception):
+    """Raised when trade records violate integrity or normalization constraints."""
+    pass
 
 
 def _std_side(value: str) -> str:
@@ -110,7 +116,7 @@ def load_interactive_brokers() -> pd.DataFrame:
         "symbol": df["Symbol"],
         "company_name": df["Description"],
         "isin": pd.NA,
-        "trade_date": pd.to_datetime(df["TradeDate"], format="%Y%m%d"),
+        "trade_date": pd.to_datetime(df["TradeDate"].astype(str), format="%Y%m%d"),
         "transaction_type": df["Buy/Sell"].apply(_std_side),
         "quantity": df["Quantity"].astype(int),
         "price": df["TradePrice"].astype(float),
@@ -123,7 +129,7 @@ def load_interactive_brokers() -> pd.DataFrame:
     return out
 
 
-LOADERS = {
+LOADERS: Dict[str, Callable[[], pd.DataFrame]] = {
     "zerodha": load_zerodha,
     "groww": load_groww,
     "icici_direct": load_icici_direct,
@@ -146,11 +152,19 @@ def normalize_all() -> pd.DataFrame:
 
 
 def validate(df: pd.DataFrame) -> None:
-    """Basic sanity checks before handing off to FIFO matching."""
-    assert df["quantity"].gt(0).all(), "Found non-positive quantity"
-    assert df["price"].gt(0).all(), "Found non-positive price"
-    assert df["transaction_type"].isin(["BUY", "SELL"]).all(), "Bad transaction_type"
-    assert df["trade_date"].notna().all(), "Found missing trade_date"
+    """Robust sanity checks before handing off to FIFO matching.
+    
+    Replaces bare assertions with explicit DataValidationError checks
+    to ensure validations remain active under optimized Python execution.
+    """
+    if not df["quantity"].gt(0).all():
+        raise DataValidationError("Found non-positive quantity in trade records")
+    if not df["price"].gt(0).all():
+        raise DataValidationError("Found non-positive price in trade records")
+    if not df["transaction_type"].isin(["BUY", "SELL"]).all():
+        raise DataValidationError("Unrecognized transaction_type detected in trade records")
+    if not df["trade_date"].notna().all():
+        raise DataValidationError("Found missing trade_date in normalized trade records")
     print(f"Validation passed: {len(df)} normalized trade rows")
 
 
