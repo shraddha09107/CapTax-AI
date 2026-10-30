@@ -1,8 +1,16 @@
 /**
  * CapTax AI — Auth Client Utility
  * Handles session management, route guarding, and authenticated fetch.
+ *
+ * Usage:
+ *   import { requireAuth, authFetch, login, logout, getTheme, applyTheme } from './auth.js';
+ *
+ * All API calls include credentials (session cookie) and target AUTH_API,
+ * which can be overridden by setting window.CAPTAX_API_BASE before this
+ * module is imported.
  */
 
+/** @type {string} Base URL for the CapTax AI backend API. */
 const AUTH_API = (window.CAPTAX_API_BASE || 'http://localhost:8001');
 
 /**
@@ -76,7 +84,17 @@ export async function requireAuth() {
 
 /**
  * Authenticated fetch — adds credentials, handles 401 globally.
- * On 401: clears session, shows toast, redirects to /login.
+ * On 401: shows an optional toast notification, then redirects to /login
+ * after a short delay so the user sees the message.
+ *
+ * Throws on 401 so callers can bail out early. All other non-OK responses
+ * are returned as-is so callers can inspect status/body as appropriate.
+ *
+ * @param {string} url - Endpoint URL (absolute or relative).
+ * @param {RequestInit} [options={}] - Standard fetch options (method, headers, body, …).
+ *   Credentials are always forced to 'include'; do not override.
+ * @returns {Promise<Response>} Resolved fetch Response (non-401).
+ * @throws {Error} If the server returns HTTP 401 (session expired/missing).
  */
 export async function authFetch(url, options = {}) {
   const res = await fetch(url, {
@@ -102,7 +120,16 @@ export async function authFetch(url, options = {}) {
 }
 
 /**
- * Theme helpers — shared across landing, login, and app.
+ * Theme helpers — shared across landing, login, and app pages.
+ *
+ * Theme preference is persisted in localStorage under the key 'captax-theme'.
+ * Valid values are 'light', 'dark', or 'system' (follows OS preference).
+ */
+
+/**
+ * Read the effective (resolved) theme from localStorage or OS preference.
+ *
+ * @returns {'light'|'dark'} The currently active visual theme.
  */
 export function getTheme() {
   const saved = localStorage.getItem('captax-theme') || 'system';
@@ -112,6 +139,17 @@ export function getTheme() {
   return saved;
 }
 
+/**
+ * Apply a theme choice to the document and persist it.
+ *
+ * Sets the `data-theme` attribute on `<html>`, updates `color-scheme`,
+ * and syncs the `<meta name="theme-color">` tag for mobile browsers.
+ * A brief CSS transition class is added (unless the user prefers reduced
+ * motion) so the colour switch animates smoothly.
+ *
+ * @param {'light'|'dark'|'system'} theme - The theme to apply.
+ *   'system' resolves to 'light' or 'dark' based on the OS media query.
+ */
 export function applyTheme(theme) {
   const effective = theme === 'system'
     ? (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark')
