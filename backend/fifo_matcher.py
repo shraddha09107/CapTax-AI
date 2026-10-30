@@ -13,18 +13,33 @@ Writes: ./data/realized_gains.csv
 
 from collections import deque
 from pathlib import Path
+from typing import Any, Dict, List
 import pandas as pd
 
 DATA_DIR = Path(__file__).parent / "data"
 
 
 def fifo_match(trades: pd.DataFrame) -> pd.DataFrame:
+    """Matches SELL transactions against earliest BUY lots per symbol (FIFO).
+    
+    Deterministic sorting:
+      1. Group by symbol
+      2. Order by trade_date ascending
+      3. For identical trade dates, prioritize BUY before SELL (side_priority)
+         to avoid spurious UNMATCHED_SELL_QUANTITY when buys and sells occur same day.
+    """
+    if trades.empty:
+        return pd.DataFrame()
+
     trades = trades.copy()
     trades["trade_date"] = pd.to_datetime(trades["trade_date"])
-    trades = trades.sort_values(["symbol", "trade_date"])
+    
+    # Prioritize BUY (0) over SELL (1) on identical trade dates
+    trades["side_priority"] = trades["transaction_type"].map({"BUY": 0, "SELL": 1}).fillna(2)
+    trades = trades.sort_values(["symbol", "trade_date", "side_priority"]).drop(columns=["side_priority"])
 
-    realized = []
-    lots_by_symbol = {}
+    realized: List[Dict[str, Any]] = []
+    lots_by_symbol: Dict[str, deque] = {}
 
     for _, row in trades.iterrows():
         symbol = row["symbol"]
