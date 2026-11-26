@@ -3,7 +3,20 @@
  * Handles session management, route guarding, and authenticated fetch.
  */
 
-const AUTH_API = (window.CAPTAX_API_BASE || 'http://localhost:8001');
+function resolveAuthApi() {
+  if (window.CAPTAX_API_BASE && window.CAPTAX_API_BASE.trim()) return window.CAPTAX_API_BASE.trim();
+  const saved = localStorage.getItem('captax_api_base');
+  if (saved && saved.trim()) return saved.trim();
+  if (window.location.port === '3000') {
+    return `${window.location.protocol}//${window.location.hostname}:8001`;
+  }
+  if (window.location.origin && window.location.origin.startsWith('http')) {
+    return window.location.origin;
+  }
+  return 'http://localhost:8001';
+}
+
+const AUTH_API = resolveAuthApi();
 
 /**
  * Check if the current session is valid.

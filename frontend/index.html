@@ -70,6 +70,11 @@
       -webkit-font-smoothing: antialiased;
     }
 
+    :focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
     body {
       background-color: var(--bg-app);
       color: var(--text-primary);
@@ -597,6 +602,18 @@
       transition: all 0.15s ease;
     }
 
+    .tx-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.85rem 1rem;
+      border-radius: var(--radius-md);
+      background: var(--bg-card-inset);
+      border: 1px solid var(--border-subtle);
+      transition: all 0.15s ease;
+      gap: 0.75rem;
+    }
+
     .tx-row:hover {
       background: var(--bg-card-hover);
       border-color: var(--border-hover);
@@ -606,15 +623,18 @@
       display: flex;
       align-items: center;
       gap: 0.75rem;
+      min-width: 0;
+      flex: 1 1 auto;
     }
 
     .tx-ticker-badge {
-      width: 44px;
+      min-width: 44px;
       height: 44px;
+      padding: 0 0.5rem;
       border-radius: var(--radius-md);
       background: var(--bg-card);
       border: 1px solid var(--border-subtle);
-      display: flex;
+      display: inline-flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
@@ -622,6 +642,31 @@
       font-weight: 800;
       color: var(--text-primary);
       position: relative;
+      flex-shrink: 0;
+      box-sizing: border-box;
+      max-width: 96px;
+    }
+
+    .tx-ticker-badge.tx-ticker-long {
+      font-size: 0.62rem;
+      letter-spacing: -0.02em;
+      padding: 0 0.45rem;
+    }
+
+    .tx-ticker-badge.tx-ticker-med {
+      font-size: 0.7rem;
+      letter-spacing: -0.01em;
+      padding: 0 0.45rem;
+    }
+
+    .tx-ticker-text {
+      display: block;
+      max-width: 100%;
+      text-align: center;
+      line-height: 1.1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .tx-broker-tag {
@@ -636,28 +681,43 @@
       color: var(--accent);
       border: 1px solid var(--border-subtle);
       text-transform: uppercase;
+      line-height: 1;
+      z-index: 1;
     }
 
     .tx-info {
       display: flex;
       flex-direction: column;
       gap: 0.15rem;
+      min-width: 0;
+      flex: 1 1 auto;
     }
 
     .tx-name {
       font-size: 0.88rem;
       font-weight: 700;
       color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .tx-sub {
       font-size: 0.72rem;
       color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .tx-right {
       text-align: right;
       display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+      flex-shrink: 0;
+      margin-left: auto;
+    }
       flex-direction: column;
       gap: 0.15rem;
     }
@@ -1252,6 +1312,8 @@
       top: 0;
       right: -420px;
       width: 400px;
+      max-width: 100vw;
+      box-sizing: border-box;
       height: 100vh;
       background: var(--bg-card);
       border-left: 1px solid var(--border-subtle);
@@ -1540,21 +1602,219 @@
     }
 
     /* Responsive Queries */
+    @media (max-width: 1600px) {
+      .header {
+        flex-wrap: wrap;
+        gap: 0.75rem 1rem;
+        padding-bottom: 0.75rem;
+      }
+      .brand {
+        order: 1;
+        flex-shrink: 0;
+      }
+      .header-actions {
+        order: 2;
+        margin-left: auto;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+      .nav-pill-group {
+        order: 3;
+        width: 100%;
+        max-width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        display: flex;
+        justify-content: flex-start;
+        padding: 4px;
+        margin-top: 0.25rem;
+        flex-shrink: 0;
+      }
+      .nav-pill-group::-webkit-scrollbar {
+        display: none;
+      }
+      .nav-pill {
+        padding: 0.5rem 1.05rem;
+        font-size: 0.84rem;
+        flex-shrink: 0;
+      }
+    }
+
     @media (max-width: 1024px) {
-      .dashboard-grid { grid-template-columns: 1fr; }
-      .market-overview-grid { grid-template-columns: 1fr; }
-      .insights-grid { grid-template-columns: 1fr; }
+      .dashboard-grid { grid-template-columns: minmax(0, 1fr); }
+      .market-overview-grid { grid-template-columns: minmax(0, 1fr); }
+      .insights-grid { grid-template-columns: minmax(0, 1fr); }
       .hero-card { flex-direction: column; align-items: flex-start; gap: 1.5rem; }
-      .hero-left { max-width: 100%; }
-      .nav-pill-group { overflow-x: auto; max-width: 500px; }
+      .hero-left { max-width: 100%; width: 100%; min-width: 0; }
+      .settings-toggle-btn {
+        width: auto !important;
+        min-width: 42px;
+        padding: 0 0.75rem;
+        border-radius: var(--radius-pill);
+      }
+      .settings-btn-label {
+        display: inline !important;
+      }
     }
 
     @media (max-width: 768px) {
-      body { padding: 1rem; }
-      .header { flex-direction: column; align-items: stretch; gap: 1rem; }
-      .nav-pill-group { width: 100%; justify-content: space-around; }
-      .header-actions { justify-content: flex-end; }
-      .hero-amount { font-size: 2.4rem; }
+      body {
+        padding: 0.75rem;
+        overflow-x: hidden;
+      }
+      .app-container {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        overflow-x: hidden;
+      }
+      .header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.75rem;
+      }
+      .brand {
+        justify-content: space-between;
+        width: 100%;
+      }
+      .header-actions {
+        width: 100%;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+      }
+      .nav-pill-group {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        padding: 4px;
+        gap: 0.25rem;
+      }
+      .nav-pill {
+        padding: 0.45rem 0.85rem;
+        font-size: 0.8rem;
+        flex-shrink: 0;
+      }
+      .dashboard-grid, .market-overview-grid, .insights-grid {
+        width: 100%;
+        min-width: 0;
+      }
+      .grid-col {
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
+      }
+      .card {
+        padding: 1.25rem 1rem;
+        min-width: 0;
+        max-width: 100%;
+        box-sizing: border-box;
+      }
+      .hero-card {
+        padding: 1.25rem 1rem;
+        min-width: 0;
+        max-width: 100%;
+        box-sizing: border-box;
+      }
+      .hero-left {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+      }
+      .hero-label-row {
+        flex-wrap: wrap;
+        gap: 0.4rem;
+        width: 100%;
+      }
+      .hero-label {
+        font-size: 0.82rem;
+      }
+      .hero-amount {
+        font-size: 1.85rem;
+        line-height: 1.15;
+        word-break: break-all;
+      }
+      .hero-metrics-pill-row {
+        flex-wrap: wrap;
+        gap: 0.4rem;
+      }
+      .hero-sub-pill {
+        font-size: 0.72rem;
+        padding: 0.25rem 0.5rem;
+      }
+      .hero-3d-graphic {
+        width: 100%;
+        max-width: 180px;
+        height: 140px;
+        margin: 0 auto;
+      }
+      .card-header-bar {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+      .settings-drawer {
+        width: 100%;
+        max-width: 100vw;
+        box-sizing: border-box;
+        padding: 1.5rem 1rem;
+      }
+      .wizard-stepper {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        justify-content: flex-start;
+        gap: 1.5rem;
+        padding-bottom: 0.5rem;
+      }
+      .wizard-stepper::-webkit-scrollbar {
+        display: none;
+      }
+      .wizard-stepper::before {
+        display: none;
+      }
+      .tax-subnav {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        flex-wrap: nowrap;
+      }
+      .tax-subnav::-webkit-scrollbar {
+        display: none;
+      }
+      .tax-tab-btn {
+        flex-shrink: 0;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .tx-row {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        padding: 0.75rem;
+      }
+      .tx-left {
+        min-width: 0;
+        flex: 1 1 100%;
+      }
+      .tx-right {
+        width: 100%;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        text-align: left;
+        padding-top: 0.35rem;
+        border-top: 1px dashed var(--border-subtle);
+      }
+      .import-dropzone {
+        padding: 2rem 1rem;
+      }
+      .staged-file-card {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
     }
   </style>
 </head>
@@ -1640,8 +1900,9 @@
         </button>
 
         <!-- Settings Drawer Toggle -->
-        <button class="icon-btn" title="Settings" onclick="toggleSettingsDrawer(true)">
+        <button class="icon-btn settings-toggle-btn" id="btnSettingsToggle" title="Settings (Configure API base &amp; preferences)" aria-label="Settings" onclick="toggleSettingsDrawer(true)">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+          <span class="settings-btn-label">Settings</span>
         </button>
 
         <!-- User Avatar & Dropdown -->
@@ -1651,6 +1912,10 @@
             <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.2rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;">Signed in as</div>
             <div style="font-size: 0.9rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.75rem;" id="userDisplayId">admin</div>
             <hr style="border: 0; border-top: 1px solid var(--border-subtle); margin-bottom: 0.5rem;" />
+            <button onclick="toggleSettingsDrawer(true); toggleUserDropdown();" style="width: 100%; display: flex; align-items: center; gap: 0.5rem; text-align: left; background: none; border: none; font-size: 0.84rem; color: var(--text-secondary); font-weight: 500; cursor: pointer; padding: 0.4rem 0.5rem; border-radius: var(--radius-sm); margin-bottom: 0.25rem;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+              Settings &amp; API Config
+            </button>
             <a href="/" style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.84rem; color: var(--text-secondary); text-decoration: none; padding: 0.4rem 0.5rem; border-radius: var(--radius-sm); margin-bottom: 0.25rem;">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
               Landing Page
@@ -2062,7 +2327,7 @@
              STEP 1: Upload & Capture
              ================================================================ -->
         <div class="wizard-view" id="wizard-view-1">
-          <div class="import-dropzone" id="importDropzone" onclick="document.getElementById('filePickerNormal').click()">
+          <div class="import-dropzone" id="importDropzone" onclick="handleDropzoneClick(event)" tabindex="0" role="button" aria-label="Drop trade statement files here or click to browse" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();triggerFilePicker('filePickerNormal');}">
             <div class="dropzone-icon">
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
             </div>
@@ -2074,12 +2339,12 @@
                 Supports CSV, Excel (.xlsx, .xls), PDF, plain text &amp; statement photos
               </div>
             </div>
-            <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;" onclick="event.stopPropagation()">
-              <button type="button" class="btn-run-pipeline" onclick="document.getElementById('filePickerNormal').click()">
+            <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+              <button type="button" class="btn-run-pipeline" onclick="triggerFilePicker('filePickerNormal')">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
                 Choose Files
               </button>
-              <button type="button" class="btn-secondary" onclick="document.getElementById('filePickerCamera').click()" style="padding: 0.55rem 1.15rem; border-radius: var(--radius-pill); font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 0.45rem; cursor: pointer;">
+              <button type="button" class="btn-secondary" onclick="triggerFilePicker('filePickerCamera')" style="padding: 0.55rem 1.15rem; border-radius: var(--radius-pill); font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 0.45rem; cursor: pointer;">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
                 Take Photo with Camera
               </button>
@@ -2626,7 +2891,7 @@
   <aside class="settings-drawer" id="settingsDrawer">
     <div style="display: flex; align-items: center; justify-content: space-between;">
       <h3 style="font-size: 1.2rem; font-weight: 800; color: var(--text-primary);">System Settings</h3>
-      <button class="icon-btn" onclick="toggleSettingsDrawer(false)">
+      <button class="icon-btn" onclick="toggleSettingsDrawer(false)" aria-label="Close Settings">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
       </button>
     </div>
@@ -2684,9 +2949,24 @@
        JAVASCRIPT APPLICATION LOGIC
        ====================================================================== -->
   <script>
+    function resolveDefaultApiBase() {
+      const saved = localStorage.getItem('captax_api_base');
+      if (saved && saved.trim()) return saved.trim();
+      if (window.CAPTAX_API_BASE && window.CAPTAX_API_BASE.trim()) {
+        return window.CAPTAX_API_BASE.trim();
+      }
+      if (window.location.port === '3000') {
+        return `${window.location.protocol}//${window.location.hostname}:8001`;
+      }
+      if (window.location.origin && window.location.origin.startsWith('http')) {
+        return window.location.origin;
+      }
+      return 'http://localhost:8001';
+    }
+
     // System State
     const STATE = {
-      apiBase: localStorage.getItem('captax_api_base') || (window.location.origin.startsWith('http') ? window.location.origin : 'http://localhost:8001'),
+      apiBase: resolveDefaultApiBase(),
       currency: localStorage.getItem('captax_curr') || 'INR',
       theme: localStorage.getItem('captax-theme') || 'system',
       usdRate: 83.50,
@@ -2704,6 +2984,8 @@
       importBatch: null,
       importCapabilities: null,
       importStatus: null,
+      uploadingFiles: [],
+      importRejectedFiles: [],
       currentStep: 1,
       selectedFileId: null,
       validationResult: null,
@@ -2751,6 +3033,14 @@
     window.addEventListener('click', () => {
       const dd = document.getElementById('userDropdown');
       if (dd) dd.classList.remove('active');
+    });
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        toggleSettingsDrawer(false);
+        const dd = document.getElementById('userDropdown');
+        if (dd) dd.classList.remove('active');
+      }
     });
 
     async function handleLogout() {
@@ -3139,15 +3429,18 @@
             ? `+ ${formatNumber(item.gross_amount_inr)}`
             : `- ${formatNumber(item.gross_amount_inr)}`;
 
+          const tLen = (item.ticker || '').length;
+          const tickerClass = tLen > 6 ? 'tx-ticker-long' : (tLen > 4 ? 'tx-ticker-med' : '');
+
           html += `
             <div class="tx-row">
               <div class="tx-left">
-                <div class="tx-ticker-badge">
-                  <span>${item.ticker}</span>
+                <div class="tx-ticker-badge ${tickerClass}">
+                  <span class="tx-ticker-text" title="${item.ticker}">${item.ticker}</span>
                   <span class="tx-broker-tag">${item.broker.slice(0, 4)}</span>
                 </div>
                 <div class="tx-info">
-                  <span class="tx-name">${item.name}</span>
+                  <span class="tx-name" title="${item.name}">${item.name}</span>
                   <span class="tx-sub">${item.category} • ${item.broker}</span>
                 </div>
               </div>
@@ -3697,42 +3990,122 @@
         const dt = e.dataTransfer;
         const files = dt ? dt.files : null;
         if (files && files.length > 0) {
-          uploadFiles(files);
+          uploadFiles(Array.from(files));
         }
       }, false);
     }
 
-    function handleFileInputChange(event) {
-      const files = event.target.files;
-      if (files && files.length > 0) {
-        uploadFiles(files);
-        event.target.value = '';
-      }
+    function handleDropzoneClick(event) {
+      if (event.target.closest('button')) return;
+      triggerFilePicker('filePickerNormal');
     }
 
-    async function uploadFiles(files) {
-      if (!files || files.length === 0) return;
+    function triggerFilePicker(id) {
+      const picker = document.getElementById(id);
+      if (picker) picker.click();
+    }
 
+    function handleFileInputChange(event) {
+      const fileList = event.target.files;
+      if (!fileList || fileList.length === 0) return;
+      const files = Array.from(fileList);
+      event.target.value = ''; // Safely reset after copying to Array
+      uploadFiles(files);
+    }
+
+    const ALLOWED_IMPORT_EXTENSIONS = ['.csv', '.xlsx', '.xls', '.pdf', '.txt', '.png', '.jpg', '.jpeg', '.webp'];
+    const MAX_IMPORT_SIZE_BYTES = 20 * 1024 * 1024; // 20 MB
+
+    function formatBytes(bytes) {
+      if (!bytes || bytes === 0) return '0 B';
+      const k = 1024;
+      const sizes = ['B', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+    }
+
+    async function uploadFiles(fileList) {
+      if (!fileList || fileList.length === 0) return;
+      const files = Array.from(fileList);
+
+      if (!STATE.importRejectedFiles) STATE.importRejectedFiles = [];
+      if (!STATE.uploadingFiles) STATE.uploadingFiles = [];
+
+      const validFilesToUpload = [];
+
+      for (const file of files) {
+        const name = file.name || 'unnamed_statement';
+        const ext = '.' + (name.split('.').pop() || '').toLowerCase();
+
+        if (!ALLOWED_IMPORT_EXTENSIONS.includes(ext)) {
+          STATE.importRejectedFiles.push({
+            name,
+            size: file.size,
+            error: `Unsupported format "${ext}". Allowed: CSV, Excel (.xlsx, .xls), PDF, TXT, images (PNG, JPG, WebP)`
+          });
+          continue;
+        }
+
+        if (file.size > MAX_IMPORT_SIZE_BYTES) {
+          const mb = (file.size / (1024 * 1024)).toFixed(1);
+          STATE.importRejectedFiles.push({
+            name,
+            size: file.size,
+            error: `File exceeds 20 MB limit (${mb} MB)`
+          });
+          continue;
+        }
+
+        if (file.size === 0) {
+          STATE.importRejectedFiles.push({
+            name,
+            size: 0,
+            error: 'File is empty (0 bytes)'
+          });
+          continue;
+        }
+
+        validFilesToUpload.push(file);
+      }
+
+      // If no valid files, show rejected state and avoid creating empty batch
+      if (validFilesToUpload.length === 0) {
+        renderStagedFiles();
+        showToast(`Rejected ${files.length} file(s). Please check format and 20 MB limit.`, 'error');
+        return;
+      }
+
+      // Set in-progress state for valid files
+      validFilesToUpload.forEach(f => {
+        if (!STATE.uploadingFiles.some(uf => uf.name === f.name)) {
+          STATE.uploadingFiles.push({
+            name: f.name,
+            size: f.size,
+            status: 'Uploading...'
+          });
+        }
+      });
+      renderStagedFiles();
+
+      // Ensure batch exists
       if (!STATE.importBatch) {
         try {
           const res = await apiFetch('/api/import/batches', { method: 'POST' });
           if (!res.ok) throw new Error(await res.text());
           STATE.importBatch = await res.json();
         } catch (err) {
-          showToast('Could not create import session: ' + err.message, 'error');
+          STATE.uploadingFiles = [];
+          showToast('Could not initialize import session: ' + err.message, 'error');
+          renderStagedFiles();
           return;
         }
       }
 
       const batchId = STATE.importBatch.id;
-      showToast(`Uploading ${files.length} file(s)...`, 'info');
+      showToast(`Uploading ${validFilesToUpload.length} statement file(s)...`, 'info');
 
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        if (file.size > 20 * 1024 * 1024) {
-          showToast(`File ${file.name} exceeds 20 MB limit`, 'error');
-          continue;
-        }
+      for (let i = 0; i < validFilesToUpload.length; i++) {
+        const file = validFilesToUpload[i];
         try {
           const res = await apiFetch(`/api/import/batches/${batchId}/files`, {
             method: 'POST',
@@ -3758,55 +4131,147 @@
           if (!STATE.selectedFileId) STATE.selectedFileId = desc.id;
           showToast(`Uploaded ${file.name} (${desc.row_count} rows detected)`, 'success');
         } catch (err) {
+          STATE.importRejectedFiles.push({
+            name: file.name,
+            size: file.size,
+            error: err.message
+          });
           showToast(`Failed to upload ${file.name}: ${err.message}`, 'error');
+        } finally {
+          STATE.uploadingFiles = STATE.uploadingFiles.filter(uf => uf.name !== file.name);
+          renderStagedFiles();
         }
       }
 
-      renderStagedFiles();
       const nextBtn = document.getElementById('btnStep1Next');
       if (nextBtn) {
-        const hasFiles = STATE.importBatch.files && STATE.importBatch.files.length > 0;
+        const hasFiles = STATE.importBatch && STATE.importBatch.files && STATE.importBatch.files.length > 0;
         nextBtn.disabled = !hasFiles;
         nextBtn.style.opacity = hasFiles ? '1' : '0.5';
+        nextBtn.style.cursor = hasFiles ? 'pointer' : 'not-allowed';
       }
     }
 
     function renderStagedFiles() {
       const container = document.getElementById('stagedFilesContainer');
       if (!container) return;
+
+      const uploading = STATE.uploadingFiles || [];
+      const rejected = STATE.importRejectedFiles || [];
       const files = STATE.importBatch ? (STATE.importBatch.files || []) : [];
-      if (files.length === 0) {
+
+      if (uploading.length === 0 && rejected.length === 0 && files.length === 0) {
         container.innerHTML = '';
         return;
       }
 
-      container.innerHTML = `
-        <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.75rem;">
-          Staged Files Ready for Preview (${files.length})
-        </div>
-        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-          ${files.map(f => `
-            <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; border-radius: var(--radius-md); background: var(--bg-card-inset); border: 1px solid var(--border-subtle); flex-wrap: wrap; gap: 0.5rem;">
-              <div style="display: flex; align-items: center; gap: 0.75rem;">
-                <div style="width: 34px; height: 34px; border-radius: var(--radius-sm); background: var(--accent-subtle); color: var(--accent); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.75rem;">
-                  ${(f.filename.split('.').pop() || 'FILE').toUpperCase()}
+      let html = '';
+
+      // 1. In-progress uploading files
+      if (uploading.length > 0) {
+        html += `
+          <div style="margin-bottom: 1rem;">
+            <div style="font-size: 0.85rem; font-weight: 700; color: var(--accent); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+              <div class="spinner" style="width: 14px; height: 14px; border-width: 2px;"></div>
+              <span>Uploading &amp; Scanning Statements (${uploading.length})...</span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 0.4rem;">
+              ${uploading.map(uf => `
+                <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.65rem 0.9rem; border-radius: var(--radius-md); background: var(--bg-card-inset); border: 1px dashed var(--accent);">
+                  <div style="display: flex; align-items: center; gap: 0.6rem;">
+                    <div style="font-weight: 600; font-size: 0.85rem; color: var(--text-primary);">${uf.name}</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">(${formatBytes(uf.size)})</div>
+                  </div>
+                  <span class="hero-tag" style="background: var(--accent-subtle); color: var(--accent); font-size: 0.72rem;">Uploading...</span>
                 </div>
-                <div>
-                  <div style="font-weight: 600; font-size: 0.88rem; color: var(--text-primary);">${f.filename}</div>
-                  <div style="font-size: 0.75rem; color: var(--text-muted);">
-                    ${f.row_count} rows • Detected Broker: <strong style="color: var(--text-primary);">${f.broker || 'Custom'}</strong> • Status: <span style="color: var(--accent); font-weight: 600;">${f.status}</span>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      // 2. Rejected / error files
+      if (rejected.length > 0) {
+        html += `
+          <div style="margin-bottom: 1rem;">
+            <div style="font-size: 0.85rem; font-weight: 700; color: var(--negative); margin-bottom: 0.5rem;">
+              File Issues Detected (${rejected.length})
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 0.4rem;">
+              ${rejected.map((rf, idx) => `
+                <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.65rem 0.9rem; border-radius: var(--radius-md); background: var(--bg-card-inset); border: 1px solid var(--negative); flex-wrap: wrap; gap: 0.5rem;">
+                  <div>
+                    <div style="font-weight: 700; font-size: 0.85rem; color: var(--negative);">${rf.name}</div>
+                    <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.15rem;">${rf.error}</div>
+                  </div>
+                  <button type="button" class="btn-secondary" onclick="dismissRejectedFile(${idx})" style="padding: 0.25rem 0.6rem; font-size: 0.75rem; color: var(--text-muted); cursor: pointer;">
+                    Dismiss
+                  </button>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      // 3. Successfully staged files
+      if (files.length > 0) {
+        html += `
+          <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.6rem;">
+            Staged Files Ready for Preview (${files.length})
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+            ${files.map(f => `
+              <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; border-radius: var(--radius-md); background: var(--bg-card-inset); border: 1px solid var(--border-subtle); flex-wrap: wrap; gap: 0.5rem;">
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                  <div style="width: 34px; height: 34px; border-radius: var(--radius-sm); background: var(--accent-subtle); color: var(--accent); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.75rem; text-transform: uppercase;">
+                    ${(f.filename.split('.').pop() || 'FILE').slice(0, 4)}
+                  </div>
+                  <div>
+                    <div style="font-weight: 600; font-size: 0.88rem; color: var(--text-primary);">${f.filename}</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">
+                      ${f.row_count} rows • Detected Broker: <strong style="color: var(--text-primary);">${f.broker || 'Custom'}</strong> • Status: <span style="color: var(--accent); font-weight: 600;">${f.status}</span>
+                    </div>
                   </div>
                 </div>
+                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                  <button type="button" class="btn-secondary" onclick="previewSpecificFile('${f.id}')" style="padding: 0.35rem 0.8rem; font-size: 0.78rem; cursor: pointer;">
+                    Preview &amp; Map →
+                  </button>
+                  <button type="button" class="btn-secondary" onclick="removeStagedFile('${f.id}')" title="Remove File" style="padding: 0.35rem 0.6rem; font-size: 0.78rem; color: var(--negative); cursor: pointer;">
+                    ✕
+                  </button>
+                </div>
               </div>
-              <div>
-                <button class="btn-secondary" onclick="previewSpecificFile('${f.id}')" style="padding: 0.35rem 0.8rem; font-size: 0.78rem; cursor: pointer;">
-                  Preview &amp; Map →
-                </button>
-              </div>
-            </div>
-          `).join('')}
-        </div>
-      `;
+            `).join('')}
+          </div>
+        `;
+      }
+
+      container.innerHTML = html;
+    }
+
+    function removeStagedFile(fileId) {
+      if (!STATE.importBatch || !STATE.importBatch.files) return;
+      STATE.importBatch.files = STATE.importBatch.files.filter(f => f.id !== fileId);
+      if (STATE.selectedFileId === fileId) {
+        STATE.selectedFileId = STATE.importBatch.files.length > 0 ? STATE.importBatch.files[0].id : null;
+      }
+      renderStagedFiles();
+      const nextBtn = document.getElementById('btnStep1Next');
+      if (nextBtn) {
+        const hasFiles = STATE.importBatch.files.length > 0;
+        nextBtn.disabled = !hasFiles;
+        nextBtn.style.opacity = hasFiles ? '1' : '0.5';
+        nextBtn.style.cursor = hasFiles ? 'pointer' : 'not-allowed';
+      }
+      showToast('File removed from staged batch', 'info');
+    }
+
+    function dismissRejectedFile(index) {
+      if (!STATE.importRejectedFiles) return;
+      STATE.importRejectedFiles.splice(index, 1);
+      renderStagedFiles();
     }
 
     function previewSpecificFile(fileId) {
@@ -4339,6 +4804,8 @@
 
         showToast('Reset to sample dataset completed', 'success');
         STATE.importBatch = null;
+        STATE.uploadingFiles = [];
+        STATE.importRejectedFiles = [];
         STATE.validationResult = null;
         STATE.selectedFileId = null;
         goToStep(1);
@@ -4352,14 +4819,21 @@
 
     function resetImportWizard() {
       STATE.importBatch = null;
+      STATE.uploadingFiles = [];
+      STATE.importRejectedFiles = [];
       STATE.validationResult = null;
       STATE.selectedFileId = null;
+      const normalInput = document.getElementById('filePickerNormal');
+      if (normalInput) normalInput.value = '';
+      const cameraInput = document.getElementById('filePickerCamera');
+      if (cameraInput) cameraInput.value = '';
       goToStep(1);
       renderStagedFiles();
       const nextBtn = document.getElementById('btnStep1Next');
       if (nextBtn) {
         nextBtn.disabled = true;
         nextBtn.style.opacity = '0.5';
+        nextBtn.style.cursor = 'not-allowed';
       }
       showToast('Import wizard reset for new upload', 'info');
     }
@@ -4394,8 +4868,19 @@
     }
 
     function toggleSettingsDrawer(open) {
-      document.getElementById('settingsDrawer').classList.toggle('open', open);
-      document.getElementById('drawerOverlay').classList.toggle('open', open);
+      const drawer = document.getElementById('settingsDrawer');
+      const overlay = document.getElementById('drawerOverlay');
+      const willOpen = open !== undefined ? open : !drawer.classList.contains('open');
+      drawer.classList.toggle('open', willOpen);
+      overlay.classList.toggle('open', willOpen);
+      if (willOpen) {
+        setTimeout(() => {
+          document.getElementById('settingsApiBase')?.focus();
+        }, 50);
+      } else {
+        const toggleBtn = document.getElementById('btnSettingsToggle');
+        if (toggleBtn) toggleBtn.focus();
+      }
     }
 
     function saveSettingsAndRefresh() {
@@ -4403,6 +4888,10 @@
       if (newBase) {
         STATE.apiBase = newBase;
         localStorage.setItem('captax_api_base', newBase);
+      } else {
+        localStorage.removeItem('captax_api_base');
+        STATE.apiBase = resolveDefaultApiBase();
+        document.getElementById('settingsApiBase').value = STATE.apiBase;
       }
       toggleSettingsDrawer(false);
       checkBackendHealth(true);

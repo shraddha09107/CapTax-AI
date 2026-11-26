@@ -802,9 +802,19 @@
   });
 
   // Derive stats dynamically from config / backend
+  const getLandingApiBase = () => {
+    const saved = localStorage.getItem('captax_api_base');
+    if (saved && saved.trim()) return saved.trim();
+    if (window.location.port === '3000') {
+      return `${window.location.protocol}//${window.location.hostname}:8001`;
+    }
+    return '';
+  };
+
   const updateHeroStats = async () => {
+    const apiBase = getLandingApiBase();
     try {
-      const resSummary = await fetch('/data/tax-summary', { credentials: 'include' });
+      const resSummary = await fetch(`${apiBase}/data/tax-summary`, { credentials: 'include' });
       if (resSummary.ok) {
         const rows = await resSummary.json();
         if (Array.isArray(rows) && rows.length > 0) {
@@ -815,7 +825,7 @@
     } catch {}
 
     try {
-      const resBrokers = await fetch('/data/brokers', { credentials: 'include' });
+      const resBrokers = await fetch(`${apiBase}/data/brokers`, { credentials: 'include' });
       if (resBrokers.ok) {
         const brokers = await resBrokers.json();
         if (Array.isArray(brokers) && brokers.length > 0) {
