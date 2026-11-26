@@ -1816,6 +1816,314 @@
         gap: 0.5rem;
       }
     }
+
+    /* =========================================================================
+       PORTFOLIO INSIGHTS PAGE STYLES
+       ========================================================================= */
+    .insights-filter-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .insights-filter-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+    .insights-filter-group {
+      flex: 1 1 220px;
+      min-width: 0;
+    }
+    .insights-filter-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .filter-chip-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      align-items: center;
+    }
+    .filter-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.3rem 0.7rem;
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-card-inset);
+      color: var(--text-secondary);
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+      user-select: none;
+    }
+    .filter-chip:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-subtle);
+    }
+    .filter-chip.active {
+      background: var(--accent);
+      color: var(--accent-contrast);
+      border-color: var(--accent);
+      box-shadow: 0 2px 8px var(--accent-glow);
+    }
+    .filter-chip.chip-all {
+      background: var(--bg-card);
+      border-color: var(--border-hover);
+      color: var(--text-primary);
+      font-weight: 700;
+    }
+    .filter-chip.chip-all.active {
+      background: var(--positive);
+      border-color: var(--positive);
+      color: #fff;
+    }
+    .filter-chip.chip-clear {
+      background: transparent;
+      border-color: var(--border-subtle);
+      color: var(--text-muted);
+      font-size: 0.72rem;
+    }
+    .filter-chip.chip-clear:hover {
+      border-color: var(--negative);
+      color: var(--negative);
+      background: transparent;
+    }
+    .filter-chip .chip-x {
+      font-size: 0.65rem;
+      opacity: 0.7;
+      margin-left: 0.1rem;
+    }
+    .fy-chip {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.3rem 0.8rem;
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-card-inset);
+      color: var(--text-secondary);
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+    .fy-chip.active {
+      background: var(--accent);
+      color: var(--accent-contrast);
+      border-color: var(--accent);
+      box-shadow: 0 2px 8px var(--accent-glow);
+    }
+    .fy-chip:hover:not(.active) {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    .insights-active-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.6rem 0.85rem;
+      border-radius: var(--radius-md);
+      background: var(--accent-subtle);
+      border: 1px solid var(--border-accent);
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      min-height: 2rem;
+    }
+    .active-filter-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: var(--radius-pill);
+      background: var(--accent);
+      color: var(--accent-contrast);
+      font-size: 0.72rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .active-filter-pill:hover { opacity: 0.85; }
+    .insights-summary-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .ins-metric-card {
+      background: var(--bg-card-inset);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 1rem 1.15rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+    .ins-metric-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+    }
+    .ins-metric-value {
+      font-size: 1.35rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--text-primary);
+      word-break: break-all;
+    }
+    .ins-metric-sub {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+    }
+    .ins-metric-value.gain  { color: var(--profit); }
+    .ins-metric-value.loss  { color: var(--negative); }
+    .insights-charts-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+    .ins-chart-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-xl);
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      min-width: 0;
+    }
+    .ins-chart-card.full-width { grid-column: 1 / -1; }
+    .ins-chart-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .ins-chart-sub {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-top: -0.4rem;
+    }
+    .ins-chart-wrap {
+      position: relative;
+      width: 100%;
+      overflow: hidden;
+    }
+    .ins-chart-wrap svg { width: 100%; display: block; }
+    .ins-chart-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 2.5rem 1rem;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.82rem;
+    }
+    .ins-chart-state svg { opacity: 0.35; }
+    .ins-toggle-group {
+      display: flex;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-pill);
+      overflow: hidden;
+    }
+    .ins-toggle-btn {
+      background: transparent;
+      border: none;
+      padding: 0.25rem 0.65rem;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .ins-toggle-btn.active {
+      background: var(--accent);
+      color: var(--accent-contrast);
+    }
+    .ins-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      font-size: 0.72rem;
+    }
+    .ins-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      color: var(--text-secondary);
+    }
+    .ins-legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .ins-tooltip {
+      position: fixed;
+      background: var(--bg-card);
+      border: 1px solid var(--border-hover);
+      border-radius: var(--radius-md);
+      padding: 0.5rem 0.75rem;
+      font-size: 0.75rem;
+      color: var(--text-primary);
+      pointer-events: none;
+      z-index: 999;
+      box-shadow: var(--shadow-card);
+      max-width: 220px;
+      display: none;
+    }
+    .ins-tooltip-label { font-weight: 700; margin-bottom: 0.2rem; }
+    .ins-table-alt {
+      display: none;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+    .ins-show-table-btn {
+      background: transparent;
+      border: none;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      cursor: pointer;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+      padding: 0;
+    }
+    .ins-show-table-btn:hover { color: var(--accent); }
+    @media (max-width: 1024px) {
+      .insights-charts-grid {
+        grid-template-columns: 1fr;
+      }
+      .ins-chart-card.full-width { grid-column: 1; }
+    }
+    @media (max-width: 640px) {
+      .insights-filter-row { flex-direction: column; }
+      .insights-filter-group { flex: 1 1 100%; }
+      .insights-summary-row { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 400px) {
+      .insights-summary-row { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -1862,6 +2170,10 @@
         <button class="nav-pill" id="tab-tax" onclick="switchTab('tax')">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
           Tax &amp; ITR
+        </button>
+        <button class="nav-pill" id="tab-insights" onclick="switchTab('insights')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v4l3 3"></path></svg>
+          Insights
         </button>
         <button class="nav-pill" id="tab-activity" onclick="switchTab('activity')">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
@@ -2151,6 +2463,174 @@
 
       </div>
     </main>
+
+    <!-- ======================================================================
+         PAGE: PORTFOLIO INSIGHTS (Power BI-style filtered charts)
+         ====================================================================== -->
+    <section class="page-section" id="page-insights">
+      <div class="card" style="margin-bottom: 1.25rem; padding-bottom: 1.25rem;">
+        <!-- Page header -->
+        <div class="card-header-bar" style="margin-bottom: 1.25rem;">
+          <div>
+            <div class="card-title">Portfolio Insights</div>
+            <div class="card-sub">Realized gains analysis &amp; invested value breakdown — filter by broker, stock, and financial year</div>
+          </div>
+          <button class="btn-secondary" id="insResetAllBtn" onclick="insResetAllFilters()" style="padding: 0.4rem 0.9rem; font-size: 0.8rem; cursor: pointer;">Reset All Filters</button>
+        </div>
+
+        <!-- Active filter summary bar -->
+        <div class="insights-active-bar" id="insActiveBar" style="display: none;">
+          <span style="font-weight: 700; color: var(--text-secondary); flex-shrink: 0;">Filtered by:</span>
+          <span id="insActiveChips" style="display: flex; flex-wrap: wrap; gap: 0.35rem;"></span>
+        </div>
+
+        <!-- Filter panel: FY + Brokers + Stocks -->
+        <div class="insights-filter-panel" style="margin-top: 1rem;">
+
+          <!-- Financial Year row -->
+          <div class="insights-filter-row">
+            <div class="insights-filter-group" style="flex: 0 0 auto;">
+              <div class="insights-filter-label">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                Financial Year
+              </div>
+              <div class="filter-chip-group" id="insFyChips">
+                <!-- Populated dynamically -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Brokers + Stocks side by side -->
+          <div class="insights-filter-row">
+            <div class="insights-filter-group">
+              <div class="insights-filter-label">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
+                Brokers
+                <span id="insBrokerCount" style="color: var(--accent); font-size: 0.65rem;"></span>
+              </div>
+              <div class="filter-chip-group" id="insBrokerChips">
+                <!-- Populated dynamically -->
+              </div>
+            </div>
+
+            <div class="insights-filter-group">
+              <div class="insights-filter-label">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 3v18h18"></path><path d="m19 9-5 5-4-4-3 3"></path></svg>
+                Stocks / Scrips
+                <span id="insStockCount" style="color: var(--accent); font-size: 0.65rem;"></span>
+              </div>
+              <div id="insStockSearch" style="margin-bottom: 0.4rem; display: none;">
+                <input type="search" class="form-input" id="insStockSearchInput" placeholder="Search stocks…" oninput="insFilterStockSearch(this.value)" style="font-size: 0.78rem; padding: 0.3rem 0.6rem; width: 100%; max-width: 220px;">
+              </div>
+              <div class="filter-chip-group" id="insStockChips">
+                <!-- Populated dynamically -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Summary metric cards -->
+      <div class="insights-summary-row" id="insSummaryRow">
+        <div class="ins-metric-card">
+          <div class="ins-metric-label">Invested Value</div>
+          <div class="ins-metric-value" id="insM_invested">—</div>
+          <div class="ins-metric-sub" id="insM_holdingsCount">— positions</div>
+        </div>
+        <div class="ins-metric-card">
+          <div class="ins-metric-label">Total Realized Gain</div>
+          <div class="ins-metric-value" id="insM_totalGain">—</div>
+          <div class="ins-metric-sub" id="insM_gainSub">LTCG + STCG</div>
+        </div>
+        <div class="ins-metric-card">
+          <div class="ins-metric-label">LTCG (Long-Term)</div>
+          <div class="ins-metric-value" id="insM_ltcg">—</div>
+          <div class="ins-metric-sub">Held &gt; 365 days</div>
+        </div>
+        <div class="ins-metric-card">
+          <div class="ins-metric-label">STCG (Short-Term)</div>
+          <div class="ins-metric-value" id="insM_stcg">—</div>
+          <div class="ins-metric-sub">Held ≤ 365 days</div>
+        </div>
+        <div class="ins-metric-card">
+          <div class="ins-metric-label">Realized Trades</div>
+          <div class="ins-metric-value" id="insM_trades" style="font-size: 1.5rem;">—</div>
+          <div class="ins-metric-sub" id="insM_tradesSub">sell transactions matched</div>
+        </div>
+      </div>
+
+      <!-- Charts grid -->
+      <div class="insights-charts-grid" id="insChartsGrid">
+
+        <!-- Chart 1: Contribution donut by broker or stock -->
+        <div class="ins-chart-card">
+          <div class="ins-chart-title">
+            Portfolio Contribution
+            <div class="ins-toggle-group">
+              <button class="ins-toggle-btn active" id="insDonTogBroker" onclick="insDonSwitch('broker')">By Broker</button>
+              <button class="ins-toggle-btn" id="insDonTogStock" onclick="insDonSwitch('stock')">By Stock</button>
+            </div>
+          </div>
+          <div class="ins-chart-sub" id="insDonSub">Invested value share by broker</div>
+          <div class="ins-chart-wrap" id="insDonWrap" style="min-height: 240px;"></div>
+          <div class="ins-legend" id="insDonLegend"></div>
+          <div style="display: flex; justify-content: flex-end;">
+            <button class="ins-show-table-btn" onclick="insToggleTable('insDonut')">Show as table</button>
+          </div>
+          <div class="ins-table-alt" id="insDonut-table"></div>
+        </div>
+
+        <!-- Chart 2: Profit ranking bar chart by stock -->
+        <div class="ins-chart-card">
+          <div class="ins-chart-title">Realized Gain Ranking</div>
+          <div class="ins-chart-sub">Net realized gain by stock — green = gain, red = loss. Source: <code>realized_gain_inr</code></div>
+          <div class="ins-chart-wrap" id="insBarWrap" style="min-height: 240px;"></div>
+          <div style="display: flex; justify-content: flex-end;">
+            <button class="ins-show-table-btn" onclick="insToggleTable('insBar')">Show as table</button>
+          </div>
+          <div class="ins-table-alt" id="insBar-table"></div>
+        </div>
+
+        <!-- Chart 3: Profit over time line chart (monthly) -->
+        <div class="ins-chart-card full-width">
+          <div class="ins-chart-title">
+            Realized Profit Over Time
+            <div class="ins-toggle-group">
+              <button class="ins-toggle-btn active" id="insLineTogM" onclick="insLineSwitch('monthly')">Monthly</button>
+              <button class="ins-toggle-btn" id="insLineTogQ" onclick="insLineSwitch('quarterly')">Quarterly</button>
+            </div>
+          </div>
+          <div class="ins-chart-sub">Cumulative realized gain by sell date — Source: <code>sell_date + realized_gain_inr</code></div>
+          <div class="ins-legend" id="insLineLegend">
+            <div class="ins-legend-item"><div class="ins-legend-dot" style="background: var(--profit);"></div>Gain month</div>
+            <div class="ins-legend-item"><div class="ins-legend-dot" style="background: var(--negative);"></div>Loss month</div>
+            <div class="ins-legend-item"><div class="ins-legend-dot" style="background: var(--accent);"></div>Cumulative</div>
+          </div>
+          <div class="ins-chart-wrap" id="insLineWrap" style="min-height: 200px;"></div>
+          <div style="display: flex; justify-content: flex-end;">
+            <button class="ins-show-table-btn" onclick="insToggleTable('insLine')">Show as table</button>
+          </div>
+          <div class="ins-table-alt" id="insLine-table"></div>
+        </div>
+
+        <!-- Chart 4: Broker comparison bar (LTCG vs STCG by broker) -->
+        <div class="ins-chart-card full-width">
+          <div class="ins-chart-title">Broker Comparison — LTCG vs STCG</div>
+          <div class="ins-chart-sub">Realized gains split by holding period per broker. LTCG = held &gt; 365 days. Source: <code>holding_period_days + realized_gain_inr</code></div>
+          <div class="ins-legend">
+            <div class="ins-legend-item"><div class="ins-legend-dot" style="background: var(--profit);"></div>LTCG (&gt;365 days)</div>
+            <div class="ins-legend-item"><div class="ins-legend-dot" style="background: var(--chart-4);"></div>STCG (≤365 days)</div>
+            <div class="ins-legend-item"><div class="ins-legend-dot" style="background: var(--negative);"></div>Loss</div>
+          </div>
+          <div class="ins-chart-wrap" id="insBrokerBarWrap" style="min-height: 200px;"></div>
+          <div style="display: flex; justify-content: flex-end;">
+            <button class="ins-show-table-btn" onclick="insToggleTable('insBrokerBar')">Show as table</button>
+          </div>
+          <div class="ins-table-alt" id="insBrokerBar-table"></div>
+        </div>
+
+      </div>
+    </section>
 
     <!-- ======================================================================
          PAGE 2: INVESTMENTS VIEW (Holdings, Invested Capital, Currency Split)
@@ -2887,6 +3367,9 @@
   <!-- ======================================================================
        SETTINGS DRAWER
        ====================================================================== -->
+  <!-- Insights tooltip (follows cursor, appended to body) -->
+  <div class="ins-tooltip" id="insTooltipEl"></div>
+
   <div class="drawer-overlay" id="drawerOverlay" onclick="toggleSettingsDrawer(false)"></div>
   <aside class="settings-drawer" id="settingsDrawer">
     <div style="display: flex; align-items: center; justify-content: space-between;">
@@ -3022,6 +3505,7 @@
       fetchImportStatus();
       fetchImportCapabilities();
       initDropzone();
+      insInit();
     });
 
     function toggleUserDropdown(event) {
@@ -4854,6 +5338,9 @@
       const activeSection = document.getElementById(`page-${tabId}`);
       if (activeSection) activeSection.classList.add('active');
 
+      // Trigger insights render on first visit
+      if (tabId === 'insights') insRender();
+
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -4949,6 +5436,721 @@
         toast.style.transform = 'translateY(-10px)';
         setTimeout(() => toast.remove(), 300);
       }, 3500);
+    }
+
+    // =========================================================================
+    // PORTFOLIO INSIGHTS MODULE
+    // =========================================================================
+    const INS = {
+      realizedGains: [],   // raw /data/realized-gains
+      holdings: [],        // raw /data/holdings
+      selectedBrokers: new Set(),   // empty = All
+      selectedStocks: new Set(),    // empty = All
+      selectedFY: new Set(),        // empty = All
+      donGroupBy: 'broker',         // 'broker' or 'stock'
+      lineGroupBy: 'monthly',       // 'monthly' or 'quarterly'
+      loaded: false,
+      loading: false,
+      allBrokers: [],
+      allStocks: [],
+      allFYs: [],
+    };
+
+    // Colour palette matching existing design tokens
+    const INS_PALETTE = [
+      '#6366f1','#22d3ee','#a78bfa','#34d399','#f97316',
+      '#f43f5e','#eab308','#8b5cf6','#ec4899','#14b8a6'
+    ];
+
+    function insFmt(val, currency) {
+      const c = currency || STATE.currency || 'INR';
+      const sym = c === 'USD' ? '$' : '₹';
+      const rate = STATE.usdInrRate || 83;
+      let v = Number(val) || 0;
+      if (c === 'USD') v = v / rate;
+      if (Math.abs(v) >= 1e7) return sym + (v / 1e7).toFixed(2) + ' Cr';
+      if (Math.abs(v) >= 1e5) return sym + (v / 1e5).toFixed(2) + ' L';
+      return sym + v.toLocaleString('en-IN', { maximumFractionDigits: 0 });
+    }
+
+    function insShortNum(v) {
+      v = Number(v) || 0;
+      if (Math.abs(v) >= 1e7) return (v / 1e7).toFixed(2) + 'Cr';
+      if (Math.abs(v) >= 1e5) return (v / 1e5).toFixed(1) + 'L';
+      if (Math.abs(v) >= 1e3) return (v / 1e3).toFixed(1) + 'K';
+      return v.toFixed(0);
+    }
+
+    async function insInit() {
+      if (INS.loading) return;
+      INS.loading = true;
+      try {
+        const [gainsRes, holdingsRes] = await Promise.all([
+          apiFetch('/data/realized-gains'),
+          apiFetch('/data/holdings')
+        ]);
+        if (!gainsRes.ok || !holdingsRes.ok) throw new Error('API error');
+        INS.realizedGains = await gainsRes.json();
+        INS.holdings = await holdingsRes.json();
+
+        // Derive unique sorted lists from actual data
+        const validGains = INS.realizedGains.filter(r => r.realized_gain_inr !== '' && r.realized_gain_inr !== null);
+        INS.allBrokers = [...new Set([
+          ...INS.holdings.map(r => r.broker),
+          ...INS.realizedGains.map(r => r.broker)
+        ])].filter(Boolean).sort();
+        INS.allStocks = [...new Set([
+          ...INS.holdings.map(r => r.symbol),
+          ...INS.realizedGains.map(r => r.symbol)
+        ])].filter(Boolean).sort();
+        // FYs: derive from sell dates
+        const fys = new Set();
+        validGains.forEach(r => {
+          const sd = r.sell_date;
+          if (!sd) return;
+          const d = new Date(sd);
+          if (isNaN(d)) return;
+          const m = d.getMonth(); // 0=Jan, 2=Mar
+          const y = d.getFullYear();
+          // Indian FY: Apr–Mar; Apr 2022–Mar 2023 = FY2022-23
+          const fyStart = m >= 3 ? y : y - 1;
+          fys.add(`FY${fyStart}-${String(fyStart + 1).slice(2)}`);
+        });
+        INS.allFYs = [...fys].sort();
+
+        INS.loaded = true;
+        insRenderFilterChips();
+        if (STATE.activeTab === 'insights') insRender();
+      } catch (e) {
+        console.warn('[Insights] Load failed:', e);
+      } finally {
+        INS.loading = false;
+      }
+    }
+
+    function insRenderFilterChips() {
+      // FY chips
+      const fyEl = document.getElementById('insFyChips');
+      if (fyEl) {
+        const allActive = INS.selectedFY.size === 0;
+        fyEl.innerHTML = `
+          <span class="fy-chip ${allActive ? 'active' : ''}" onclick="insFYToggle('ALL')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')insFYToggle('ALL')">All Years</span>
+          ${INS.allFYs.map(fy => `
+            <span class="fy-chip ${INS.selectedFY.has(fy) ? 'active' : ''}" onclick="insFYToggle('${fy}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')insFYToggle('${fy}')">${fy}</span>
+          `).join('')}
+        `;
+      }
+
+      // Broker chips
+      const brEl = document.getElementById('insBrokerChips');
+      if (brEl) {
+        const allActive = INS.selectedBrokers.size === 0;
+        brEl.innerHTML = `
+          <span class="filter-chip chip-all ${allActive ? 'active' : ''}" onclick="insBrokerToggle('ALL')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')insBrokerToggle('ALL')">All</span>
+          ${INS.allBrokers.map(b => `
+            <span class="filter-chip ${INS.selectedBrokers.has(b) ? 'active' : ''}" onclick="insBrokerToggle('${b}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')insBrokerToggle('${b}')">${b}</span>
+          `).join('')}
+          ${INS.selectedBrokers.size > 0 ? '<span class="filter-chip chip-clear" onclick="insBrokerToggle(\'ALL\')" role="button" tabindex="0">Clear ×</span>' : ''}
+        `;
+        const cnt = document.getElementById('insBrokerCount');
+        if (cnt) cnt.textContent = INS.selectedBrokers.size > 0 ? `(${INS.selectedBrokers.size} selected)` : '';
+      }
+
+      // Stock chips (show search if > 10)
+      const stEl = document.getElementById('insStockChips');
+      const srEl = document.getElementById('insStockSearch');
+      if (stEl) {
+        if (INS.allStocks.length > 10 && srEl) srEl.style.display = '';
+        const searchTerm = document.getElementById('insStockSearchInput')?.value?.toLowerCase() || '';
+        const filtered = searchTerm ? INS.allStocks.filter(s => s.toLowerCase().includes(searchTerm)) : INS.allStocks;
+        const allActive = INS.selectedStocks.size === 0;
+        stEl.innerHTML = `
+          <span class="filter-chip chip-all ${allActive ? 'active' : ''}" onclick="insStockToggle('ALL')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')insStockToggle('ALL')">All</span>
+          ${filtered.map(s => `
+            <span class="filter-chip ${INS.selectedStocks.has(s) ? 'active' : ''}" onclick="insStockToggle('${s}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')insStockToggle('${s}')">${s}</span>
+          `).join('')}
+          ${INS.selectedStocks.size > 0 ? '<span class="filter-chip chip-clear" onclick="insStockToggle(\'ALL\')" role="button" tabindex="0">Clear ×</span>' : ''}
+        `;
+        const cnt = document.getElementById('insStockCount');
+        if (cnt) cnt.textContent = INS.selectedStocks.size > 0 ? `(${INS.selectedStocks.size} selected)` : '';
+      }
+
+      // Active bar
+      insRenderActiveBar();
+    }
+
+    function insRenderActiveBar() {
+      const bar = document.getElementById('insActiveBar');
+      const chips = document.getElementById('insActiveChips');
+      if (!bar || !chips) return;
+      const parts = [];
+      INS.selectedFY.forEach(fy => parts.push({ label: fy, type: 'fy' }));
+      INS.selectedBrokers.forEach(b => parts.push({ label: b, type: 'broker' }));
+      INS.selectedStocks.forEach(s => parts.push({ label: s, type: 'stock' }));
+      if (parts.length === 0) {
+        bar.style.display = 'none';
+        return;
+      }
+      bar.style.display = 'flex';
+      chips.innerHTML = parts.map(p => `
+        <span class="active-filter-pill" onclick="insRemoveFilter('${p.type}','${p.label}')" title="Remove filter" role="button" tabindex="0">
+          ${p.label} ×
+        </span>
+      `).join('');
+    }
+
+    function insRemoveFilter(type, label) {
+      if (type === 'fy') INS.selectedFY.delete(label);
+      else if (type === 'broker') INS.selectedBrokers.delete(label);
+      else if (type === 'stock') INS.selectedStocks.delete(label);
+      insRenderFilterChips();
+      insRender();
+    }
+
+    function insFYToggle(fy) {
+      if (fy === 'ALL') { INS.selectedFY.clear(); }
+      else {
+        if (INS.selectedFY.has(fy)) INS.selectedFY.delete(fy);
+        else INS.selectedFY.add(fy);
+      }
+      insRenderFilterChips();
+      insRender();
+    }
+
+    function insBrokerToggle(broker) {
+      if (broker === 'ALL') { INS.selectedBrokers.clear(); }
+      else {
+        if (INS.selectedBrokers.has(broker)) INS.selectedBrokers.delete(broker);
+        else INS.selectedBrokers.add(broker);
+      }
+      insRenderFilterChips();
+      insRender();
+    }
+
+    function insStockToggle(stock) {
+      if (stock === 'ALL') { INS.selectedStocks.clear(); }
+      else {
+        if (INS.selectedStocks.has(stock)) INS.selectedStocks.delete(stock);
+        else INS.selectedStocks.add(stock);
+      }
+      insRenderFilterChips();
+      insRender();
+    }
+
+    function insFilterStockSearch(val) {
+      insRenderFilterChips(); // re-render with filtered chips
+    }
+
+    function insResetAllFilters() {
+      INS.selectedFY.clear();
+      INS.selectedBrokers.clear();
+      INS.selectedStocks.clear();
+      const inp = document.getElementById('insStockSearchInput');
+      if (inp) inp.value = '';
+      insRenderFilterChips();
+      insRender();
+    }
+
+    function insDonSwitch(mode) {
+      INS.donGroupBy = mode;
+      document.getElementById('insDonTogBroker').classList.toggle('active', mode === 'broker');
+      document.getElementById('insDonTogStock').classList.toggle('active', mode === 'stock');
+      document.getElementById('insDonSub').textContent =
+        mode === 'broker' ? 'Invested value share by broker' : 'Invested value share by stock';
+      insRenderDonut();
+    }
+
+    function insLineSwitch(mode) {
+      INS.lineGroupBy = mode;
+      document.getElementById('insLineTogM').classList.toggle('active', mode === 'monthly');
+      document.getElementById('insLineTogQ').classList.toggle('active', mode === 'quarterly');
+      insRenderLine();
+    }
+
+    // Apply all active filters to a data array; each row must have .broker and .symbol
+    function insApplyFilters(rows) {
+      return rows.filter(r => {
+        // Broker filter
+        if (INS.selectedBrokers.size > 0 && !INS.selectedBrokers.has(r.broker)) return false;
+        // Stock filter
+        if (INS.selectedStocks.size > 0 && !INS.selectedStocks.has(r.symbol)) return false;
+        // FY filter — based on sell_date (realized gains) or last_trade_date (holdings)
+        if (INS.selectedFY.size > 0) {
+          const dateStr = r.sell_date || r.last_trade_date || '';
+          const d = new Date(dateStr);
+          if (isNaN(d)) return false;
+          const m = d.getMonth();
+          const y = d.getFullYear();
+          const fyStart = m >= 3 ? y : y - 1;
+          const fy = `FY${fyStart}-${String(fyStart + 1).slice(2)}`;
+          if (!INS.selectedFY.has(fy)) return false;
+        }
+        return true;
+      });
+    }
+
+    // Holdings don't have sell_date — apply FY filter only by broker/stock for holdings
+    function insApplyHoldingsFilters(rows) {
+      return rows.filter(r => {
+        if (INS.selectedBrokers.size > 0 && !INS.selectedBrokers.has(r.broker)) return false;
+        if (INS.selectedStocks.size > 0 && !INS.selectedStocks.has(r.symbol)) return false;
+        return true;
+      });
+    }
+
+    function insChartEmpty(containerId, msg) {
+      const el = document.getElementById(containerId);
+      if (!el) return;
+      el.innerHTML = `
+        <div class="ins-chart-state">
+          <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+          <span>${msg}</span>
+        </div>`;
+    }
+
+    function insRender() {
+      if (!INS.loaded) return;
+      insRenderSummary();
+      insRenderDonut();
+      insRenderBar();
+      insRenderLine();
+      insRenderBrokerBar();
+    }
+
+    function insRenderSummary() {
+      const validGains = INS.realizedGains.filter(r => r.realized_gain_inr !== '' && r.realized_gain_inr !== null);
+      const filtered = insApplyFilters(validGains);
+      const hFiltered = insApplyHoldingsFilters(INS.holdings);
+
+      const totalInvested = hFiltered.reduce((s, r) => s + (Number(r.invested_amount_inr) || 0), 0);
+      const totalGain = filtered.reduce((s, r) => s + (Number(r.realized_gain_inr) || 0), 0);
+      const ltcg = filtered.filter(r => Number(r.holding_period_days) > 365).reduce((s, r) => s + Number(r.realized_gain_inr), 0);
+      const stcg = filtered.filter(r => Number(r.holding_period_days) <= 365).reduce((s, r) => s + Number(r.realized_gain_inr), 0);
+
+      const setVal = (id, val, cls) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.textContent = val;
+        if (cls) { el.classList.remove('gain', 'loss'); el.classList.add(cls); }
+      };
+
+      setVal('insM_invested', insFmt(totalInvested));
+      setVal('insM_holdingsCount', `${hFiltered.length} position${hFiltered.length !== 1 ? 's' : ''}`);
+      setVal('insM_totalGain', insFmt(totalGain), totalGain >= 0 ? 'gain' : 'loss');
+      setVal('insM_gainSub', `From ${filtered.length} trade${filtered.length !== 1 ? 's' : ''}`);
+      setVal('insM_ltcg', insFmt(ltcg), ltcg >= 0 ? 'gain' : 'loss');
+      setVal('insM_stcg', insFmt(stcg), stcg >= 0 ? 'gain' : 'loss');
+      setVal('insM_trades', filtered.length);
+    }
+
+    function insRenderDonut() {
+      const hFiltered = insApplyHoldingsFilters(INS.holdings);
+      const groupBy = INS.donGroupBy;
+      const groupKey = groupBy === 'broker' ? 'broker' : 'symbol';
+
+      // Aggregate invested_amount_inr
+      const agg = {};
+      hFiltered.forEach(r => {
+        const k = r[groupKey] || 'Unknown';
+        agg[k] = (agg[k] || 0) + (Number(r.invested_amount_inr) || 0);
+      });
+      const entries = Object.entries(agg).sort((a, b) => b[1] - a[1]);
+      const total = entries.reduce((s, e) => s + e[1], 0);
+
+      const container = document.getElementById('insDonWrap');
+      const legendEl = document.getElementById('insDonLegend');
+      if (!container) return;
+
+      if (entries.length === 0 || total === 0) {
+        insChartEmpty('insDonWrap', 'No holdings match the current filters.');
+        if (legendEl) legendEl.innerHTML = '';
+        // Clear table alt
+        const tbl = document.getElementById('insDonut-table');
+        if (tbl) tbl.innerHTML = '';
+        return;
+      }
+
+      // Build donut SVG
+      const W = 220, H = 220, cx = 110, cy = 110, R = 90, r = 54;
+      let paths = '';
+      let angle = -Math.PI / 2;
+      entries.slice(0, 10).forEach((e, i) => {
+        const pct = e[1] / total;
+        const sweep = pct * 2 * Math.PI;
+        const x1 = cx + R * Math.cos(angle);
+        const y1 = cy + R * Math.sin(angle);
+        const x2 = cx + R * Math.cos(angle + sweep);
+        const y2 = cy + R * Math.sin(angle + sweep);
+        const xi1 = cx + r * Math.cos(angle + sweep);
+        const yi1 = cy + r * Math.sin(angle + sweep);
+        const xi2 = cx + r * Math.cos(angle);
+        const yi2 = cy + r * Math.sin(angle);
+        const lf = sweep > Math.PI ? 1 : 0;
+        const color = INS_PALETTE[i % INS_PALETTE.length];
+        const label = e[0];
+        const fmtVal = insFmt(e[1]);
+        const pctStr = (pct * 100).toFixed(1);
+        paths += `<path d="M${x1.toFixed(2)},${y1.toFixed(2)} A${R},${R} 0 ${lf},1 ${x2.toFixed(2)},${y2.toFixed(2)} L${xi1.toFixed(2)},${yi1.toFixed(2)} A${r},${r} 0 ${lf},0 ${xi2.toFixed(2)},${yi2.toFixed(2)} Z"
+          fill="${color}" stroke="var(--bg-card)" stroke-width="2"
+          data-label="${label}" data-val="${fmtVal}" data-pct="${pctStr}%"
+          style="cursor:pointer; transition: opacity 0.15s;"
+          onmouseenter="insShowTooltip(event,'${label}','${fmtVal} (${pctStr}%)')"
+          onmouseleave="insHideTooltip()"
+          onfocus="insShowTooltipEl(this,'${label}','${fmtVal} (${pctStr}%)')" onblur="insHideTooltip()"
+          tabindex="0" role="img" aria-label="${label}: ${fmtVal} ${pctStr}%"/>`;
+        angle += sweep;
+      });
+
+      // Centre label
+      const topEntry = entries[0];
+      const topPct = ((topEntry[1] / total) * 100).toFixed(1);
+      const svgCentre = `
+        <text x="${cx}" y="${cy - 8}" text-anchor="middle" font-size="11" fill="var(--text-muted)" font-family="var(--font-sans)">Top</text>
+        <text x="${cx}" y="${cy + 10}" text-anchor="middle" font-size="13" font-weight="800" fill="var(--text-primary)" font-family="var(--font-sans)">${topEntry[0].length > 10 ? topEntry[0].slice(0, 9) + '…' : topEntry[0]}</text>
+        <text x="${cx}" y="${cy + 28}" text-anchor="middle" font-size="11" fill="var(--accent)" font-family="var(--font-sans)">${topPct}%</text>
+      `;
+
+      container.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Portfolio contribution donut chart">${paths}${svgCentre}</svg>`;
+
+      // Legend
+      if (legendEl) {
+        legendEl.innerHTML = entries.slice(0, 10).map((e, i) => {
+          const pct = ((e[1] / total) * 100).toFixed(1);
+          return `<div class="ins-legend-item">
+            <div class="ins-legend-dot" style="background:${INS_PALETTE[i % INS_PALETTE.length]};"></div>
+            <span>${e[0]} <strong>${pct}%</strong></span>
+          </div>`;
+        }).join('');
+      }
+
+      // Table alt
+      const tbl = document.getElementById('insDonut-table');
+      if (tbl) {
+        tbl.innerHTML = `<table class="data-table" style="margin-top: 0.5rem;">
+          <thead><tr><th>${groupBy === 'broker' ? 'Broker' : 'Stock'}</th><th class="num">Invested Value</th><th class="num">Share %</th></tr></thead>
+          <tbody>${entries.map((e, i) => `<tr>
+            <td><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${INS_PALETTE[i % INS_PALETTE.length]};margin-right:5px;"></span>${e[0]}</td>
+            <td class="num">${insFmt(e[1])}</td>
+            <td class="num">${((e[1] / total) * 100).toFixed(1)}%</td>
+          </tr>`).join('')}</tbody>
+        </table>`;
+      }
+    }
+
+    function insRenderBar() {
+      const validGains = INS.realizedGains.filter(r => r.realized_gain_inr !== '' && r.realized_gain_inr !== null);
+      const filtered = insApplyFilters(validGains);
+
+      // Aggregate by symbol
+      const agg = {};
+      filtered.forEach(r => {
+        const k = r.symbol || 'Unknown';
+        agg[k] = (agg[k] || 0) + Number(r.realized_gain_inr);
+      });
+      const entries = Object.entries(agg).sort((a, b) => b[1] - a[1]);
+
+      const container = document.getElementById('insBarWrap');
+      if (!container) return;
+
+      if (entries.length === 0) {
+        insChartEmpty('insBarWrap', 'No realized gains data for the selected filters.');
+        const tbl = document.getElementById('insBar-table');
+        if (tbl) tbl.innerHTML = '';
+        return;
+      }
+
+      const BAR_H = 28, PAD_L = 70, PAD_R = 70, PAD_T = 10, PAD_B = 20;
+      const svgH = entries.length * (BAR_H + 6) + PAD_T + PAD_B;
+      const svgW = 480;
+      const maxAbs = Math.max(...entries.map(e => Math.abs(e[1])));
+      const scale = (svgW - PAD_L - PAD_R) / 2 / (maxAbs || 1);
+      const midX = PAD_L + (svgW - PAD_L - PAD_R) / 2;
+
+      let bars = '';
+      entries.forEach((e, i) => {
+        const y = PAD_T + i * (BAR_H + 6);
+        const val = e[1];
+        const isGain = val >= 0;
+        const barW = Math.abs(val) * scale;
+        const barX = isGain ? midX : midX - barW;
+        const color = isGain ? 'var(--profit)' : 'var(--negative)';
+        const fmtVal = insFmt(val);
+        bars += `
+          <text x="${PAD_L - 6}" y="${y + BAR_H / 2 + 4}" text-anchor="end" font-size="10" fill="var(--text-secondary)" font-family="var(--font-sans)">${e[0]}</text>
+          <rect x="${barX.toFixed(1)}" y="${y}" width="${Math.max(barW, 2).toFixed(1)}" height="${BAR_H}"
+            fill="${color}" rx="3" opacity="0.88"
+            onmouseenter="insShowTooltip(event,'${e[0]}','${fmtVal}')"
+            onmouseleave="insHideTooltip()"
+            style="cursor:pointer; transition: opacity 0.15s;"
+            tabindex="0" role="img" aria-label="${e[0]}: ${fmtVal}"
+            onfocus="insShowTooltipEl(this,'${e[0]}','${fmtVal}')" onblur="insHideTooltip()"/>
+          <text x="${isGain ? barX + barW + 4 : barX - 4}" y="${y + BAR_H / 2 + 4}"
+            text-anchor="${isGain ? 'start' : 'end'}" font-size="9.5" fill="${isGain ? 'var(--profit)' : 'var(--negative)'}"
+            font-weight="700" font-family="var(--font-sans)">${insShortNum(val)}</text>
+        `;
+      });
+
+      // Centre line
+      bars += `<line x1="${midX}" y1="${PAD_T - 4}" x2="${midX}" y2="${svgH - PAD_B}" stroke="var(--border-hover)" stroke-width="1" stroke-dasharray="3,3"/>`;
+
+      container.innerHTML = `<svg viewBox="0 0 ${svgW} ${svgH}" style="overflow: visible;" role="img" aria-label="Realized gain ranking bar chart">${bars}</svg>`;
+
+      // Table alt
+      const tbl = document.getElementById('insBar-table');
+      if (tbl) {
+        tbl.innerHTML = `<table class="data-table" style="margin-top: 0.5rem;">
+          <thead><tr><th>Stock</th><th class="num">Realized Gain</th></tr></thead>
+          <tbody>${entries.map(e => `<tr>
+            <td>${e[0]}</td>
+            <td class="num" style="color:${e[1] >= 0 ? 'var(--profit)' : 'var(--negative)'}">${insFmt(e[1])}</td>
+          </tr>`).join('')}</tbody>
+        </table>`;
+      }
+    }
+
+    function insRenderLine() {
+      const validGains = INS.realizedGains.filter(r => r.realized_gain_inr !== '' && r.realized_gain_inr !== null && r.sell_date);
+      const filtered = insApplyFilters(validGains);
+
+      // Group by period
+      const agg = {};
+      filtered.forEach(r => {
+        const d = new Date(r.sell_date);
+        if (isNaN(d)) return;
+        let key;
+        if (INS.lineGroupBy === 'quarterly') {
+          const q = Math.floor(d.getMonth() / 3) + 1;
+          key = `${d.getFullYear()}-Q${q}`;
+        } else {
+          key = r.sell_date.slice(0, 7); // YYYY-MM
+        }
+        agg[key] = (agg[key] || 0) + Number(r.realized_gain_inr);
+      });
+
+      const periods = Object.keys(agg).sort();
+      const container = document.getElementById('insLineWrap');
+      if (!container) return;
+
+      if (periods.length === 0) {
+        insChartEmpty('insLineWrap', 'No time-series data for the selected filters.');
+        const tbl = document.getElementById('insLine-table');
+        if (tbl) tbl.innerHTML = '';
+        return;
+      }
+
+      const vals = periods.map(p => agg[p]);
+      // Cumulative
+      const cumVals = vals.reduce((acc, v, i) => { acc.push((acc[i - 1] || 0) + v); return acc; }, []);
+      const allVals = [...vals, ...cumVals];
+      const minV = Math.min(...allVals);
+      const maxV = Math.max(...allVals);
+      const range = maxV - minV || 1;
+
+      const W = 600, H = 180, PAD_L = 60, PAD_R = 20, PAD_T = 15, PAD_B = 30;
+      const plotW = W - PAD_L - PAD_R;
+      const plotH = H - PAD_T - PAD_B;
+      const n = periods.length;
+      const xStep = n > 1 ? plotW / (n - 1) : plotW / 2;
+
+      const toX = i => PAD_L + (n > 1 ? i * xStep : plotW / 2);
+      const toY = v => PAD_T + plotH - ((v - minV) / range) * plotH;
+
+      // Bars for each period (gain/loss)
+      let barsSvg = '';
+      const barW = Math.max(2, Math.min(20, xStep * 0.6));
+      vals.forEach((v, i) => {
+        const x = toX(i) - barW / 2;
+        const zeroY = toY(0);
+        const valY = toY(v);
+        const bH = Math.abs(valY - zeroY);
+        const bY = v >= 0 ? valY : zeroY;
+        const color = v >= 0 ? 'var(--profit)' : 'var(--negative)';
+        barsSvg += `<rect x="${x.toFixed(1)}" y="${bY.toFixed(1)}" width="${barW.toFixed(1)}" height="${Math.max(bH, 2).toFixed(1)}"
+          fill="${color}" opacity="0.5" rx="1"
+          onmouseenter="insShowTooltip(event,'${periods[i]}','${insFmt(v)}')"
+          onmouseleave="insHideTooltip()" style="cursor:pointer;"
+          tabindex="0" role="img" aria-label="${periods[i]}: ${insFmt(v)}"
+          onfocus="insShowTooltipEl(this,'${periods[i]}','${insFmt(v)}')" onblur="insHideTooltip()"/>`;
+      });
+
+      // Cumulative line
+      let linePts = cumVals.map((v, i) => `${toX(i).toFixed(1)},${toY(v).toFixed(1)}`).join(' ');
+      let cumLineSvg = `<polyline points="${linePts}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
+      let dotsSvg = cumVals.map((v, i) => `
+        <circle cx="${toX(i).toFixed(1)}" cy="${toY(v).toFixed(1)}" r="3" fill="var(--accent)"
+          onmouseenter="insShowTooltip(event,'${periods[i]} cumulative','${insFmt(v)}')"
+          onmouseleave="insHideTooltip()" style="cursor:pointer;"
+          tabindex="0" role="img" aria-label="${periods[i]} cumulative: ${insFmt(v)}"
+          onfocus="insShowTooltipEl(this,'${periods[i]} cumulative','${insFmt(v)}')" onblur="insHideTooltip()"/>
+      `).join('');
+
+      // Zero line
+      const zeroLineSvg = minV < 0 && maxV > 0
+        ? `<line x1="${PAD_L}" y1="${toY(0).toFixed(1)}" x2="${W - PAD_R}" y2="${toY(0).toFixed(1)}" stroke="var(--border-hover)" stroke-width="1" stroke-dasharray="3,3"/>`
+        : '';
+
+      // Y axis labels
+      const yTicks = [minV, minV + range / 2, maxV].map(v => `
+        <text x="${PAD_L - 5}" y="${toY(v).toFixed(1) + 4}" text-anchor="end" font-size="9" fill="var(--text-muted)" font-family="var(--font-sans)">${insShortNum(v)}</text>
+      `).join('');
+
+      // X axis labels (show every Nth)
+      const showEvery = n > 24 ? 6 : n > 12 ? 3 : n > 6 ? 2 : 1;
+      const xLabels = periods.map((p, i) => {
+        if (i % showEvery !== 0 && i !== n - 1) return '';
+        const label = INS.lineGroupBy === 'quarterly' ? p : p.replace(/^\d{4}-/, '').replace(/^0/, '');
+        return `<text x="${toX(i).toFixed(1)}" y="${H - 4}" text-anchor="middle" font-size="8.5" fill="var(--text-muted)" font-family="var(--font-sans)">${label}</text>`;
+      }).join('');
+
+      container.innerHTML = `<svg viewBox="0 0 ${W} ${H}" style="overflow:visible;" role="img" aria-label="Profit over time line chart">
+        ${zeroLineSvg}${barsSvg}${cumLineSvg}${dotsSvg}${yTicks}${xLabels}
+      </svg>`;
+
+      // Table alt
+      const tbl = document.getElementById('insLine-table');
+      if (tbl) {
+        tbl.innerHTML = `<table class="data-table" style="margin-top: 0.5rem;">
+          <thead><tr><th>Period</th><th class="num">Realized Gain</th><th class="num">Cumulative</th></tr></thead>
+          <tbody>${periods.map((p, i) => `<tr>
+            <td>${p}</td>
+            <td class="num" style="color:${vals[i] >= 0 ? 'var(--profit)' : 'var(--negative)'}">${insFmt(vals[i])}</td>
+            <td class="num">${insFmt(cumVals[i])}</td>
+          </tr>`).join('')}</tbody>
+        </table>`;
+      }
+    }
+
+    function insRenderBrokerBar() {
+      const validGains = INS.realizedGains.filter(r => r.realized_gain_inr !== '' && r.realized_gain_inr !== null);
+      const filtered = insApplyFilters(validGains);
+
+      // Aggregate per broker: LTCG (>365d), STCG (<=365d, positive), loss (negative)
+      const brokers = [...new Set(filtered.map(r => r.broker))].sort();
+      const aggLTCG = {}, aggSTCG = {}, aggLoss = {};
+      brokers.forEach(b => { aggLTCG[b] = 0; aggSTCG[b] = 0; aggLoss[b] = 0; });
+      filtered.forEach(r => {
+        const b = r.broker;
+        const v = Number(r.realized_gain_inr);
+        const days = Number(r.holding_period_days);
+        if (v < 0) aggLoss[b] += v;
+        else if (days > 365) aggLTCG[b] += v;
+        else aggSTCG[b] += v;
+      });
+
+      const container = document.getElementById('insBrokerBarWrap');
+      if (!container) return;
+
+      if (brokers.length === 0) {
+        insChartEmpty('insBrokerBarWrap', 'No broker comparison data for the selected filters.');
+        const tbl = document.getElementById('insBrokerBar-table');
+        if (tbl) tbl.innerHTML = '';
+        return;
+      }
+
+      const GRP_W = 160, GRP_PAD = 20, BAR_W = 36, BAR_GAP = 4;
+      const svgW = Math.max(brokers.length * (GRP_W + GRP_PAD) + 40, 380);
+      const PAD_L = 60, PAD_T = 15, PAD_B = 50, H_PLOT = 200;
+      const svgH = H_PLOT + PAD_T + PAD_B;
+      const allVals = brokers.flatMap(b => [aggLTCG[b], aggSTCG[b], Math.abs(aggLoss[b])]);
+      const maxV = Math.max(...allVals, 1);
+      const toY = v => PAD_T + H_PLOT - (v / maxV) * H_PLOT;
+      const toH = v => (v / maxV) * H_PLOT;
+
+      let svgContent = '';
+      brokers.forEach((b, bi) => {
+        const gx = PAD_L + bi * (GRP_W + GRP_PAD);
+        const ltcg = aggLTCG[b];
+        const stcg = aggSTCG[b];
+        const loss = Math.abs(aggLoss[b]);
+
+        const barsData = [
+          { v: ltcg, color: 'var(--profit)', label: 'LTCG', offsetX: 0 },
+          { v: stcg, color: 'var(--chart-4)', label: 'STCG', offsetX: BAR_W + BAR_GAP },
+          { v: loss, color: 'var(--negative)', label: 'Loss', offsetX: (BAR_W + BAR_GAP) * 2 },
+        ];
+
+        barsData.forEach(bd => {
+          const bh = toH(bd.v);
+          const by = toY(bd.v);
+          svgContent += `<rect x="${(gx + bd.offsetX).toFixed(1)}" y="${by.toFixed(1)}" width="${BAR_W}" height="${Math.max(bh, 2).toFixed(1)}"
+            fill="${bd.color}" rx="3" opacity="0.85"
+            onmouseenter="insShowTooltip(event,'${b} — ${bd.label}','${insFmt(bd.v)}')"
+            onmouseleave="insHideTooltip()" style="cursor:pointer;"
+            tabindex="0" role="img" aria-label="${b} ${bd.label}: ${insFmt(bd.v)}"
+            onfocus="insShowTooltipEl(this,'${b} — ${bd.label}','${insFmt(bd.v)}')" onblur="insHideTooltip()"/>`;
+          if (bd.v > 0) {
+            svgContent += `<text x="${(gx + bd.offsetX + BAR_W / 2).toFixed(1)}" y="${(by - 3).toFixed(1)}"
+              text-anchor="middle" font-size="8.5" fill="${bd.color}" font-weight="700" font-family="var(--font-sans)">${insShortNum(bd.v)}</text>`;
+          }
+          svgContent += `<text x="${(gx + bd.offsetX + BAR_W / 2).toFixed(1)}" y="${svgH - PAD_B + 14}"
+            text-anchor="middle" font-size="8" fill="var(--text-muted)" font-family="var(--font-sans)">${bd.label}</text>`;
+        });
+        // Broker label
+        const brokerShort = b.length > 12 ? b.slice(0, 11) + '…' : b;
+        svgContent += `<text x="${(gx + (BAR_W + BAR_GAP) * 1.5 - BAR_GAP / 2).toFixed(1)}" y="${svgH - PAD_B + 30}"
+          text-anchor="middle" font-size="10" font-weight="700" fill="var(--text-secondary)" font-family="var(--font-sans)">${brokerShort}</text>`;
+      });
+
+      // Y axis ticks
+      [0, maxV / 2, maxV].forEach(v => {
+        const y = toY(v);
+        svgContent += `<text x="${PAD_L - 5}" y="${y + 4}" text-anchor="end" font-size="9" fill="var(--text-muted)" font-family="var(--font-sans)">${insShortNum(v)}</text>
+          <line x1="${PAD_L - 3}" y1="${y}" x2="${svgW - 10}" y2="${y}" stroke="var(--border-subtle)" stroke-width="0.5"/>`;
+      });
+
+      container.innerHTML = `<svg viewBox="0 0 ${svgW} ${svgH}" role="img" aria-label="Broker comparison LTCG vs STCG bar chart">${svgContent}</svg>`;
+
+      // Table alt
+      const tbl = document.getElementById('insBrokerBar-table');
+      if (tbl) {
+        tbl.innerHTML = `<table class="data-table" style="margin-top: 0.5rem;">
+          <thead><tr><th>Broker</th><th class="num">LTCG</th><th class="num">STCG</th><th class="num">Loss</th></tr></thead>
+          <tbody>${brokers.map(b => `<tr>
+            <td>${b}</td>
+            <td class="num" style="color:var(--profit)">${insFmt(aggLTCG[b])}</td>
+            <td class="num" style="color:var(--chart-4)">${insFmt(aggSTCG[b])}</td>
+            <td class="num" style="color:var(--negative)">${insFmt(-aggLoss[b])}</td>
+          </tr>`).join('')}</tbody>
+        </table>`;
+      }
+    }
+
+    // Tooltip helpers
+    function insShowTooltip(event, label, value) {
+      let tip = document.getElementById('insTooltipEl');
+      if (!tip) return;
+      tip.style.display = 'block';
+      tip.innerHTML = `<div class="ins-tooltip-label">${label}</div><div>${value}</div>`;
+      insMoveTooltip(event);
+    }
+    function insShowTooltipEl(el, label, value) {
+      const rect = el.getBoundingClientRect();
+      const fakeEvt = { clientX: rect.left + rect.width / 2, clientY: rect.top };
+      insShowTooltip(fakeEvt, label, value);
+    }
+    function insMoveTooltip(event) {
+      const tip = document.getElementById('insTooltipEl');
+      if (!tip) return;
+      tip.style.left = (event.clientX + 14) + 'px';
+      tip.style.top  = (event.clientY - 10) + 'px';
+    }
+    function insHideTooltip() {
+      const tip = document.getElementById('insTooltipEl');
+      if (tip) tip.style.display = 'none';
+    }
+    document.addEventListener('mousemove', e => {
+      const tip = document.getElementById('insTooltipEl');
+      if (tip && tip.style.display === 'block') insMoveTooltip(e);
+    });
+
+    function insToggleTable(chartId) {
+      const tbl = document.getElementById(`${chartId}-table`);
+      if (!tbl) return;
+      const isVisible = tbl.style.display === 'block';
+      tbl.style.display = isVisible ? 'none' : 'block';
+      // Update button text
+      const btn = tbl.previousElementSibling?.querySelector('.ins-show-table-btn');
+      if (btn) btn.textContent = isVisible ? 'Show as table' : 'Hide table';
     }
   </script>
 </body>
