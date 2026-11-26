@@ -23,6 +23,8 @@ import asyncio
 import logging
 import os
 import time
+import json
+import uuid
 import subprocess
 import sys
 import uuid
@@ -34,8 +36,43 @@ from fastapi import FastAPI, HTTPException, Request, Depends, Cookie
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, RedirectResponse, JSONResponse
 from itsdangerous import TimestampSigner, SignatureExpired, BadSignature
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 import pandas as pd
+import shutil
+import re
+import io
+import email
+from email import policy
+try:
+    import pdfplumber
+except ImportError:
+    pdfplumber = None
+
+try:
+    import pytesseract
+    from PIL import Image
+except ImportError:
+    pytesseract = None
+    Image = None
+
+try:  # Supports both `uvicorn app:app` and `uvicorn backend.app:app`.
+    from .ingest import (
+        normalize_uploaded_frame,
+        REQUIRED_UPLOAD_FIELDS,
+        auto_detect_mapping,
+        inspect_uploaded_frame,
+        normalize_all,
+        UNIFIED_COLUMNS,
+    )
+except ImportError:
+    from ingest import (
+        normalize_uploaded_frame,
+        REQUIRED_UPLOAD_FIELDS,
+        auto_detect_mapping,
+        inspect_uploaded_frame,
+        normalize_all,
+        UNIFIED_COLUMNS,
+    )
 
 # Setup structured logger
 logger = logging.getLogger("captax.backend")
@@ -50,7 +87,6 @@ logger.setLevel(logging.INFO)
 # ---------------------------------------------------------------------------
 BACKEND_DIR = Path(__file__).resolve().parent
 PROJECT_DIR = BACKEND_DIR.parent
-
 # Check if in unified monorepo OR separate branch sibling directories
 if (PROJECT_DIR / "aiml").exists():
     AIML_DIR = PROJECT_DIR / "aiml"
@@ -60,6 +96,7 @@ else:
     AIML_DIR = PROJECT_DIR / "aiml"
 
 DATA_DIR = BACKEND_DIR / "data"
+IMPORT_DIR = DATA_DIR / "import_batches"
 
 if (PROJECT_DIR / "frontend").exists():
     FRONTEND_DIR = PROJECT_DIR / "frontend"
@@ -344,11 +381,563 @@ def _read_csv_as_records(filename: str):
     return df.fillna("").to_dict(orient="records")
 
 
+# ---------------------------------------------------------------------------
+# Batch imports
+# ---------------------------------------------------------------------------
+IMPORT_FIELDS = [
+    "symbol", "company_name", "isin", "trade_date", "transaction_type", "side",
+    "quantity", "price", "price_currency", "currency", "fx_rate_to_inr", "charges",
+    "exchange", "source_ref",
+]
+IMPORT_BROKERS = ["Zerodha", "Groww", "ICICI Direct", "Interactive Brokers", "Other"]
+MAX_IMPORT_FILE_BYTES = 20 * 1024 * 1024
+
+
+class ImportMapping(BaseModel):
+    broker: str = "Other"
+    columns: dict[str, str] = Field(default_factory=dict)
+    excluded_rows: list[int] = Field(default_factory=list)
+
+
+def _batch_dir(batch_id: str) -> Path:
+    # UUID validation prevents path traversal even if an ID is manually supplied.
+    try:
+        canonical = str(uuid.UUID(batch_id))
+    except ValueError:
+        raise HTTPException(status_code=404, detail="Import batch not found")
+    return IMPORT_DIR / canonical
+
+
+def _load_batch(batch_id: str) -> tuple[Path, dict]:
+    directory = _batch_dir(batch_id)
+    metadata_path = directory / "batch.json"
+    if not metadata_path.is_file():
+        raise HTTPException(status_code=404, detail="Import batch not found")
+    return directory, json.loads(metadata_path.read_text())
+
+
+def _save_batch(directory: Path, batch: dict) -> None:
+    (directory / "batch.json").write_text(json.dumps(batch, indent=2))
+
+
+def _parse_ocr_text_to_frame(text: str) -> pd.DataFrame:
+    """Convert raw OCR text lines into a structured DataFrame."""
+    lines = [line.strip() for line in text.splitlines() if line.strip()]
+    if not lines:
+        raise ValueError("No readable text detected in file")
+
+    parsed_rows = []
+    delimiter = None
+    for line in lines:
+        if "," in line:
+            delimiter = ","
+            break
+        elif "\t" in line:
+            delimiter = "\t"
+            break
+        elif "|" in line:
+            delimiter = "|"
+            break
+
+    for line in lines:
+        if delimiter:
+            parts = [p.strip() for p in line.split(delimiter) if p.strip()]
+        else:
+            parts = re.split(r'\s{2,}|\t', line)
+            if len(parts) <= 1:
+                parts = line.split()
+        if len(parts) >= 3:
+            parsed_rows.append(parts)
+
+    if not parsed_rows:
+        raise ValueError("Could not detect tabular rows in OCR / text output")
+
+    header_candidate = parsed_rows[0]
+    has_letters = any(re.search(r'[A-Za-z]', c) for c in header_candidate)
+    if has_letters and len(parsed_rows) > 1:
+        headers = [f"Col_{i}_{c}" if not c.isalnum() else c for i, c in enumerate(header_candidate)]
+        clean_headers = []
+        for i, h in enumerate(headers):
+            h_clean = str(h).strip() or f"Column_{i+1}"
+            if h_clean in clean_headers:
+                h_clean = f"{h_clean}_{i+1}"
+            clean_headers.append(h_clean)
+        data_rows = parsed_rows[1:]
+    else:
+        clean_headers = [f"Column_{i+1}" for i in range(max(len(r) for r in parsed_rows))]
+        data_rows = parsed_rows
+
+    num_cols = len(clean_headers)
+    padded = []
+    for r in data_rows:
+        if len(r) < num_cols:
+            padded.append(r + [""] * (num_cols - len(r)))
+        else:
+            padded.append(r[:num_cols])
+
+    df = pd.DataFrame(padded, columns=clean_headers)
+    return df
+
+
+def _parse_pdf_to_frame(file_path: Path) -> pd.DataFrame:
+    if not pdfplumber:
+        raise ValueError("PDF extraction requires pdfplumber library")
+
+    all_rows = []
+    header = None
+    with pdfplumber.open(file_path) as pdf:
+        for page in pdf.pages:
+            tables = page.extract_tables()
+            for table in tables:
+                for row in table:
+                    clean_row = [str(cell or "").strip().replace("\n", " ") for cell in row]
+                    if not any(clean_row):
+                        continue
+                    if header is None:
+                        header = clean_row
+                    else:
+                        all_rows.append(clean_row)
+
+    if header and all_rows:
+        max_cols = max(len(header), max(len(r) for r in all_rows))
+        clean_headers = []
+        for i in range(max_cols):
+            h = header[i] if i < len(header) and header[i] else f"Column_{i+1}"
+            if h in clean_headers:
+                h = f"{h}_{i+1}"
+            clean_headers.append(h)
+        padded = []
+        for r in all_rows:
+            if len(r) < max_cols:
+                padded.append(r + [""] * (max_cols - len(r)))
+            else:
+                padded.append(r[:max_cols])
+        return pd.DataFrame(padded, columns=clean_headers)
+
+    # Fallback to text extraction if no structured table lines
+    text_content = []
+    with pdfplumber.open(file_path) as pdf:
+        for page in pdf.pages:
+            t = page.extract_text()
+            if t:
+                text_content.append(t)
+    combined_text = "\n".join(text_content)
+    if combined_text.strip():
+        return _parse_ocr_text_to_frame(combined_text)
+
+    raise ValueError("No table or text could be extracted from PDF statement")
+
+
+def _read_import_frame(file_path: Path, sheet: str | None = None) -> tuple[pd.DataFrame, str, list[str]]:
+    suffix = file_path.suffix.lower()
+
+    if suffix == ".csv":
+        for enc in ["utf-8", "latin1", "cp1252"]:
+            try:
+                df = pd.read_csv(file_path, encoding=enc)
+                df.columns = [str(c).strip() for c in df.columns]
+                return df.dropna(how="all").reset_index(drop=True), "", []
+            except Exception:
+                continue
+        df = pd.read_csv(file_path, sep=None, engine="python")
+        df.columns = [str(c).strip() for c in df.columns]
+        return df.dropna(how="all").reset_index(drop=True), "", []
+
+    elif suffix in (".xlsx", ".xlsm"):
+        workbook = pd.ExcelFile(file_path, engine="openpyxl")
+        sheets = workbook.sheet_names
+        if not sheets:
+            raise ValueError("Workbook has no worksheets")
+        selected = sheet if sheet in sheets else sheets[0]
+        df = pd.read_excel(file_path, sheet_name=selected, engine="openpyxl")
+        df.columns = [str(c).strip() for c in df.columns]
+        return df.dropna(how="all").reset_index(drop=True), selected, sheets
+
+    elif suffix == ".xls":
+        workbook = pd.ExcelFile(file_path, engine="xlrd")
+        sheets = workbook.sheet_names
+        if not sheets:
+            raise ValueError("Workbook has no worksheets")
+        selected = sheet if sheet in sheets else sheets[0]
+        df = pd.read_excel(file_path, sheet_name=selected, engine="xlrd")
+        df.columns = [str(c).strip() for c in df.columns]
+        return df.dropna(how="all").reset_index(drop=True), selected, sheets
+
+    elif suffix == ".txt":
+        try:
+            df = pd.read_csv(file_path, sep=None, engine="python", encoding="utf-8")
+        except Exception:
+            text = file_path.read_text(encoding="utf-8", errors="ignore")
+            df = _parse_ocr_text_to_frame(text)
+        df.columns = [str(c).strip() for c in df.columns]
+        return df.dropna(how="all").reset_index(drop=True), "", []
+
+    elif suffix == ".pdf":
+        df = _parse_pdf_to_frame(file_path)
+        df.columns = [str(c).strip() for c in df.columns]
+        return df.dropna(how="all").reset_index(drop=True), "", []
+
+    elif suffix in (".png", ".jpg", ".jpeg", ".webp"):
+        if not pytesseract or not Image:
+            raise ValueError("Image OCR requires Pillow and pytesseract")
+        img = Image.open(file_path)
+        text = pytesseract.image_to_string(img)
+        df = _parse_ocr_text_to_frame(text)
+        df.columns = [str(c).strip() for c in df.columns]
+        return df.dropna(how="all").reset_index(drop=True), "", []
+
+    else:
+        raise ValueError(f"Unsupported file format '{suffix}'")
+
+
+@app.get("/api/import/capabilities")
+def import_capabilities(user_id: str = Depends(require_auth)):
+    tess_path = shutil.which("tesseract")
+    ocr_ready = (pytesseract is not None and Image is not None and tess_path is not None)
+    ocr_reason = None if ocr_ready else ("Tesseract binary not found on PATH" if not tess_path else "pytesseract/Pillow not installed")
+
+    return {
+        "supported_formats": [
+            {"ext": ".csv", "name": "CSV Spreadsheet", "status": "available", "description": "Comma, tab, semicolon or pipe-delimited"},
+            {"ext": ".xlsx", "name": "Excel Workbook", "status": "available", "description": "Modern Excel files (.xlsx)"},
+            {"ext": ".xls", "name": "Excel 97-2003", "status": "available", "description": "Legacy Excel files (.xls)"},
+            {"ext": ".pdf", "name": "PDF Statements", "status": "available", "description": "Table and text extraction from digital statements"},
+            {"ext": ".txt", "name": "Text Statement", "status": "available", "description": "Delimited or fixed-width exports"},
+            {"ext": ".png", "name": "PNG Image", "status": "available" if ocr_ready else "unavailable", "reason": ocr_reason, "description": "Photos & screenshots via OCR"},
+            {"ext": ".jpg", "name": "JPG/JPEG Image", "status": "available" if ocr_ready else "unavailable", "reason": ocr_reason, "description": "Mobile camera capture & photos"},
+            {"ext": ".jpeg", "name": "JPEG Image", "status": "available" if ocr_ready else "unavailable", "reason": ocr_reason, "description": "Mobile camera capture & photos"},
+            {"ext": ".webp", "name": "WebP Image", "status": "available" if ocr_ready else "unavailable", "reason": ocr_reason, "description": "Modern image format"},
+        ],
+        "file_types": [".csv", ".xlsx", ".xls", ".pdf", ".txt", ".png", ".jpg", ".jpeg", ".webp"],
+        "max_file_bytes": MAX_IMPORT_FILE_BYTES,
+        "max_file_size_mb": 20,
+        "brokers": IMPORT_BROKERS,
+        "fields": IMPORT_FIELDS,
+        "required_fields": REQUIRED_UPLOAD_FIELDS,
+        "sample_data_available": True,
+        "ocr_available": ocr_ready,
+        "ocr_binary_path": tess_path,
+        "camera_capture_supported": True,
+    }
+
+
+@app.get("/api/import/status")
+def import_status(user_id: str = Depends(require_auth)):
+    active_batch = None
+    if IMPORT_DIR.exists():
+        for metadata_path in sorted(IMPORT_DIR.glob("*/batch.json"), reverse=True):
+            try:
+                b = json.loads(metadata_path.read_text())
+                if b.get("status") == "confirmed":
+                    active_batch = b
+                    break
+            except Exception:
+                continue
+    return {
+        "active_dataset": "imported" if active_batch else "sample",
+        "active_batch": active_batch,
+        "sample_data_available": True,
+    }
+
+
+@app.post("/api/import/reset-sample")
+def reset_to_sample_data(user_id: str = Depends(require_auth)):
+    """Deactivates user import batches and restores default sample data."""
+    if IMPORT_DIR.exists():
+        for metadata_path in IMPORT_DIR.glob("*/batch.json"):
+            try:
+                b = json.loads(metadata_path.read_text())
+                if b.get("status") == "confirmed":
+                    b["status"] = "archived"
+                    metadata_path.write_text(json.dumps(b, indent=2))
+            except Exception:
+                continue
+    # Restore normalized_trades.csv to sample data
+    normalized = normalize_all()
+    normalized.to_csv(DATA_DIR / "normalized_trades.csv", index=False)
+    # Re-run pipeline to refresh all outputs
+    for script_path, owner in PIPELINE:
+        _run_script(script_path)
+    return {"status": "reset", "active_dataset": "sample", "message": "Restored sample data and recomputed pipeline"}
+
+
+@app.post("/api/import/batches", status_code=201)
+def create_import_batch(user_id: str = Depends(require_auth)):
+    IMPORT_DIR.mkdir(parents=True, exist_ok=True)
+    batch_id = str(uuid.uuid4())
+    directory = IMPORT_DIR / batch_id
+    directory.mkdir()
+    batch = {
+        "id": batch_id,
+        "status": "created",
+        "created_at": datetime.utcnow().isoformat() + "Z",
+        "files": [],
+    }
+    _save_batch(directory, batch)
+    return batch
+
+
+@app.get("/api/import/batches/{batch_id}")
+def get_import_batch(batch_id: str, user_id: str = Depends(require_auth)):
+    directory, batch = _load_batch(batch_id)
+    return batch
+
+
+async def _extract_uploaded_file(request: Request) -> tuple[str, bytes]:
+    """Extract uploaded file from multipart/form-data or binary body without third-party dependencies."""
+    content_type = request.headers.get("content-type", "")
+    body = await request.body()
+    if not body:
+        raise HTTPException(status_code=400, detail="Empty upload body received")
+
+    if "multipart/form-data" in content_type:
+        header_bytes = f"Content-Type: {content_type}\r\n\r\n".encode("latin1", errors="replace")
+        msg = email.message_from_bytes(header_bytes + body, policy=policy.default)
+        for part in msg.iter_parts():
+            fn = part.get_filename()
+            payload = part.get_payload(decode=True)
+            if fn and payload is not None:
+                return fn, payload
+            cd = part.get("Content-Disposition", "")
+            if 'name="file"' in cd or 'filename=' in cd:
+                match = re.search(r'filename="?([^";\r\n]+)"?', cd)
+                filename = match.group(1) if match else "statement.csv"
+                if payload is not None:
+                    return filename, payload
+        raise HTTPException(status_code=400, detail="No statement file found in multipart upload")
+    else:
+        filename = (
+            request.headers.get("x-filename")
+            or request.query_params.get("filename")
+            or "statement.csv"
+        )
+        return filename, body
+
+
+@app.post("/api/import/batches/{batch_id}/files", status_code=201)
+async def upload_import_file(
+    batch_id: str,
+    request: Request,
+    user_id: str = Depends(require_auth),
+):
+    directory, batch = _load_batch(batch_id)
+    raw_filename, content = await _extract_uploaded_file(request)
+    filename = Path(raw_filename).name
+    suffix = Path(filename).suffix.lower()
+    allowed_suffixes = {".csv", ".xlsx", ".xls", ".pdf", ".txt", ".png", ".jpg", ".jpeg", ".webp"}
+    if suffix not in allowed_suffixes:
+        raise HTTPException(
+            status_code=415,
+            detail=f"Format '{suffix}' not supported. Allowed formats: {', '.join(sorted(allowed_suffixes))}",
+        )
+    if len(content) > MAX_IMPORT_FILE_BYTES:
+        raise HTTPException(status_code=413, detail="File exceeds the 20 MB limit")
+    file_id = str(uuid.uuid4())
+    stored_name = file_id + suffix
+    target = directory / stored_name
+    target.write_bytes(content)
+
+    try:
+        frame, sheet, sheets = _read_import_frame(target)
+    except Exception as exc:
+        target.unlink(missing_ok=True)
+        raise HTTPException(status_code=400, detail=f"Could not read statement: {exc}")
+
+    if frame.empty:
+        target.unlink(missing_ok=True)
+        raise HTTPException(status_code=400, detail="Statement contains no data rows")
+
+    columns = [str(c) for c in frame.columns]
+    auto_broker, auto_map = auto_detect_mapping(columns)
+
+    descriptor = {
+        "id": file_id,
+        "filename": filename,
+        "stored_name": stored_name,
+        "row_count": len(frame),
+        "columns": columns,
+        "sheet": sheet,
+        "sheets": sheets,
+        "broker": auto_broker,
+        "mapping": auto_map,
+        "excluded_rows": [],
+        "status": "mapped" if all(f in auto_map for f in REQUIRED_UPLOAD_FIELDS) else "uploaded",
+    }
+    batch["files"].append(descriptor)
+    batch["status"] = "uploading"
+    _save_batch(directory, batch)
+    return descriptor
+
+
+def _get_batch_file(batch: dict, file_id: str) -> dict:
+    match = next((item for item in batch["files"] if item["id"] == file_id), None)
+    if not match:
+        raise HTTPException(status_code=404, detail="File not found in this batch")
+    return match
+
+
+@app.get("/api/import/batches/{batch_id}/files/{file_id}/preview")
+def preview_import_file(batch_id: str, file_id: str, sheet: str | None = None, user_id: str = Depends(require_auth)):
+    directory, batch = _load_batch(batch_id)
+    item = _get_batch_file(batch, file_id)
+    selected_sheet = sheet or item.get("sheet")
+    if sheet and sheet not in item.get("sheets", []):
+        raise HTTPException(status_code=422, detail="Requested worksheet is not present in this file")
+    frame, selected_sheet, sheets = _read_import_frame(directory / item["stored_name"], selected_sheet)
+    item["sheet"] = selected_sheet
+    item["columns"] = [str(c) for c in frame.columns]
+    item["row_count"] = len(frame)
+    _save_batch(directory, batch)
+    return {
+        "file_id": file_id,
+        "filename": item["filename"],
+        "sheet": selected_sheet,
+        "sheets": item.get("sheets", []),
+        "columns": item["columns"],
+        "row_count": len(frame),
+        "broker": item.get("broker", "Other"),
+        "mapping": item.get("mapping", {}),
+        "excluded_rows": item.get("excluded_rows", []),
+        "rows": frame.head(20).fillna("").to_dict(orient="records"),
+    }
+
+
+@app.put("/api/import/batches/{batch_id}/files/{file_id}/mapping")
+def map_import_file(batch_id: str, file_id: str, body: ImportMapping, user_id: str = Depends(require_auth)):
+    directory, batch = _load_batch(batch_id)
+    item = _get_batch_file(batch, file_id)
+    bad_fields = set(body.columns) - set(IMPORT_FIELDS)
+    if bad_fields:
+        raise HTTPException(status_code=422, detail=f"Unknown target fields: {', '.join(sorted(bad_fields))}")
+    bad_columns = set(body.columns.values()) - set(item["columns"])
+    if bad_columns:
+        raise HTTPException(status_code=422, detail=f"Unknown source columns: {', '.join(sorted(bad_columns))}")
+
+    # Normalize aliases: side -> transaction_type, currency -> price_currency
+    field_aliases = {"side": "transaction_type", "currency": "price_currency"}
+    canonical_mapping = {}
+    for k, v in body.columns.items():
+        canonical_k = field_aliases.get(k, k)
+        canonical_mapping[canonical_k] = v
+
+    item["broker"] = body.broker if body.broker in IMPORT_BROKERS else "Other"
+    item["mapping"] = canonical_mapping
+    item["excluded_rows"] = [int(r) for r in body.excluded_rows]
+    item["status"] = "mapped"
+    batch["status"] = "mapping"
+    _save_batch(directory, batch)
+    return {
+        "file_id": file_id,
+        "broker": item["broker"],
+        "mapping": item["mapping"],
+        "excluded_rows": item["excluded_rows"],
+        "status": item["status"],
+    }
+
+
+def _validate_batch_frames(directory: Path, batch: dict) -> tuple[list[pd.DataFrame], list[dict], list[dict]]:
+    frames = []
+    errors = []
+    reports = []
+    for item in batch["files"]:
+        try:
+            raw, sheet, _ = _read_import_frame(directory / item["stored_name"], item.get("sheet"))
+            inspection = inspect_uploaded_frame(
+                raw,
+                item.get("mapping", {}),
+                broker=item.get("broker", "Other"),
+                excluded_rows=item.get("excluded_rows", []),
+            )
+            inspection["file_id"] = item["id"]
+            inspection["filename"] = item["filename"]
+            reports.append(inspection)
+
+            if not inspection["valid"]:
+                item["status"] = "invalid"
+                errors.append({
+                    "file_id": item["id"],
+                    "filename": item["filename"],
+                    "error": f"{len(inspection['errors'])} validation errors found in statement rows",
+                    "details": inspection["errors"][:10],
+                })
+            else:
+                normalized = normalize_uploaded_frame(
+                    raw,
+                    item.get("mapping", {}),
+                    broker=item.get("broker", "Other"),
+                    source_file_id=item["id"],
+                    import_batch_id=batch["id"],
+                    source_sheet=sheet,
+                    excluded_rows=item.get("excluded_rows", []),
+                )
+                frames.append(normalized)
+                item["status"] = "valid"
+        except Exception as exc:
+            item["status"] = "invalid"
+            errors.append({"file_id": item["id"], "filename": item["filename"], "error": str(exc), "details": []})
+    return frames, errors, reports
+
+
+@app.post("/api/import/batches/{batch_id}/validate")
+def validate_import_batch(batch_id: str, user_id: str = Depends(require_auth)):
+    directory, batch = _load_batch(batch_id)
+    if not batch["files"]:
+        raise HTTPException(status_code=400, detail="Upload at least one file first")
+    frames, errors, reports = _validate_batch_frames(directory, batch)
+    batch["status"] = "validated" if not errors else "invalid"
+    _save_batch(directory, batch)
+    total_valid_rows = sum(len(f) for f in frames)
+    return {
+        "batch_id": batch_id,
+        "valid": not errors,
+        "row_count": total_valid_rows,
+        "files": batch["files"],
+        "reports": reports,
+        "errors": errors,
+    }
+
+
+@app.post("/api/import/batches/{batch_id}/confirm")
+def confirm_import_batch(batch_id: str, user_id: str = Depends(require_auth)):
+    directory, batch = _load_batch(batch_id)
+    frames, errors, _ = _validate_batch_frames(directory, batch)
+    if errors or not frames:
+        _save_batch(directory, batch)
+        raise HTTPException(status_code=422, detail={"message": "Import validation failed", "errors": errors})
+    imported = pd.concat(frames, ignore_index=True)
+    imported = imported.sort_values(["symbol", "trade_date"]).reset_index(drop=True)
+    imported.to_csv(DATA_DIR / "normalized_trades.csv", index=False)
+    batch["status"] = "confirmed"
+    batch["confirmed_at"] = datetime.utcnow().isoformat() + "Z"
+    _save_batch(directory, batch)
+    return {
+        "batch_id": batch_id,
+        "status": "confirmed",
+        "row_count": len(imported),
+        "output": "normalized_trades.csv",
+        "message": "Statement data successfully imported. Run the pipeline to compute capital gains.",
+    }
+
+
 @app.post("/pipeline/run")
 async def run_pipeline(user_id: str = Depends(require_auth)):
     """Runs every stage of the pipeline in order without blocking the event loop."""
     log = []
+    imported_batch_active = False
+    if IMPORT_DIR.exists():
+        for metadata_path in IMPORT_DIR.glob("*/batch.json"):
+            try:
+                if json.loads(metadata_path.read_text()).get("status") == "confirmed":
+                    imported_batch_active = True
+                    break
+            except (OSError, json.JSONDecodeError):
+                continue
     for script_path, owner in PIPELINE:
+        # A confirmed upload has already produced normalized_trades.csv. Keep
+        # the sample generator/loader from replacing it before later stages.
+        if imported_batch_active and script_path.name in {"generate_datasets.py", "ingest.py"}:
+            log.append({"step": script_path.name, "owner": owner, "status": "skipped", "reason": "confirmed import batch is active"})
+            continue
         await asyncio.to_thread(_run_script, script_path)
         log.append({"step": script_path.name, "owner": owner, "status": "completed"})
     return {"status": "completed", "steps": log}

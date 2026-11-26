@@ -70,6 +70,11 @@
       -webkit-font-smoothing: antialiased;
     }
 
+    :focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
     body {
       background-color: var(--bg-app);
       color: var(--text-primary);
@@ -597,6 +602,18 @@
       transition: all 0.15s ease;
     }
 
+    .tx-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.85rem 1rem;
+      border-radius: var(--radius-md);
+      background: var(--bg-card-inset);
+      border: 1px solid var(--border-subtle);
+      transition: all 0.15s ease;
+      gap: 0.75rem;
+    }
+
     .tx-row:hover {
       background: var(--bg-card-hover);
       border-color: var(--border-hover);
@@ -606,15 +623,18 @@
       display: flex;
       align-items: center;
       gap: 0.75rem;
+      min-width: 0;
+      flex: 1 1 auto;
     }
 
     .tx-ticker-badge {
-      width: 44px;
+      min-width: 44px;
       height: 44px;
+      padding: 0 0.5rem;
       border-radius: var(--radius-md);
       background: var(--bg-card);
       border: 1px solid var(--border-subtle);
-      display: flex;
+      display: inline-flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
@@ -622,6 +642,31 @@
       font-weight: 800;
       color: var(--text-primary);
       position: relative;
+      flex-shrink: 0;
+      box-sizing: border-box;
+      max-width: 96px;
+    }
+
+    .tx-ticker-badge.tx-ticker-long {
+      font-size: 0.62rem;
+      letter-spacing: -0.02em;
+      padding: 0 0.45rem;
+    }
+
+    .tx-ticker-badge.tx-ticker-med {
+      font-size: 0.7rem;
+      letter-spacing: -0.01em;
+      padding: 0 0.45rem;
+    }
+
+    .tx-ticker-text {
+      display: block;
+      max-width: 100%;
+      text-align: center;
+      line-height: 1.1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .tx-broker-tag {
@@ -636,28 +681,43 @@
       color: var(--accent);
       border: 1px solid var(--border-subtle);
       text-transform: uppercase;
+      line-height: 1;
+      z-index: 1;
     }
 
     .tx-info {
       display: flex;
       flex-direction: column;
       gap: 0.15rem;
+      min-width: 0;
+      flex: 1 1 auto;
     }
 
     .tx-name {
       font-size: 0.88rem;
       font-weight: 700;
       color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .tx-sub {
       font-size: 0.72rem;
       color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .tx-right {
       text-align: right;
       display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+      flex-shrink: 0;
+      margin-left: auto;
+    }
       flex-direction: column;
       gap: 0.15rem;
     }
@@ -1252,6 +1312,8 @@
       top: 0;
       right: -420px;
       width: 400px;
+      max-width: 100vw;
+      box-sizing: border-box;
       height: 100vh;
       background: var(--bg-card);
       border-left: 1px solid var(--border-subtle);
@@ -1405,22 +1467,662 @@
       color: var(--text-muted);
     }
 
+    /* Guided Import Stepper & Wizard Styles */
+    .wizard-stepper {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 2rem;
+      padding: 0 1rem;
+      position: relative;
+    }
+    .wizard-stepper::before {
+      content: '';
+      position: absolute;
+      top: 18px;
+      left: 3rem;
+      right: 3rem;
+      height: 2px;
+      background: var(--border-subtle);
+      z-index: 1;
+    }
+    .wizard-step-node {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.4rem;
+      position: relative;
+      z-index: 2;
+      cursor: pointer;
+    }
+    .wizard-step-circle {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--bg-card-inset);
+      border: 2px solid var(--border-subtle);
+      color: var(--text-muted);
+      font-weight: 700;
+      font-size: 0.85rem;
+      display: grid;
+      place-items: center;
+      transition: all 0.2s ease;
+    }
+    .wizard-step-node.active .wizard-step-circle {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+      box-shadow: 0 0 12px var(--accent-glow);
+    }
+    .wizard-step-node.completed .wizard-step-circle {
+      background: var(--profit);
+      border-color: var(--profit);
+      color: #fff;
+    }
+    .wizard-step-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+    .wizard-step-node.active .wizard-step-label {
+      color: var(--text-primary);
+      font-weight: 700;
+    }
+    .wizard-step-node.completed .wizard-step-label {
+      color: var(--profit);
+    }
+
+    /* Dropzone */
+    .import-dropzone {
+      border: 2px dashed var(--border-hover);
+      border-radius: var(--radius-xl);
+      padding: 3rem 2rem;
+      text-align: center;
+      background: var(--bg-card-inset);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+    }
+    .import-dropzone:hover, .import-dropzone.dragover {
+      border-color: var(--accent);
+      background: var(--accent-subtle);
+    }
+    .dropzone-icon {
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      display: grid;
+      place-items: center;
+      color: var(--accent);
+    }
+
+    /* Staged File Cards */
+    .staged-file-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.85rem 1.15rem;
+      background: var(--bg-card-inset);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      margin-top: 0.75rem;
+    }
+
+    /* Mapping Grid */
+    .mapping-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
+    }
+    .mapping-card {
+      background: var(--bg-card-inset);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .mapping-card.required {
+      border-left: 3px solid var(--accent);
+    }
+
+    /* Problem Row */
+    .problem-table-wrapper {
+      max-height: 280px;
+      overflow-y: auto;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+    }
+
     /* Responsive Queries */
+    @media (max-width: 1600px) {
+      .header {
+        flex-wrap: wrap;
+        gap: 0.75rem 1rem;
+        padding-bottom: 0.75rem;
+      }
+      .brand {
+        order: 1;
+        flex-shrink: 0;
+      }
+      .header-actions {
+        order: 2;
+        margin-left: auto;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+      .nav-pill-group {
+        order: 3;
+        width: 100%;
+        max-width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        display: flex;
+        justify-content: flex-start;
+        padding: 4px;
+        margin-top: 0.25rem;
+        flex-shrink: 0;
+      }
+      .nav-pill-group::-webkit-scrollbar {
+        display: none;
+      }
+      .nav-pill {
+        padding: 0.5rem 1.05rem;
+        font-size: 0.84rem;
+        flex-shrink: 0;
+      }
+    }
+
     @media (max-width: 1024px) {
-      .dashboard-grid { grid-template-columns: 1fr; }
-      .market-overview-grid { grid-template-columns: 1fr; }
-      .insights-grid { grid-template-columns: 1fr; }
+      .dashboard-grid { grid-template-columns: minmax(0, 1fr); }
+      .market-overview-grid { grid-template-columns: minmax(0, 1fr); }
+      .insights-grid { grid-template-columns: minmax(0, 1fr); }
       .hero-card { flex-direction: column; align-items: flex-start; gap: 1.5rem; }
-      .hero-left { max-width: 100%; }
-      .nav-pill-group { overflow-x: auto; max-width: 500px; }
+      .hero-left { max-width: 100%; width: 100%; min-width: 0; }
+      .settings-toggle-btn {
+        width: auto !important;
+        min-width: 42px;
+        padding: 0 0.75rem;
+        border-radius: var(--radius-pill);
+      }
+      .settings-btn-label {
+        display: inline !important;
+      }
     }
 
     @media (max-width: 768px) {
-      body { padding: 1rem; }
-      .header { flex-direction: column; align-items: stretch; gap: 1rem; }
-      .nav-pill-group { width: 100%; justify-content: space-around; }
-      .header-actions { justify-content: flex-end; }
-      .hero-amount { font-size: 2.4rem; }
+      body {
+        padding: 0.75rem;
+        overflow-x: hidden;
+      }
+      .app-container {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        overflow-x: hidden;
+      }
+      .header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.75rem;
+      }
+      .brand {
+        justify-content: space-between;
+        width: 100%;
+      }
+      .header-actions {
+        width: 100%;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+      }
+      .nav-pill-group {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        padding: 4px;
+        gap: 0.25rem;
+      }
+      .nav-pill {
+        padding: 0.45rem 0.85rem;
+        font-size: 0.8rem;
+        flex-shrink: 0;
+      }
+      .dashboard-grid, .market-overview-grid, .insights-grid {
+        width: 100%;
+        min-width: 0;
+      }
+      .grid-col {
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
+      }
+      .card {
+        padding: 1.25rem 1rem;
+        min-width: 0;
+        max-width: 100%;
+        box-sizing: border-box;
+      }
+      .hero-card {
+        padding: 1.25rem 1rem;
+        min-width: 0;
+        max-width: 100%;
+        box-sizing: border-box;
+      }
+      .hero-left {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+      }
+      .hero-label-row {
+        flex-wrap: wrap;
+        gap: 0.4rem;
+        width: 100%;
+      }
+      .hero-label {
+        font-size: 0.82rem;
+      }
+      .hero-amount {
+        font-size: 1.85rem;
+        line-height: 1.15;
+        word-break: break-all;
+      }
+      .hero-metrics-pill-row {
+        flex-wrap: wrap;
+        gap: 0.4rem;
+      }
+      .hero-sub-pill {
+        font-size: 0.72rem;
+        padding: 0.25rem 0.5rem;
+      }
+      .hero-3d-graphic {
+        width: 100%;
+        max-width: 180px;
+        height: 140px;
+        margin: 0 auto;
+      }
+      .card-header-bar {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+      .settings-drawer {
+        width: 100%;
+        max-width: 100vw;
+        box-sizing: border-box;
+        padding: 1.5rem 1rem;
+      }
+      .wizard-stepper {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        justify-content: flex-start;
+        gap: 1.5rem;
+        padding-bottom: 0.5rem;
+      }
+      .wizard-stepper::-webkit-scrollbar {
+        display: none;
+      }
+      .wizard-stepper::before {
+        display: none;
+      }
+      .tax-subnav {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        flex-wrap: nowrap;
+      }
+      .tax-subnav::-webkit-scrollbar {
+        display: none;
+      }
+      .tax-tab-btn {
+        flex-shrink: 0;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .tx-row {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        padding: 0.75rem;
+      }
+      .tx-left {
+        min-width: 0;
+        flex: 1 1 100%;
+      }
+      .tx-right {
+        width: 100%;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        text-align: left;
+        padding-top: 0.35rem;
+        border-top: 1px dashed var(--border-subtle);
+      }
+      .import-dropzone {
+        padding: 2rem 1rem;
+      }
+      .staged-file-card {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+    }
+
+    /* =========================================================================
+       PORTFOLIO INSIGHTS PAGE STYLES
+       ========================================================================= */
+    .insights-filter-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .insights-filter-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+    .insights-filter-group {
+      flex: 1 1 220px;
+      min-width: 0;
+    }
+    .insights-filter-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .filter-chip-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      align-items: center;
+    }
+    .filter-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.3rem 0.7rem;
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-card-inset);
+      color: var(--text-secondary);
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+      user-select: none;
+    }
+    .filter-chip:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-subtle);
+    }
+    .filter-chip.active {
+      background: var(--accent);
+      color: var(--accent-contrast);
+      border-color: var(--accent);
+      box-shadow: 0 2px 8px var(--accent-glow);
+    }
+    .filter-chip.chip-all {
+      background: var(--bg-card);
+      border-color: var(--border-hover);
+      color: var(--text-primary);
+      font-weight: 700;
+    }
+    .filter-chip.chip-all.active {
+      background: var(--positive);
+      border-color: var(--positive);
+      color: #fff;
+    }
+    .filter-chip.chip-clear {
+      background: transparent;
+      border-color: var(--border-subtle);
+      color: var(--text-muted);
+      font-size: 0.72rem;
+    }
+    .filter-chip.chip-clear:hover {
+      border-color: var(--negative);
+      color: var(--negative);
+      background: transparent;
+    }
+    .filter-chip .chip-x {
+      font-size: 0.65rem;
+      opacity: 0.7;
+      margin-left: 0.1rem;
+    }
+    .fy-chip {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.3rem 0.8rem;
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-card-inset);
+      color: var(--text-secondary);
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+    .fy-chip.active {
+      background: var(--accent);
+      color: var(--accent-contrast);
+      border-color: var(--accent);
+      box-shadow: 0 2px 8px var(--accent-glow);
+    }
+    .fy-chip:hover:not(.active) {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    .insights-active-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.6rem 0.85rem;
+      border-radius: var(--radius-md);
+      background: var(--accent-subtle);
+      border: 1px solid var(--border-accent);
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      min-height: 2rem;
+    }
+    .active-filter-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: var(--radius-pill);
+      background: var(--accent);
+      color: var(--accent-contrast);
+      font-size: 0.72rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .active-filter-pill:hover { opacity: 0.85; }
+    .insights-summary-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .ins-metric-card {
+      background: var(--bg-card-inset);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 1rem 1.15rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+    .ins-metric-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+    }
+    .ins-metric-value {
+      font-size: 1.35rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--text-primary);
+      word-break: break-all;
+    }
+    .ins-metric-sub {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+    }
+    .ins-metric-value.gain  { color: var(--profit); }
+    .ins-metric-value.loss  { color: var(--negative); }
+    .insights-charts-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+    .ins-chart-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-xl);
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      min-width: 0;
+    }
+    .ins-chart-card.full-width { grid-column: 1 / -1; }
+    .ins-chart-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .ins-chart-sub {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-top: -0.4rem;
+    }
+    .ins-chart-wrap {
+      position: relative;
+      width: 100%;
+      overflow: hidden;
+    }
+    .ins-chart-wrap svg { width: 100%; display: block; }
+    .ins-chart-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 2.5rem 1rem;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.82rem;
+    }
+    .ins-chart-state svg { opacity: 0.35; }
+    .ins-toggle-group {
+      display: flex;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-pill);
+      overflow: hidden;
+    }
+    .ins-toggle-btn {
+      background: transparent;
+      border: none;
+      padding: 0.25rem 0.65rem;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .ins-toggle-btn.active {
+      background: var(--accent);
+      color: var(--accent-contrast);
+    }
+    .ins-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      font-size: 0.72rem;
+    }
+    .ins-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      color: var(--text-secondary);
+    }
+    .ins-legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .ins-tooltip {
+      position: fixed;
+      background: var(--bg-card);
+      border: 1px solid var(--border-hover);
+      border-radius: var(--radius-md);
+      padding: 0.5rem 0.75rem;
+      font-size: 0.75rem;
+      color: var(--text-primary);
+      pointer-events: none;
+      z-index: 999;
+      box-shadow: var(--shadow-card);
+      max-width: 220px;
+      display: none;
+    }
+    .ins-tooltip-label { font-weight: 700; margin-bottom: 0.2rem; }
+    .ins-table-alt {
+      display: none;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+    .ins-show-table-btn {
+      background: transparent;
+      border: none;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      cursor: pointer;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+      padding: 0;
+    }
+    .ins-show-table-btn:hover { color: var(--accent); }
+    @media (max-width: 1024px) {
+      .insights-charts-grid {
+        grid-template-columns: 1fr;
+      }
+      .ins-chart-card.full-width { grid-column: 1; }
+    }
+    @media (max-width: 640px) {
+      .insights-filter-row { flex-direction: column; }
+      .insights-filter-group { flex: 1 1 100%; }
+      .insights-summary-row { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 400px) {
+      .insights-summary-row { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -1461,9 +2163,17 @@
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
           Brokers
         </button>
+        <button class="nav-pill" id="tab-import" onclick="switchTab('import')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+          Import Files
+        </button>
         <button class="nav-pill" id="tab-tax" onclick="switchTab('tax')">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
           Tax &amp; ITR
+        </button>
+        <button class="nav-pill" id="tab-insights" onclick="switchTab('insights')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v4l3 3"></path></svg>
+          Insights
         </button>
         <button class="nav-pill" id="tab-activity" onclick="switchTab('activity')">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
@@ -1478,6 +2188,12 @@
           <button class="curr-btn active" id="btnCurrINR" onclick="setCurrency('INR')">₹ INR</button>
           <button class="curr-btn" id="btnCurrUSD" onclick="setCurrency('USD')">$ USD</button>
         </div>
+
+        <!-- Upload Files Action Button -->
+        <button class="btn-run-pipeline" onclick="switchTab('import')" style="background: var(--bg-card); border: 1px solid var(--accent); color: var(--accent); box-shadow: none;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+          <span>Upload Files</span>
+        </button>
 
         <!-- Run Pipeline Header Action -->
         <button class="btn-run-pipeline" id="headerRunPipelineBtn" onclick="triggerPipelineRun()">
@@ -1496,8 +2212,9 @@
         </button>
 
         <!-- Settings Drawer Toggle -->
-        <button class="icon-btn" title="Settings" onclick="toggleSettingsDrawer(true)">
+        <button class="icon-btn settings-toggle-btn" id="btnSettingsToggle" title="Settings (Configure API base &amp; preferences)" aria-label="Settings" onclick="toggleSettingsDrawer(true)">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+          <span class="settings-btn-label">Settings</span>
         </button>
 
         <!-- User Avatar & Dropdown -->
@@ -1507,6 +2224,10 @@
             <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.2rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;">Signed in as</div>
             <div style="font-size: 0.9rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.75rem;" id="userDisplayId">admin</div>
             <hr style="border: 0; border-top: 1px solid var(--border-subtle); margin-bottom: 0.5rem;" />
+            <button onclick="toggleSettingsDrawer(true); toggleUserDropdown();" style="width: 100%; display: flex; align-items: center; gap: 0.5rem; text-align: left; background: none; border: none; font-size: 0.84rem; color: var(--text-secondary); font-weight: 500; cursor: pointer; padding: 0.4rem 0.5rem; border-radius: var(--radius-sm); margin-bottom: 0.25rem;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+              Settings &amp; API Config
+            </button>
             <a href="/" style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.84rem; color: var(--text-secondary); text-decoration: none; padding: 0.4rem 0.5rem; border-radius: var(--radius-sm); margin-bottom: 0.25rem;">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
               Landing Page
@@ -1744,6 +2465,174 @@
     </main>
 
     <!-- ======================================================================
+         PAGE: PORTFOLIO INSIGHTS (Power BI-style filtered charts)
+         ====================================================================== -->
+    <section class="page-section" id="page-insights">
+      <div class="card" style="margin-bottom: 1.25rem; padding-bottom: 1.25rem;">
+        <!-- Page header -->
+        <div class="card-header-bar" style="margin-bottom: 1.25rem;">
+          <div>
+            <div class="card-title">Portfolio Insights</div>
+            <div class="card-sub">Realized gains analysis &amp; invested value breakdown — filter by broker, stock, and financial year</div>
+          </div>
+          <button class="btn-secondary" id="insResetAllBtn" onclick="insResetAllFilters()" style="padding: 0.4rem 0.9rem; font-size: 0.8rem; cursor: pointer;">Reset All Filters</button>
+        </div>
+
+        <!-- Active filter summary bar -->
+        <div class="insights-active-bar" id="insActiveBar" style="display: none;">
+          <span style="font-weight: 700; color: var(--text-secondary); flex-shrink: 0;">Filtered by:</span>
+          <span id="insActiveChips" style="display: flex; flex-wrap: wrap; gap: 0.35rem;"></span>
+        </div>
+
+        <!-- Filter panel: FY + Brokers + Stocks -->
+        <div class="insights-filter-panel" style="margin-top: 1rem;">
+
+          <!-- Financial Year row -->
+          <div class="insights-filter-row">
+            <div class="insights-filter-group" style="flex: 0 0 auto;">
+              <div class="insights-filter-label">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                Financial Year
+              </div>
+              <div class="filter-chip-group" id="insFyChips">
+                <!-- Populated dynamically -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Brokers + Stocks side by side -->
+          <div class="insights-filter-row">
+            <div class="insights-filter-group">
+              <div class="insights-filter-label">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
+                Brokers
+                <span id="insBrokerCount" style="color: var(--accent); font-size: 0.65rem;"></span>
+              </div>
+              <div class="filter-chip-group" id="insBrokerChips">
+                <!-- Populated dynamically -->
+              </div>
+            </div>
+
+            <div class="insights-filter-group">
+              <div class="insights-filter-label">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 3v18h18"></path><path d="m19 9-5 5-4-4-3 3"></path></svg>
+                Stocks / Scrips
+                <span id="insStockCount" style="color: var(--accent); font-size: 0.65rem;"></span>
+              </div>
+              <div id="insStockSearch" style="margin-bottom: 0.4rem; display: none;">
+                <input type="search" class="form-input" id="insStockSearchInput" placeholder="Search stocks…" oninput="insFilterStockSearch(this.value)" style="font-size: 0.78rem; padding: 0.3rem 0.6rem; width: 100%; max-width: 220px;">
+              </div>
+              <div class="filter-chip-group" id="insStockChips">
+                <!-- Populated dynamically -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Summary metric cards -->
+      <div class="insights-summary-row" id="insSummaryRow">
+        <div class="ins-metric-card">
+          <div class="ins-metric-label">Invested Value</div>
+          <div class="ins-metric-value" id="insM_invested">—</div>
+          <div class="ins-metric-sub" id="insM_holdingsCount">— positions</div>
+        </div>
+        <div class="ins-metric-card">
+          <div class="ins-metric-label">Total Realized Gain</div>
+          <div class="ins-metric-value" id="insM_totalGain">—</div>
+          <div class="ins-metric-sub" id="insM_gainSub">LTCG + STCG</div>
+        </div>
+        <div class="ins-metric-card">
+          <div class="ins-metric-label">LTCG (Long-Term)</div>
+          <div class="ins-metric-value" id="insM_ltcg">—</div>
+          <div class="ins-metric-sub">Held &gt; 365 days</div>
+        </div>
+        <div class="ins-metric-card">
+          <div class="ins-metric-label">STCG (Short-Term)</div>
+          <div class="ins-metric-value" id="insM_stcg">—</div>
+          <div class="ins-metric-sub">Held ≤ 365 days</div>
+        </div>
+        <div class="ins-metric-card">
+          <div class="ins-metric-label">Realized Trades</div>
+          <div class="ins-metric-value" id="insM_trades" style="font-size: 1.5rem;">—</div>
+          <div class="ins-metric-sub" id="insM_tradesSub">sell transactions matched</div>
+        </div>
+      </div>
+
+      <!-- Charts grid -->
+      <div class="insights-charts-grid" id="insChartsGrid">
+
+        <!-- Chart 1: Contribution donut by broker or stock -->
+        <div class="ins-chart-card">
+          <div class="ins-chart-title">
+            Portfolio Contribution
+            <div class="ins-toggle-group">
+              <button class="ins-toggle-btn active" id="insDonTogBroker" onclick="insDonSwitch('broker')">By Broker</button>
+              <button class="ins-toggle-btn" id="insDonTogStock" onclick="insDonSwitch('stock')">By Stock</button>
+            </div>
+          </div>
+          <div class="ins-chart-sub" id="insDonSub">Invested value share by broker</div>
+          <div class="ins-chart-wrap" id="insDonWrap" style="min-height: 240px;"></div>
+          <div class="ins-legend" id="insDonLegend"></div>
+          <div style="display: flex; justify-content: flex-end;">
+            <button class="ins-show-table-btn" onclick="insToggleTable('insDonut')">Show as table</button>
+          </div>
+          <div class="ins-table-alt" id="insDonut-table"></div>
+        </div>
+
+        <!-- Chart 2: Profit ranking bar chart by stock -->
+        <div class="ins-chart-card">
+          <div class="ins-chart-title">Realized Gain Ranking</div>
+          <div class="ins-chart-sub">Net realized gain by stock — green = gain, red = loss. Source: <code>realized_gain_inr</code></div>
+          <div class="ins-chart-wrap" id="insBarWrap" style="min-height: 240px;"></div>
+          <div style="display: flex; justify-content: flex-end;">
+            <button class="ins-show-table-btn" onclick="insToggleTable('insBar')">Show as table</button>
+          </div>
+          <div class="ins-table-alt" id="insBar-table"></div>
+        </div>
+
+        <!-- Chart 3: Profit over time line chart (monthly) -->
+        <div class="ins-chart-card full-width">
+          <div class="ins-chart-title">
+            Realized Profit Over Time
+            <div class="ins-toggle-group">
+              <button class="ins-toggle-btn active" id="insLineTogM" onclick="insLineSwitch('monthly')">Monthly</button>
+              <button class="ins-toggle-btn" id="insLineTogQ" onclick="insLineSwitch('quarterly')">Quarterly</button>
+            </div>
+          </div>
+          <div class="ins-chart-sub">Cumulative realized gain by sell date — Source: <code>sell_date + realized_gain_inr</code></div>
+          <div class="ins-legend" id="insLineLegend">
+            <div class="ins-legend-item"><div class="ins-legend-dot" style="background: var(--profit);"></div>Gain month</div>
+            <div class="ins-legend-item"><div class="ins-legend-dot" style="background: var(--negative);"></div>Loss month</div>
+            <div class="ins-legend-item"><div class="ins-legend-dot" style="background: var(--accent);"></div>Cumulative</div>
+          </div>
+          <div class="ins-chart-wrap" id="insLineWrap" style="min-height: 200px;"></div>
+          <div style="display: flex; justify-content: flex-end;">
+            <button class="ins-show-table-btn" onclick="insToggleTable('insLine')">Show as table</button>
+          </div>
+          <div class="ins-table-alt" id="insLine-table"></div>
+        </div>
+
+        <!-- Chart 4: Broker comparison bar (LTCG vs STCG by broker) -->
+        <div class="ins-chart-card full-width">
+          <div class="ins-chart-title">Broker Comparison — LTCG vs STCG</div>
+          <div class="ins-chart-sub">Realized gains split by holding period per broker. LTCG = held &gt; 365 days. Source: <code>holding_period_days + realized_gain_inr</code></div>
+          <div class="ins-legend">
+            <div class="ins-legend-item"><div class="ins-legend-dot" style="background: var(--profit);"></div>LTCG (&gt;365 days)</div>
+            <div class="ins-legend-item"><div class="ins-legend-dot" style="background: var(--chart-4);"></div>STCG (≤365 days)</div>
+            <div class="ins-legend-item"><div class="ins-legend-dot" style="background: var(--negative);"></div>Loss</div>
+          </div>
+          <div class="ins-chart-wrap" id="insBrokerBarWrap" style="min-height: 200px;"></div>
+          <div style="display: flex; justify-content: flex-end;">
+            <button class="ins-show-table-btn" onclick="insToggleTable('insBrokerBar')">Show as table</button>
+          </div>
+          <div class="ins-table-alt" id="insBrokerBar-table"></div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ======================================================================
          PAGE 2: INVESTMENTS VIEW (Holdings, Invested Capital, Currency Split)
          ====================================================================== -->
     <section class="page-section" id="page-investments">
@@ -1811,13 +2700,33 @@
       <div class="card" style="margin-bottom: 1.5rem;">
         <div class="card-header-bar">
           <div>
-            <div class="card-title">Connected Broker Accounts</div>
-            <div class="card-sub">Multi-broker trade normalization &amp; corporate actions sync</div>
+            <div class="card-title">Broker Statements &amp; Accounts</div>
+            <div class="card-sub">Multi-broker statement ingestion, normalization &amp; corporate actions sync</div>
           </div>
-          <button class="btn-run-pipeline" onclick="triggerPipelineRun()">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
-            Sync All Brokers
-          </button>
+          <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+            <button class="btn-run-pipeline" onclick="switchTab('import')" style="background: var(--bg-card); border: 1px solid var(--accent); color: var(--accent); box-shadow: none;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+              Upload Statements
+            </button>
+            <button class="btn-run-pipeline" onclick="triggerPipelineRun()">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+              Sync All Brokers
+            </button>
+          </div>
+        </div>
+
+        <!-- Active Dataset Status Banner -->
+        <div id="datasetStatusBanner" style="margin-bottom: 1.25rem; padding: 1rem 1.25rem; border-radius: var(--radius-md); background: var(--bg-card-inset); border: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;">
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <span class="hero-tag" id="datasetBadge" style="background: var(--warning-subtle); color: var(--warning); border-color: var(--warning);">Sample Data</span>
+            <div style="font-size: 0.85rem; color: var(--text-secondary);" id="datasetDescription">
+              Showing 540 synthetic demo trades across 4 sample brokers. Upload your own statements to compute personalized capital gains.
+            </div>
+          </div>
+          <div style="display: flex; gap: 0.5rem;" id="datasetActionBtns">
+            <button class="btn-secondary" onclick="switchTab('import')" style="padding: 0.4rem 0.9rem; font-size: 0.8rem; cursor: pointer;">Upload Statements →</button>
+            <button class="btn-secondary" id="btnResetSample" onclick="resetToSampleData()" style="padding: 0.4rem 0.9rem; font-size: 0.8rem; cursor: pointer; display: none;">Reset to Sample</button>
+          </div>
         </div>
 
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem;" id="brokersCardsGrid">
@@ -1845,6 +2754,333 @@
           <span class="hero-sub-pill">charges_inr</span>
           <span class="hero-sub-pill">exchange</span>
           <span class="hero-sub-pill">source_ref</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         PAGE: GUIDED STATEMENT IMPORT WIZARD
+         ====================================================================== -->
+    <section class="page-section" id="page-import">
+      <div class="card" style="margin-bottom: 1.5rem;">
+        <!-- Header -->
+        <div class="card-header-bar" style="margin-bottom: 1.5rem;">
+          <div>
+            <div class="card-title">Import Trade Statements</div>
+            <div class="card-sub">Upload CSV, Excel, PDF, TXT or camera photos with smart schema mapping</div>
+          </div>
+          <div style="display: flex; gap: 0.5rem;">
+            <button class="btn-secondary" onclick="resetImportWizard()" style="padding: 0.4rem 0.9rem; font-size: 0.8rem; cursor: pointer;">New Import</button>
+            <button class="btn-secondary" onclick="switchTab('brokers')" style="padding: 0.4rem 0.9rem; font-size: 0.8rem; cursor: pointer;">← Brokers</button>
+          </div>
+        </div>
+
+        <!-- 5-Step Stepper -->
+        <div class="wizard-stepper">
+          <div class="wizard-step-node active" id="step-node-1" onclick="goToStep(1)">
+            <div class="wizard-step-circle">1</div>
+            <div class="wizard-step-label">Upload Files</div>
+          </div>
+          <div class="wizard-step-node" id="step-node-2" onclick="goToStep(2)">
+            <div class="wizard-step-circle">2</div>
+            <div class="wizard-step-label">Preview &amp; Sheet</div>
+          </div>
+          <div class="wizard-step-node" id="step-node-3" onclick="goToStep(3)">
+            <div class="wizard-step-circle">3</div>
+            <div class="wizard-step-label">Map Columns</div>
+          </div>
+          <div class="wizard-step-node" id="step-node-4" onclick="goToStep(4)">
+            <div class="wizard-step-circle">4</div>
+            <div class="wizard-step-label">Validate Rows</div>
+          </div>
+          <div class="wizard-step-node" id="step-node-5" onclick="goToStep(5)">
+            <div class="wizard-step-circle">5</div>
+            <div class="wizard-step-label">Confirm &amp; Compute</div>
+          </div>
+        </div>
+
+        <!-- Hidden File Inputs -->
+        <input type="file" id="filePickerNormal" multiple accept=".csv,.xlsx,.xls,.pdf,.txt,image/*" style="display: none;" onchange="handleFileInputChange(event)" />
+        <input type="file" id="filePickerCamera" accept="image/*" capture="environment" style="display: none;" onchange="handleFileInputChange(event)" />
+
+        <!-- ================================================================
+             STEP 1: Upload & Capture
+             ================================================================ -->
+        <div class="wizard-view" id="wizard-view-1">
+          <div class="import-dropzone" id="importDropzone" onclick="handleDropzoneClick(event)" tabindex="0" role="button" aria-label="Drop trade statement files here or click to browse" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();triggerFilePicker('filePickerNormal');}">
+            <div class="dropzone-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+            </div>
+            <div>
+              <div style="font-size: 1.05rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.35rem;">
+                Drop trade statement files here or browse
+              </div>
+              <div style="font-size: 0.82rem; color: var(--text-secondary);">
+                Supports CSV, Excel (.xlsx, .xls), PDF, plain text &amp; statement photos
+              </div>
+            </div>
+            <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+              <button type="button" class="btn-run-pipeline" onclick="triggerFilePicker('filePickerNormal')">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                Choose Files
+              </button>
+              <button type="button" class="btn-secondary" onclick="triggerFilePicker('filePickerCamera')" style="padding: 0.55rem 1.15rem; border-radius: var(--radius-pill); font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 0.45rem; cursor: pointer;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                Take Photo with Camera
+              </button>
+            </div>
+          </div>
+
+          <!-- Format capabilities strip -->
+          <div style="margin-top: 1.25rem; padding: 0.85rem 1rem; border-radius: var(--radius-md); background: var(--bg-card-inset); border: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem; font-size: 0.78rem;">
+            <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+              <span style="font-weight: 700; color: var(--text-muted);">SUPPORTED:</span>
+              <span class="hero-sub-pill">CSV</span>
+              <span class="hero-sub-pill">Excel (.xlsx &amp; .xls)</span>
+              <span class="hero-sub-pill">PDF</span>
+              <span class="hero-sub-pill">TXT</span>
+              <span class="hero-sub-pill" id="ocrFormatBadge">PNG/JPG (OCR Active)</span>
+            </div>
+            <div style="color: var(--text-muted);">
+              Limit: <strong>20 MB per file</strong> • Local privacy protected
+            </div>
+          </div>
+
+          <!-- Staged files list -->
+          <div id="stagedFilesContainer" style="margin-top: 1.5rem;">
+            <!-- Populated dynamically -->
+          </div>
+
+          <!-- Next Button -->
+          <div style="margin-top: 1.75rem; display: flex; justify-content: flex-end;">
+            <button class="btn-run-pipeline" id="btnStep1Next" onclick="goToStep(2)" disabled style="opacity: 0.5;">
+              <span>Next: Preview Statement →</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- ================================================================
+             STEP 2: Preview & Worksheet Selector
+             ================================================================ -->
+        <div class="wizard-view" id="wizard-view-2" style="display: none;">
+          <!-- Controls row -->
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+              <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-secondary);">Select File:</label>
+              <select class="form-input" id="previewFileSelect" onchange="onPreviewFileChange()" style="font-size: 0.85rem; padding: 0.4rem 0.8rem; width: auto;">
+                <!-- Populated dynamically -->
+              </select>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+              <div id="sheetSelectGroup" style="display: none; align-items: center; gap: 0.5rem;">
+                <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-secondary);">Sheet:</label>
+                <select class="form-input" id="previewSheetSelect" onchange="onPreviewSheetChange()" style="font-size: 0.85rem; padding: 0.4rem 0.8rem; width: auto;"></select>
+              </div>
+
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-secondary);">Broker:</label>
+                <select class="form-input" id="previewBrokerSelect" onchange="onPreviewBrokerChange()" style="font-size: 0.85rem; padding: 0.4rem 0.8rem; width: auto;">
+                  <option value="Zerodha">Zerodha</option>
+                  <option value="Groww">Groww</option>
+                  <option value="ICICI Direct">ICICI Direct</option>
+                  <option value="Interactive Brokers">Interactive Brokers (US)</option>
+                  <option value="Other">Other / Custom Broker</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Preview Table -->
+          <div class="table-responsive" style="max-height: 380px; overflow-y: auto; border: 1px solid var(--border-subtle); border-radius: var(--radius-md);">
+            <table class="data-table" id="rawPreviewTable">
+              <thead id="rawPreviewHead"></thead>
+              <tbody id="rawPreviewBody"></tbody>
+            </table>
+          </div>
+          <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem;" id="previewRowCountNotice">
+            Showing first 15 rows of statement
+          </div>
+
+          <!-- Navigation -->
+          <div style="margin-top: 1.5rem; display: flex; justify-content: space-between;">
+            <button class="btn-secondary" onclick="goToStep(1)" style="padding: 0.6rem 1.25rem; border-radius: var(--radius-pill); cursor: pointer;">← Back to Files</button>
+            <button class="btn-run-pipeline" onclick="goToStep(3)">
+              <span>Next: Map Columns →</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- ================================================================
+             STEP 3: Column Mapping
+             ================================================================ -->
+        <div class="wizard-view" id="wizard-view-3" style="display: none;">
+          <div style="margin-bottom: 1.25rem; padding: 0.85rem 1rem; border-radius: var(--radius-md); background: var(--accent-subtle); border: 1px solid var(--border-accent); display: flex; align-items: center; justify-content: space-between;">
+            <div style="font-size: 0.85rem; color: var(--accent); font-weight: 600;" id="mappingAutoDetectNotice">
+              Auto-detected broker columns. Review and verify mappings below.
+            </div>
+            <button class="btn-secondary" onclick="autoDetectCurrentFileMapping()" style="padding: 0.35rem 0.8rem; font-size: 0.75rem; cursor: pointer;">Re-detect</button>
+          </div>
+
+          <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.75rem;">
+            Required Fields (5 required for tax calculation)
+          </div>
+          <div class="mapping-grid" id="requiredMappingGrid" style="margin-bottom: 1.5rem;">
+            <!-- Populated via JS -->
+          </div>
+
+          <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.75rem;">
+            Optional &amp; Audit Fields
+          </div>
+          <div class="mapping-grid" id="optionalMappingGrid">
+            <!-- Populated via JS -->
+          </div>
+
+          <!-- Navigation -->
+          <div style="margin-top: 1.75rem; display: flex; justify-content: space-between;">
+            <button class="btn-secondary" onclick="goToStep(2)" style="padding: 0.6rem 1.25rem; border-radius: var(--radius-pill); cursor: pointer;">← Back to Preview</button>
+            <button class="btn-run-pipeline" onclick="submitMappingAndValidate()">
+              <span>Validate &amp; Inspect Rows →</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- ================================================================
+             STEP 4: Validation & Row Problem Inspector
+             ================================================================ -->
+        <div class="wizard-view" id="wizard-view-4" style="display: none;">
+          <!-- Validation Summary Badges -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;" id="validationSummaryGrid">
+            <!-- Populated via JS -->
+          </div>
+
+          <!-- Problems Inspector -->
+          <div id="validationProblemsContainer" style="display: none; margin-bottom: 1.5rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+              <div style="font-size: 0.88rem; font-weight: 700; color: var(--negative);">Flagged Row Issues (Must exclude or resolve to continue):</div>
+              <button class="btn-secondary" onclick="excludeAllProblemRows()" style="padding: 0.35rem 0.8rem; font-size: 0.78rem; color: var(--negative); border-color: var(--negative); cursor: pointer;">
+                Exclude All Problem Rows
+              </button>
+            </div>
+            <div class="problem-table-wrapper">
+              <table class="data-table" id="problemRowsTable">
+                <thead>
+                  <tr>
+                    <th>Row #</th>
+                    <th>Field</th>
+                    <th>Raw Value</th>
+                    <th>Issue</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="problemRowsTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Valid Trades Sample Table -->
+          <div>
+            <div style="font-size: 0.88rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.75rem;">
+              Validated Trades Ready for Ingestion
+            </div>
+            <div class="table-responsive" style="max-height: 280px; overflow-y: auto; border: 1px solid var(--border-subtle); border-radius: var(--radius-md);">
+              <table class="data-table" id="validatedRowsTable">
+                <thead>
+                  <tr>
+                    <th>Row #</th>
+                    <th>Symbol</th>
+                    <th>Date</th>
+                    <th>Side</th>
+                    <th class="num">Qty</th>
+                    <th class="num">Price</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="validatedRowsTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Navigation -->
+          <div style="margin-top: 1.75rem; display: flex; justify-content: space-between;">
+            <button class="btn-secondary" onclick="goToStep(3)" style="padding: 0.6rem 1.25rem; border-radius: var(--radius-pill); cursor: pointer;">← Back to Mapping</button>
+            <button class="btn-run-pipeline" id="btnProceedToConfirm" onclick="goToStep(5)">
+              <span>Next: Review &amp; Confirm →</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- ================================================================
+             STEP 5: Review, Confirm & Compute
+             ================================================================ -->
+        <div class="wizard-view" id="wizard-view-5" style="display: none;">
+          <div class="card" style="background: var(--bg-card-inset); border: 1px solid var(--border-subtle); margin-bottom: 1.5rem; padding: 1.5rem;">
+            <div style="font-size: 1.15rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.5rem;">
+              Ready to Ingest &amp; Run Tax Engine
+            </div>
+            <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.25rem;">
+              Your statements will be consolidated into the unified trade schema, adjusted for corporate actions, matched via FIFO, and evaluated for Schedule CG and DTAA relief.
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.25rem;">
+              <div style="background: var(--bg-card); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+                <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">FILES IN BATCH</div>
+                <div style="font-size: 1.5rem; font-weight: 800; color: var(--text-primary);" id="confirmFileCount">0</div>
+              </div>
+              <div style="background: var(--bg-card); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+                <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">VALID TRADES</div>
+                <div style="font-size: 1.5rem; font-weight: 800; color: var(--profit);" id="confirmRowCount">0</div>
+              </div>
+              <div style="background: var(--bg-card); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+                <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">PROVENANCE AUDIT</div>
+                <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-secondary); margin-top: 0.5rem;">
+                  Source file, sheet &amp; row numbers attached
+                </div>
+              </div>
+            </div>
+
+            <button class="btn-run-pipeline" id="btnConfirmImportBatch" onclick="executeImportConfirmation()" style="padding: 0.75rem 1.5rem; font-size: 0.95rem;">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              <span>Confirm &amp; Run 7-Step Pipeline</span>
+            </button>
+          </div>
+
+          <!-- Live Pipeline Execution Progress Box -->
+          <div id="importPipelineProgressBox" style="display: none; background: var(--bg-card-inset); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 1.5rem; margin-bottom: 1.5rem;">
+            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem;">
+              <div class="spinner" id="importSpinner" style="display: inline-block;"></div>
+              <div style="font-weight: 700; font-size: 0.95rem;" id="importProgressTitle">Executing Tax Pipeline...</div>
+            </div>
+            <div id="importStepLog" style="display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.82rem;">
+              <!-- Populated during execution -->
+            </div>
+          </div>
+
+          <!-- Post-Import Result Summary -->
+          <div id="importSuccessBox" style="display: none; padding: 1.5rem; border-radius: var(--radius-lg); background: var(--positive-subtle); border: 1px solid var(--profit); margin-bottom: 1.5rem;">
+            <div style="font-size: 1.15rem; font-weight: 800; color: var(--profit); margin-bottom: 0.5rem;">
+              ✓ Import Complete &amp; Capital Gains Updated!
+            </div>
+            <div style="font-size: 0.85rem; color: var(--text-primary); margin-bottom: 1.25rem;" id="importSuccessDetails">
+              Your uploaded trades have been successfully processed through the pipeline.
+            </div>
+            <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+              <button class="btn-run-pipeline" onclick="switchTab('tax')">
+                View Schedule CG &amp; FSI →
+              </button>
+              <button class="btn-secondary" onclick="switchTab('dashboard')" style="padding: 0.6rem 1.25rem; border-radius: var(--radius-pill); cursor: pointer;">
+                Open Portfolio Dashboard
+              </button>
+              <button class="btn-secondary" onclick="resetToSampleData()" style="padding: 0.6rem 1.25rem; border-radius: var(--radius-pill); cursor: pointer;">
+                Reset to Sample Data
+              </button>
+            </div>
+          </div>
+
+          <!-- Navigation -->
+          <div style="display: flex; justify-content: flex-start;">
+            <button class="btn-secondary" onclick="goToStep(4)" style="padding: 0.6rem 1.25rem; border-radius: var(--radius-pill); cursor: pointer;">← Back to Validation</button>
+          </div>
         </div>
       </div>
     </section>
@@ -2131,11 +3367,14 @@
   <!-- ======================================================================
        SETTINGS DRAWER
        ====================================================================== -->
+  <!-- Insights tooltip (follows cursor, appended to body) -->
+  <div class="ins-tooltip" id="insTooltipEl"></div>
+
   <div class="drawer-overlay" id="drawerOverlay" onclick="toggleSettingsDrawer(false)"></div>
   <aside class="settings-drawer" id="settingsDrawer">
     <div style="display: flex; align-items: center; justify-content: space-between;">
       <h3 style="font-size: 1.2rem; font-weight: 800; color: var(--text-primary);">System Settings</h3>
-      <button class="icon-btn" onclick="toggleSettingsDrawer(false)">
+      <button class="icon-btn" onclick="toggleSettingsDrawer(false)" aria-label="Close Settings">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
       </button>
     </div>
@@ -2193,9 +3432,24 @@
        JAVASCRIPT APPLICATION LOGIC
        ====================================================================== -->
   <script>
+    function resolveDefaultApiBase() {
+      const saved = localStorage.getItem('captax_api_base');
+      if (saved && saved.trim()) return saved.trim();
+      if (window.CAPTAX_API_BASE && window.CAPTAX_API_BASE.trim()) {
+        return window.CAPTAX_API_BASE.trim();
+      }
+      if (window.location.port === '3000') {
+        return `${window.location.protocol}//${window.location.hostname}:8001`;
+      }
+      if (window.location.origin && window.location.origin.startsWith('http')) {
+        return window.location.origin;
+      }
+      return 'http://localhost:8001';
+    }
+
     // System State
     const STATE = {
-      apiBase: localStorage.getItem('captax_api_base') || (window.location.origin.startsWith('http') ? window.location.origin : 'http://localhost:8001'),
+      apiBase: resolveDefaultApiBase(),
       currency: localStorage.getItem('captax_curr') || 'INR',
       theme: localStorage.getItem('captax-theme') || 'system',
       usdRate: 83.50,
@@ -2210,6 +3464,14 @@
       recentTransactions: [],
       disclosureReport: '',
       pipelineRunning: false,
+      importBatch: null,
+      importCapabilities: null,
+      importStatus: null,
+      uploadingFiles: [],
+      importRejectedFiles: [],
+      currentStep: 1,
+      selectedFileId: null,
+      validationResult: null,
     };
 
     // Initialize on window load
@@ -2240,6 +3502,10 @@
 
       checkBackendHealth();
       loadAllBackendData();
+      fetchImportStatus();
+      fetchImportCapabilities();
+      initDropzone();
+      insInit();
     });
 
     function toggleUserDropdown(event) {
@@ -2251,6 +3517,14 @@
     window.addEventListener('click', () => {
       const dd = document.getElementById('userDropdown');
       if (dd) dd.classList.remove('active');
+    });
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        toggleSettingsDrawer(false);
+        const dd = document.getElementById('userDropdown');
+        if (dd) dd.classList.remove('active');
+      }
     });
 
     async function handleLogout() {
@@ -2644,15 +3918,18 @@
             ? `+ ${formatNumber(item.gross_amount_inr)}`
             : `- ${formatNumber(item.gross_amount_inr)}`;
 
+          const tLen = (item.ticker || '').length;
+          const tickerClass = tLen > 6 ? 'tx-ticker-long' : (tLen > 4 ? 'tx-ticker-med' : '');
+
           html += `
             <div class="tx-row">
               <div class="tx-left">
-                <div class="tx-ticker-badge">
-                  <span>${item.ticker}</span>
+                <div class="tx-ticker-badge ${tickerClass}">
+                  <span class="tx-ticker-text" title="${item.ticker}">${item.ticker}</span>
                   <span class="tx-broker-tag">${item.broker.slice(0, 4)}</span>
                 </div>
                 <div class="tx-info">
-                  <span class="tx-name">${item.name}</span>
+                  <span class="tx-name" title="${item.name}">${item.name}</span>
                   <span class="tx-sub">${item.category} • ${item.broker}</span>
                 </div>
               </div>
@@ -3100,6 +4377,957 @@
     }
 
     // =========================================================================
+    // GUIDED STATEMENT IMPORT WIZARD (PHASE 2)
+    // =========================================================================
+    const REQUIRED_UPLOAD_FIELDS = [
+      { key: 'symbol', label: 'Symbol / Ticker', desc: 'Stock or ETF ticker (e.g. INFY, AAPL, RELIANCE)' },
+      { key: 'trade_date', label: 'Trade Date', desc: 'Execution date (YYYY-MM-DD or DD/MM/YYYY)' },
+      { key: 'side', label: 'Side (BUY / SELL)', desc: 'Direction of transaction' },
+      { key: 'quantity', label: 'Quantity / Units', desc: 'Number of units executed' },
+      { key: 'price', label: 'Price per Unit', desc: 'Execution price in transaction currency' },
+    ];
+
+    const OPTIONAL_UPLOAD_FIELDS = [
+      { key: 'broker', label: 'Broker Name', desc: 'Source broker (Zerodha, Groww, IBKR, etc.)' },
+      { key: 'currency', label: 'Currency', desc: 'INR, USD, etc. (defaults to INR if omitted)' },
+      { key: 'isin', label: 'ISIN Code', desc: '12-char international security identifier' },
+      { key: 'exchange', label: 'Exchange', desc: 'NSE, BSE, NASDAQ, NYSE, etc.' },
+      { key: 'settlement_date', label: 'Settlement Date', desc: 'Trade clearance date (optional)' },
+    ];
+
+    async function fetchImportStatus() {
+      try {
+        const res = await apiFetch('/api/import/status');
+        if (!res.ok) return;
+        const statusData = await res.json();
+        STATE.importStatus = statusData;
+
+        const badge = document.getElementById('datasetBadge');
+        const desc = document.getElementById('datasetDescription');
+        const btnReset = document.getElementById('btnResetSample');
+
+        if (badge) {
+          if (statusData.sample_mode) {
+            badge.textContent = 'Sample Data';
+            badge.style.background = 'var(--warning-subtle)';
+            badge.style.color = 'var(--warning)';
+            badge.style.borderColor = 'var(--warning)';
+          } else {
+            badge.textContent = 'Imported Statements Active';
+            badge.style.background = 'var(--positive-subtle)';
+            badge.style.color = 'var(--positive)';
+            badge.style.borderColor = 'var(--positive)';
+          }
+        }
+
+        if (desc) {
+          desc.textContent = statusData.description;
+        }
+
+        if (btnReset) {
+          btnReset.style.display = statusData.sample_mode ? 'none' : 'inline-block';
+        }
+      } catch (err) {
+        console.warn('Could not fetch import status:', err);
+      }
+    }
+
+    async function fetchImportCapabilities() {
+      try {
+        const res = await apiFetch('/api/import/capabilities');
+        if (!res.ok) return;
+        const caps = await res.json();
+        STATE.importCapabilities = caps;
+
+        const ocrBadge = document.getElementById('ocrFormatBadge');
+        if (ocrBadge) {
+          if (caps.ocr_available) {
+            ocrBadge.textContent = 'PNG/JPG (OCR Active)';
+            ocrBadge.style.color = 'var(--profit)';
+          } else {
+            ocrBadge.textContent = 'PNG/JPG (OCR Offline)';
+            ocrBadge.style.color = 'var(--text-muted)';
+            ocrBadge.title = 'Tesseract OCR engine unavailable on host';
+          }
+        }
+      } catch (err) {
+        console.warn('Could not fetch import capabilities:', err);
+      }
+    }
+
+    function initDropzone() {
+      const dropzone = document.getElementById('importDropzone');
+      if (!dropzone) return;
+
+      ['dragenter', 'dragover'].forEach(eventName => {
+        dropzone.addEventListener(eventName, e => {
+          e.preventDefault();
+          e.stopPropagation();
+          dropzone.classList.add('drag-active');
+        }, false);
+      });
+
+      ['dragleave', 'drop'].forEach(eventName => {
+        dropzone.addEventListener(eventName, e => {
+          e.preventDefault();
+          e.stopPropagation();
+          dropzone.classList.remove('drag-active');
+        }, false);
+      });
+
+      dropzone.addEventListener('drop', e => {
+        const dt = e.dataTransfer;
+        const files = dt ? dt.files : null;
+        if (files && files.length > 0) {
+          uploadFiles(Array.from(files));
+        }
+      }, false);
+    }
+
+    function handleDropzoneClick(event) {
+      if (event.target.closest('button')) return;
+      triggerFilePicker('filePickerNormal');
+    }
+
+    function triggerFilePicker(id) {
+      const picker = document.getElementById(id);
+      if (picker) picker.click();
+    }
+
+    function handleFileInputChange(event) {
+      const fileList = event.target.files;
+      if (!fileList || fileList.length === 0) return;
+      const files = Array.from(fileList);
+      event.target.value = ''; // Safely reset after copying to Array
+      uploadFiles(files);
+    }
+
+    const ALLOWED_IMPORT_EXTENSIONS = ['.csv', '.xlsx', '.xls', '.pdf', '.txt', '.png', '.jpg', '.jpeg', '.webp'];
+    const MAX_IMPORT_SIZE_BYTES = 20 * 1024 * 1024; // 20 MB
+
+    function formatBytes(bytes) {
+      if (!bytes || bytes === 0) return '0 B';
+      const k = 1024;
+      const sizes = ['B', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+    }
+
+    async function uploadFiles(fileList) {
+      if (!fileList || fileList.length === 0) return;
+      const files = Array.from(fileList);
+
+      if (!STATE.importRejectedFiles) STATE.importRejectedFiles = [];
+      if (!STATE.uploadingFiles) STATE.uploadingFiles = [];
+
+      const validFilesToUpload = [];
+
+      for (const file of files) {
+        const name = file.name || 'unnamed_statement';
+        const ext = '.' + (name.split('.').pop() || '').toLowerCase();
+
+        if (!ALLOWED_IMPORT_EXTENSIONS.includes(ext)) {
+          STATE.importRejectedFiles.push({
+            name,
+            size: file.size,
+            error: `Unsupported format "${ext}". Allowed: CSV, Excel (.xlsx, .xls), PDF, TXT, images (PNG, JPG, WebP)`
+          });
+          continue;
+        }
+
+        if (file.size > MAX_IMPORT_SIZE_BYTES) {
+          const mb = (file.size / (1024 * 1024)).toFixed(1);
+          STATE.importRejectedFiles.push({
+            name,
+            size: file.size,
+            error: `File exceeds 20 MB limit (${mb} MB)`
+          });
+          continue;
+        }
+
+        if (file.size === 0) {
+          STATE.importRejectedFiles.push({
+            name,
+            size: 0,
+            error: 'File is empty (0 bytes)'
+          });
+          continue;
+        }
+
+        validFilesToUpload.push(file);
+      }
+
+      // If no valid files, show rejected state and avoid creating empty batch
+      if (validFilesToUpload.length === 0) {
+        renderStagedFiles();
+        showToast(`Rejected ${files.length} file(s). Please check format and 20 MB limit.`, 'error');
+        return;
+      }
+
+      // Set in-progress state for valid files
+      validFilesToUpload.forEach(f => {
+        if (!STATE.uploadingFiles.some(uf => uf.name === f.name)) {
+          STATE.uploadingFiles.push({
+            name: f.name,
+            size: f.size,
+            status: 'Uploading...'
+          });
+        }
+      });
+      renderStagedFiles();
+
+      // Ensure batch exists
+      if (!STATE.importBatch) {
+        try {
+          const res = await apiFetch('/api/import/batches', { method: 'POST' });
+          if (!res.ok) throw new Error(await res.text());
+          STATE.importBatch = await res.json();
+        } catch (err) {
+          STATE.uploadingFiles = [];
+          showToast('Could not initialize import session: ' + err.message, 'error');
+          renderStagedFiles();
+          return;
+        }
+      }
+
+      const batchId = STATE.importBatch.id;
+      showToast(`Uploading ${validFilesToUpload.length} statement file(s)...`, 'info');
+
+      for (let i = 0; i < validFilesToUpload.length; i++) {
+        const file = validFilesToUpload[i];
+        try {
+          const res = await apiFetch(`/api/import/batches/${batchId}/files`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': file.type || 'application/octet-stream',
+              'X-Filename': file.name
+            },
+            body: file
+          });
+          if (!res.ok) {
+            const errData = await res.json().catch(() => ({ detail: res.statusText }));
+            throw new Error(errData.detail || 'Upload failed');
+          }
+          const desc = await res.json();
+          if (!STATE.importBatch.files) STATE.importBatch.files = [];
+          // Replace if already present, or add
+          const existingIdx = STATE.importBatch.files.findIndex(f => f.id === desc.id || f.filename === desc.filename);
+          if (existingIdx >= 0) {
+            STATE.importBatch.files[existingIdx] = desc;
+          } else {
+            STATE.importBatch.files.push(desc);
+          }
+          if (!STATE.selectedFileId) STATE.selectedFileId = desc.id;
+          showToast(`Uploaded ${file.name} (${desc.row_count} rows detected)`, 'success');
+        } catch (err) {
+          STATE.importRejectedFiles.push({
+            name: file.name,
+            size: file.size,
+            error: err.message
+          });
+          showToast(`Failed to upload ${file.name}: ${err.message}`, 'error');
+        } finally {
+          STATE.uploadingFiles = STATE.uploadingFiles.filter(uf => uf.name !== file.name);
+          renderStagedFiles();
+        }
+      }
+
+      const nextBtn = document.getElementById('btnStep1Next');
+      if (nextBtn) {
+        const hasFiles = STATE.importBatch && STATE.importBatch.files && STATE.importBatch.files.length > 0;
+        nextBtn.disabled = !hasFiles;
+        nextBtn.style.opacity = hasFiles ? '1' : '0.5';
+        nextBtn.style.cursor = hasFiles ? 'pointer' : 'not-allowed';
+      }
+    }
+
+    function renderStagedFiles() {
+      const container = document.getElementById('stagedFilesContainer');
+      if (!container) return;
+
+      const uploading = STATE.uploadingFiles || [];
+      const rejected = STATE.importRejectedFiles || [];
+      const files = STATE.importBatch ? (STATE.importBatch.files || []) : [];
+
+      if (uploading.length === 0 && rejected.length === 0 && files.length === 0) {
+        container.innerHTML = '';
+        return;
+      }
+
+      let html = '';
+
+      // 1. In-progress uploading files
+      if (uploading.length > 0) {
+        html += `
+          <div style="margin-bottom: 1rem;">
+            <div style="font-size: 0.85rem; font-weight: 700; color: var(--accent); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+              <div class="spinner" style="width: 14px; height: 14px; border-width: 2px;"></div>
+              <span>Uploading &amp; Scanning Statements (${uploading.length})...</span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 0.4rem;">
+              ${uploading.map(uf => `
+                <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.65rem 0.9rem; border-radius: var(--radius-md); background: var(--bg-card-inset); border: 1px dashed var(--accent);">
+                  <div style="display: flex; align-items: center; gap: 0.6rem;">
+                    <div style="font-weight: 600; font-size: 0.85rem; color: var(--text-primary);">${uf.name}</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">(${formatBytes(uf.size)})</div>
+                  </div>
+                  <span class="hero-tag" style="background: var(--accent-subtle); color: var(--accent); font-size: 0.72rem;">Uploading...</span>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      // 2. Rejected / error files
+      if (rejected.length > 0) {
+        html += `
+          <div style="margin-bottom: 1rem;">
+            <div style="font-size: 0.85rem; font-weight: 700; color: var(--negative); margin-bottom: 0.5rem;">
+              File Issues Detected (${rejected.length})
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 0.4rem;">
+              ${rejected.map((rf, idx) => `
+                <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.65rem 0.9rem; border-radius: var(--radius-md); background: var(--bg-card-inset); border: 1px solid var(--negative); flex-wrap: wrap; gap: 0.5rem;">
+                  <div>
+                    <div style="font-weight: 700; font-size: 0.85rem; color: var(--negative);">${rf.name}</div>
+                    <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.15rem;">${rf.error}</div>
+                  </div>
+                  <button type="button" class="btn-secondary" onclick="dismissRejectedFile(${idx})" style="padding: 0.25rem 0.6rem; font-size: 0.75rem; color: var(--text-muted); cursor: pointer;">
+                    Dismiss
+                  </button>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      // 3. Successfully staged files
+      if (files.length > 0) {
+        html += `
+          <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.6rem;">
+            Staged Files Ready for Preview (${files.length})
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+            ${files.map(f => `
+              <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; border-radius: var(--radius-md); background: var(--bg-card-inset); border: 1px solid var(--border-subtle); flex-wrap: wrap; gap: 0.5rem;">
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                  <div style="width: 34px; height: 34px; border-radius: var(--radius-sm); background: var(--accent-subtle); color: var(--accent); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.75rem; text-transform: uppercase;">
+                    ${(f.filename.split('.').pop() || 'FILE').slice(0, 4)}
+                  </div>
+                  <div>
+                    <div style="font-weight: 600; font-size: 0.88rem; color: var(--text-primary);">${f.filename}</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">
+                      ${f.row_count} rows • Detected Broker: <strong style="color: var(--text-primary);">${f.broker || 'Custom'}</strong> • Status: <span style="color: var(--accent); font-weight: 600;">${f.status}</span>
+                    </div>
+                  </div>
+                </div>
+                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                  <button type="button" class="btn-secondary" onclick="previewSpecificFile('${f.id}')" style="padding: 0.35rem 0.8rem; font-size: 0.78rem; cursor: pointer;">
+                    Preview &amp; Map →
+                  </button>
+                  <button type="button" class="btn-secondary" onclick="removeStagedFile('${f.id}')" title="Remove File" style="padding: 0.35rem 0.6rem; font-size: 0.78rem; color: var(--negative); cursor: pointer;">
+                    ✕
+                  </button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      }
+
+      container.innerHTML = html;
+    }
+
+    function removeStagedFile(fileId) {
+      if (!STATE.importBatch || !STATE.importBatch.files) return;
+      STATE.importBatch.files = STATE.importBatch.files.filter(f => f.id !== fileId);
+      if (STATE.selectedFileId === fileId) {
+        STATE.selectedFileId = STATE.importBatch.files.length > 0 ? STATE.importBatch.files[0].id : null;
+      }
+      renderStagedFiles();
+      const nextBtn = document.getElementById('btnStep1Next');
+      if (nextBtn) {
+        const hasFiles = STATE.importBatch.files.length > 0;
+        nextBtn.disabled = !hasFiles;
+        nextBtn.style.opacity = hasFiles ? '1' : '0.5';
+        nextBtn.style.cursor = hasFiles ? 'pointer' : 'not-allowed';
+      }
+      showToast('File removed from staged batch', 'info');
+    }
+
+    function dismissRejectedFile(index) {
+      if (!STATE.importRejectedFiles) return;
+      STATE.importRejectedFiles.splice(index, 1);
+      renderStagedFiles();
+    }
+
+    function previewSpecificFile(fileId) {
+      STATE.selectedFileId = fileId;
+      goToStep(2);
+    }
+
+    function goToStep(stepNum) {
+      if (stepNum > 1 && (!STATE.importBatch || !STATE.importBatch.files || STATE.importBatch.files.length === 0)) {
+        showToast('Please upload or stage at least one file first', 'info');
+        return;
+      }
+
+      STATE.currentStep = stepNum;
+
+      // Update stepper UI
+      for (let s = 1; s <= 5; s++) {
+        const node = document.getElementById(`step-node-${s}`);
+        const view = document.getElementById(`wizard-view-${s}`);
+        if (node) {
+          node.classList.toggle('active', s === stepNum);
+          node.classList.toggle('completed', s < stepNum);
+        }
+        if (view) {
+          view.style.display = (s === stepNum) ? 'block' : 'none';
+        }
+      }
+
+      if (stepNum === 2) {
+        renderPreviewStep();
+      } else if (stepNum === 3) {
+        renderMappingStep();
+      } else if (stepNum === 4) {
+        renderValidationStep();
+      } else if (stepNum === 5) {
+        renderConfirmStep();
+      }
+    }
+
+    async function renderPreviewStep() {
+      if (!STATE.importBatch || !STATE.importBatch.files || STATE.importBatch.files.length === 0) return;
+
+      const files = STATE.importBatch.files;
+      if (!STATE.selectedFileId || !files.find(f => f.id === STATE.selectedFileId)) {
+        STATE.selectedFileId = files[0].id;
+      }
+
+      const fileSelect = document.getElementById('previewFileSelect');
+      if (fileSelect) {
+        fileSelect.innerHTML = files.map(f => `
+          <option value="${f.id}" ${f.id === STATE.selectedFileId ? 'selected' : ''}>${f.filename} (${f.row_count} rows)</option>
+        `).join('');
+      }
+
+      const currentFile = files.find(f => f.id === STATE.selectedFileId);
+      if (!currentFile) return;
+
+      const brokerSelect = document.getElementById('previewBrokerSelect');
+      if (brokerSelect) {
+        brokerSelect.value = currentFile.broker || 'Other';
+      }
+
+      try {
+        const sheetParam = currentFile.sheet ? `?sheet=${encodeURIComponent(currentFile.sheet)}` : '';
+        const res = await apiFetch(`/api/import/batches/${STATE.importBatch.id}/files/${currentFile.id}/preview${sheetParam}`);
+        if (!res.ok) throw new Error(await res.text());
+        const previewData = await res.json();
+
+        // Sheets handling for Excel / multi-sheet files
+        const sheetGroup = document.getElementById('sheetSelectGroup');
+        const sheetSelect = document.getElementById('previewSheetSelect');
+        if (sheetGroup && sheetSelect) {
+          if (previewData.sheets && previewData.sheets.length > 1) {
+            sheetGroup.style.display = 'flex';
+            sheetSelect.innerHTML = previewData.sheets.map(sh => `
+              <option value="${sh}" ${sh === previewData.sheet ? 'selected' : ''}>${sh}</option>
+            `).join('');
+          } else {
+            sheetGroup.style.display = 'none';
+          }
+        }
+
+        const head = document.getElementById('rawPreviewHead');
+        const body = document.getElementById('rawPreviewBody');
+        const notice = document.getElementById('previewRowCountNotice');
+
+        if (previewData.columns && previewData.columns.length > 0) {
+          head.innerHTML = `<tr>${previewData.columns.map(c => `<th>${c}</th>`).join('')}</tr>`;
+          if (previewData.rows && previewData.rows.length > 0) {
+            body.innerHTML = previewData.rows.map(row => `
+              <tr>${previewData.columns.map(c => `<td>${row[c] !== undefined && row[c] !== null ? row[c] : ''}</td>`).join('')}</tr>
+            `).join('');
+          } else {
+            body.innerHTML = `<tr><td colspan="${previewData.columns.length}" style="text-align:center; color:var(--text-muted);">No data rows in this sheet</td></tr>`;
+          }
+        } else {
+          head.innerHTML = '';
+          body.innerHTML = '<tr><td style="text-align:center; color:var(--text-muted);">No columns found</td></tr>';
+        }
+
+        if (notice) {
+          notice.textContent = `Showing first ${previewData.rows ? previewData.rows.length : 0} rows of statement (Total: ${previewData.row_count || 0} rows)`;
+        }
+
+        // Update local descriptor
+        currentFile.columns = previewData.columns;
+        currentFile.sheet = previewData.sheet;
+        currentFile.sheets = previewData.sheets;
+        currentFile.broker = previewData.broker;
+        currentFile.mapping = previewData.mapping;
+        currentFile.row_count = previewData.row_count;
+      } catch (err) {
+        showToast('Failed to load file preview: ' + err.message, 'error');
+      }
+    }
+
+    function onPreviewFileChange() {
+      const fileSelect = document.getElementById('previewFileSelect');
+      if (fileSelect) {
+        STATE.selectedFileId = fileSelect.value;
+        renderPreviewStep();
+      }
+    }
+
+    function onPreviewSheetChange() {
+      const sheetSelect = document.getElementById('previewSheetSelect');
+      const currentFile = STATE.importBatch?.files?.find(f => f.id === STATE.selectedFileId);
+      if (currentFile && sheetSelect) {
+        currentFile.sheet = sheetSelect.value;
+        renderPreviewStep();
+      }
+    }
+
+    function onPreviewBrokerChange() {
+      const brokerSelect = document.getElementById('previewBrokerSelect');
+      const currentFile = STATE.importBatch?.files?.find(f => f.id === STATE.selectedFileId);
+      if (currentFile && brokerSelect) {
+        currentFile.broker = brokerSelect.value;
+      }
+    }
+
+    function renderMappingStep() {
+      const currentFile = STATE.importBatch?.files?.find(f => f.id === STATE.selectedFileId);
+      if (!currentFile) return;
+
+      const columns = currentFile.columns || [];
+      const currentMapping = currentFile.mapping || {};
+
+      const reqContainer = document.getElementById('requiredMappingGrid');
+      const optContainer = document.getElementById('optionalMappingGrid');
+
+      if (reqContainer) {
+        reqContainer.innerHTML = REQUIRED_UPLOAD_FIELDS.map(fld => {
+          const selectedCol = currentMapping[fld.key] || '';
+          return `
+            <div class="mapping-card">
+              <div class="mapping-card-header">
+                <span class="mapping-label">${fld.label} <span style="color:var(--negative)">*</span></span>
+                <span class="mapping-desc">${fld.desc}</span>
+              </div>
+              <select class="form-input mapping-select" data-field="${fld.key}" id="map-${fld.key}">
+                <option value="">-- Select Source Column --</option>
+                ${columns.map(col => `
+                  <option value="${col}" ${col === selectedCol ? 'selected' : ''}>${col}</option>
+                `).join('')}
+              </select>
+            </div>
+          `;
+        }).join('');
+      }
+
+      if (optContainer) {
+        optContainer.innerHTML = OPTIONAL_UPLOAD_FIELDS.map(fld => {
+          const selectedCol = currentMapping[fld.key] || '';
+          return `
+            <div class="mapping-card">
+              <div class="mapping-card-header">
+                <span class="mapping-label">${fld.label}</span>
+                <span class="mapping-desc">${fld.desc}</span>
+              </div>
+              <select class="form-input mapping-select" data-field="${fld.key}" id="map-${fld.key}">
+                <option value="">-- Not in statement --</option>
+                ${columns.map(col => `
+                  <option value="${col}" ${col === selectedCol ? 'selected' : ''}>${col}</option>
+                `).join('')}
+              </select>
+            </div>
+          `;
+        }).join('');
+      }
+
+      const notice = document.getElementById('mappingAutoDetectNotice');
+      if (notice) {
+        notice.innerHTML = `Mapping statement: <strong>${currentFile.filename}</strong> (${currentFile.broker || 'Custom Broker'})`;
+      }
+    }
+
+    function autoDetectCurrentFileMapping() {
+      const currentFile = STATE.importBatch?.files?.find(f => f.id === STATE.selectedFileId);
+      if (!currentFile || !currentFile.columns) return;
+
+      REQUIRED_UPLOAD_FIELDS.forEach(fld => {
+        const sel = document.getElementById(`map-${fld.key}`);
+        if (sel) {
+          const match = currentFile.columns.find(c => {
+            const lc = c.toLowerCase().trim();
+            if (fld.key === 'symbol') return ['symbol', 'scrip', 'stock', 'ticker', 'instrument'].some(k => lc.includes(k));
+            if (fld.key === 'trade_date') return ['trade_date', 'date', 'order_execution_time', 'time'].some(k => lc.includes(k));
+            if (fld.key === 'side') return ['side', 'type', 'action', 'buy/sell', 'transaction'].some(k => lc.includes(k));
+            if (fld.key === 'quantity') return ['quantity', 'qty', 'shares', 'units'].some(k => lc.includes(k));
+            if (fld.key === 'price') return ['price', 'trade_price', 'rate', 'avg_price'].some(k => lc.includes(k));
+            return false;
+          });
+          if (match) sel.value = match;
+        }
+      });
+      showToast('Re-applied column auto-detection', 'info');
+    }
+
+    async function submitMappingAndValidate() {
+      const currentFile = STATE.importBatch?.files?.find(f => f.id === STATE.selectedFileId);
+      if (!currentFile) return;
+
+      const mapping = {};
+      let missingRequired = [];
+
+      REQUIRED_UPLOAD_FIELDS.forEach(fld => {
+        const sel = document.getElementById(`map-${fld.key}`);
+        const val = sel ? sel.value : '';
+        if (val) {
+          mapping[fld.key] = val;
+        } else {
+          missingRequired.push(fld.label);
+        }
+      });
+
+      if (missingRequired.length > 0) {
+        showToast(`Missing required mapping(s): ${missingRequired.join(', ')}`, 'error');
+        return;
+      }
+
+      OPTIONAL_UPLOAD_FIELDS.forEach(fld => {
+        const sel = document.getElementById(`map-${fld.key}`);
+        const val = sel ? sel.value : '';
+        if (val) {
+          mapping[fld.key] = val;
+        }
+      });
+
+      try {
+        showToast('Saving column mappings & validating rows...', 'info');
+        const mapRes = await apiFetch(`/api/import/batches/${STATE.importBatch.id}/files/${currentFile.id}/mapping`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            broker: currentFile.broker || 'Other',
+            columns: mapping,
+            excluded_rows: currentFile.excluded_rows || []
+          })
+        });
+        if (!mapRes.ok) throw new Error(await mapRes.text());
+        currentFile.mapping = mapping;
+
+        const valRes = await apiFetch(`/api/import/batches/${STATE.importBatch.id}/validate`, { method: 'POST' });
+        if (!valRes.ok) throw new Error(await valRes.text());
+        STATE.validationResult = await valRes.json();
+
+        goToStep(4);
+      } catch (err) {
+        showToast('Validation request failed: ' + err.message, 'error');
+      }
+    }
+
+    function renderValidationStep() {
+      const vr = STATE.validationResult;
+      if (!vr) return;
+
+      const sumGrid = document.getElementById('validationSummaryGrid');
+      const probContainer = document.getElementById('validationProblemsContainer');
+      const probTbody = document.getElementById('problemRowsTableBody');
+      const valTbody = document.getElementById('validatedRowsTableBody');
+      const confirmBtn = document.getElementById('btnProceedToConfirm');
+
+      const totalFiles = vr.files ? vr.files.length : 0;
+      const validRows = vr.row_count || 0;
+
+      let totalErrors = 0;
+      let allErrorsList = [];
+      if (vr.reports) {
+        vr.reports.forEach(rep => {
+          if (rep.errors && rep.errors.length > 0) {
+            totalErrors += rep.errors.length;
+            rep.errors.forEach(err => {
+              allErrorsList.push({
+                file_id: rep.file_id,
+                filename: rep.filename,
+                ...err
+              });
+            });
+          }
+        });
+      }
+
+      if (sumGrid) {
+        sumGrid.innerHTML = `
+          <div style="background: var(--bg-card); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+            <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">FILES IN BATCH</div>
+            <div style="font-size: 1.5rem; font-weight: 800; color: var(--text-primary);">${totalFiles}</div>
+          </div>
+          <div style="background: var(--bg-card); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+            <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">VALIDATED TRADES</div>
+            <div style="font-size: 1.5rem; font-weight: 800; color: var(--profit);">${validRows}</div>
+          </div>
+          <div style="background: var(--bg-card); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+            <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">FLAGGED ISSUES</div>
+            <div style="font-size: 1.5rem; font-weight: 800; color: ${totalErrors > 0 ? 'var(--negative)' : 'var(--profit)'};">${totalErrors}</div>
+          </div>
+          <div style="background: var(--bg-card); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+            <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">BATCH STATUS</div>
+            <div style="font-size: 1.15rem; font-weight: 800; color: ${vr.valid ? 'var(--profit)' : 'var(--negative)'}; margin-top: 0.35rem;">
+              ${vr.valid ? '✓ Ready to Ingest' : '⚠ Action Required'}
+            </div>
+          </div>
+        `;
+      }
+
+      if (totalErrors > 0) {
+        probContainer.style.display = 'block';
+        probTbody.innerHTML = allErrorsList.map(err => `
+          <tr>
+            <td><strong>#${err.row}</strong></td>
+            <td><code>${err.field}</code></td>
+            <td><span style="font-family: var(--font-mono); font-size: 0.8rem;">${err.value !== undefined ? err.value : ''}</span></td>
+            <td style="color: var(--negative);">${err.issue}</td>
+            <td>
+              <button class="btn-secondary" onclick="toggleExcludeRow('${err.file_id}', ${err.row})" style="padding: 0.25rem 0.6rem; font-size: 0.75rem; color: var(--negative); border-color: var(--negative); cursor: pointer;">
+                Exclude Row
+              </button>
+            </td>
+          </tr>
+        `).join('');
+        if (confirmBtn) {
+          confirmBtn.disabled = true;
+          confirmBtn.style.opacity = '0.5';
+        }
+      } else {
+        probContainer.style.display = 'none';
+        if (confirmBtn) {
+          confirmBtn.disabled = false;
+          confirmBtn.style.opacity = '1';
+        }
+      }
+
+      let sampleRows = [];
+      if (vr.reports) {
+        vr.reports.forEach(rep => {
+          if (rep.sample_rows) sampleRows = sampleRows.concat(rep.sample_rows);
+        });
+      }
+
+      if (valTbody) {
+        if (sampleRows.length > 0) {
+          valTbody.innerHTML = sampleRows.slice(0, 15).map(r => `
+            <tr>
+              <td>#${r.row || ''}</td>
+              <td><strong>${r.symbol || ''}</strong></td>
+              <td>${r.trade_date || ''}</td>
+              <td><span class="hero-tag" style="background:${r.side === 'BUY' ? 'var(--positive-subtle)' : 'var(--warning-subtle)'}; color:${r.side === 'BUY' ? 'var(--positive)' : 'var(--warning)'}">${r.side || ''}</span></td>
+              <td class="num">${r.quantity || ''}</td>
+              <td class="num">${r.price || ''}</td>
+              <td><span style="color: var(--profit); font-size: 0.8rem; font-weight: 600;">✓ Valid</span></td>
+            </tr>
+          `).join('');
+        } else {
+          valTbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted);">No valid rows yet</td></tr>';
+        }
+      }
+    }
+
+    async function toggleExcludeRow(fileId, rowIndex) {
+      const file = STATE.importBatch?.files?.find(f => f.id === fileId);
+      if (!file) return;
+
+      if (!file.excluded_rows) file.excluded_rows = [];
+      if (!file.excluded_rows.includes(rowIndex)) {
+        file.excluded_rows.push(rowIndex);
+      }
+
+      try {
+        await apiFetch(`/api/import/batches/${STATE.importBatch.id}/files/${file.id}/mapping`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            broker: file.broker || 'Other',
+            columns: file.mapping || {},
+            excluded_rows: file.excluded_rows
+          })
+        });
+
+        const valRes = await apiFetch(`/api/import/batches/${STATE.importBatch.id}/validate`, { method: 'POST' });
+        if (!valRes.ok) throw new Error(await valRes.text());
+        STATE.validationResult = await valRes.json();
+        renderValidationStep();
+        showToast(`Excluded row #${rowIndex}`, 'info');
+      } catch (err) {
+        showToast('Failed to exclude row: ' + err.message, 'error');
+      }
+    }
+
+    async function excludeAllProblemRows() {
+      const vr = STATE.validationResult;
+      if (!vr || !vr.reports) return;
+
+      try {
+        for (const rep of vr.reports) {
+          if (rep.errors && rep.errors.length > 0) {
+            const file = STATE.importBatch?.files?.find(f => f.id === rep.file_id);
+            if (file) {
+              if (!file.excluded_rows) file.excluded_rows = [];
+              rep.errors.forEach(e => {
+                if (!file.excluded_rows.includes(e.row)) file.excluded_rows.push(e.row);
+              });
+              await apiFetch(`/api/import/batches/${STATE.importBatch.id}/files/${file.id}/mapping`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  broker: file.broker || 'Other',
+                  columns: file.mapping || {},
+                  excluded_rows: file.excluded_rows
+                })
+              });
+            }
+          }
+        }
+
+        const valRes = await apiFetch(`/api/import/batches/${STATE.importBatch.id}/validate`, { method: 'POST' });
+        if (!valRes.ok) throw new Error(await valRes.text());
+        STATE.validationResult = await valRes.json();
+        renderValidationStep();
+        showToast('Excluded all problem rows. Batch is now valid!', 'success');
+      } catch (err) {
+        showToast('Failed to exclude problem rows: ' + err.message, 'error');
+      }
+    }
+
+    function renderConfirmStep() {
+      const vr = STATE.validationResult;
+      const filesCount = STATE.importBatch?.files?.length || 0;
+      const rowsCount = vr?.row_count || 0;
+
+      const cFileCount = document.getElementById('confirmFileCount');
+      const cRowCount = document.getElementById('confirmRowCount');
+      if (cFileCount) cFileCount.textContent = filesCount;
+      if (cRowCount) cRowCount.textContent = rowsCount;
+
+      document.getElementById('importPipelineProgressBox').style.display = 'none';
+      document.getElementById('importSuccessBox').style.display = 'none';
+      const btn = document.getElementById('btnConfirmImportBatch');
+      if (btn) btn.disabled = false;
+    }
+
+    async function executeImportConfirmation() {
+      if (!STATE.importBatch) return;
+
+      const btn = document.getElementById('btnConfirmImportBatch');
+      if (btn) btn.disabled = true;
+
+      const progressBox = document.getElementById('importPipelineProgressBox');
+      const progressTitle = document.getElementById('importProgressTitle');
+      const stepLog = document.getElementById('importStepLog');
+      const successBox = document.getElementById('importSuccessBox');
+      const successDetails = document.getElementById('importSuccessDetails');
+
+      progressBox.style.display = 'block';
+      stepLog.innerHTML = '<div>1. Confirming batch and writing canonical dataset...</div>';
+
+      try {
+        const confRes = await apiFetch(`/api/import/batches/${STATE.importBatch.id}/confirm`, { method: 'POST' });
+        if (!confRes.ok) throw new Error(await confRes.text());
+        const confData = await confRes.json();
+
+        stepLog.innerHTML += `<div style="color:var(--profit);">✓ Confirmed ${confData.row_count} trades into normalized_trades.csv with provenance</div>`;
+        stepLog.innerHTML += '<div>2. Executing 7-stage capital gains &amp; tax pipeline...</div>';
+
+        const pipeRes = await apiFetch('/pipeline/run', { method: 'POST' });
+        if (!pipeRes.ok) throw new Error(await pipeRes.text());
+        const pipeData = await pipeRes.json();
+
+        if (pipeData.steps) {
+          pipeData.steps.forEach(st => {
+            stepLog.innerHTML += `
+              <div style="display:flex; justify-content:space-between; color: ${st.status === 'completed' ? 'var(--profit)' : 'var(--text-muted)'};">
+                <span>• ${st.step}</span>
+                <span>${st.status.toUpperCase()}</span>
+              </div>
+            `;
+          });
+        }
+
+        document.getElementById('importSpinner').style.display = 'none';
+        progressTitle.textContent = 'Pipeline Completed Successfully!';
+
+        successBox.style.display = 'block';
+        successDetails.innerHTML = `
+          Successfully imported <strong>${confData.row_count} trades</strong> from <strong>${STATE.importBatch.files.length} file(s)</strong>.
+          Corporate actions, FIFO lot-matching, and FY tax liability have been computed with full audit provenance.
+        `;
+
+        showToast('Import successful & pipeline computed!', 'success');
+
+        await fetchImportStatus();
+        await loadAllBackendData();
+      } catch (err) {
+        document.getElementById('importSpinner').style.display = 'none';
+        progressTitle.textContent = 'Import Failed';
+        stepLog.innerHTML += `<div style="color:var(--negative);">Error: ${err.message}</div>`;
+        showToast('Import confirmation failed: ' + err.message, 'error');
+        if (btn) btn.disabled = false;
+      }
+    }
+
+    async function resetToSampleData() {
+      if (!confirm('Reset CapTax AI to use synthetic sample data (540 demo trades)? Any imported statements will be cleared.')) return;
+      try {
+        showToast('Resetting to sample datasets...', 'info');
+        const res = await apiFetch('/api/import/reset-sample', { method: 'POST' });
+        if (!res.ok) throw new Error(await res.text());
+
+        await apiFetch('/pipeline/run', { method: 'POST' });
+
+        showToast('Reset to sample dataset completed', 'success');
+        STATE.importBatch = null;
+        STATE.uploadingFiles = [];
+        STATE.importRejectedFiles = [];
+        STATE.validationResult = null;
+        STATE.selectedFileId = null;
+        goToStep(1);
+        renderStagedFiles();
+        await fetchImportStatus();
+        await loadAllBackendData();
+      } catch (err) {
+        showToast('Failed to reset to sample data: ' + err.message, 'error');
+      }
+    }
+
+    function resetImportWizard() {
+      STATE.importBatch = null;
+      STATE.uploadingFiles = [];
+      STATE.importRejectedFiles = [];
+      STATE.validationResult = null;
+      STATE.selectedFileId = null;
+      const normalInput = document.getElementById('filePickerNormal');
+      if (normalInput) normalInput.value = '';
+      const cameraInput = document.getElementById('filePickerCamera');
+      if (cameraInput) cameraInput.value = '';
+      goToStep(1);
+      renderStagedFiles();
+      const nextBtn = document.getElementById('btnStep1Next');
+      if (nextBtn) {
+        nextBtn.disabled = true;
+        nextBtn.style.opacity = '0.5';
+        nextBtn.style.cursor = 'not-allowed';
+      }
+      showToast('Import wizard reset for new upload', 'info');
+    }
+
+    // =========================================================================
     // NAVIGATION & DRAWER CONTROLS
     // =========================================================================
     function switchTab(tabId) {
@@ -3115,6 +5343,9 @@
       const activeSection = document.getElementById(`page-${tabId}`);
       if (activeSection) activeSection.classList.add('active');
 
+      // Trigger insights render on first visit
+      if (tabId === 'insights') insRender();
+
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -3129,8 +5360,19 @@
     }
 
     function toggleSettingsDrawer(open) {
-      document.getElementById('settingsDrawer').classList.toggle('open', open);
-      document.getElementById('drawerOverlay').classList.toggle('open', open);
+      const drawer = document.getElementById('settingsDrawer');
+      const overlay = document.getElementById('drawerOverlay');
+      const willOpen = open !== undefined ? open : !drawer.classList.contains('open');
+      drawer.classList.toggle('open', willOpen);
+      overlay.classList.toggle('open', willOpen);
+      if (willOpen) {
+        setTimeout(() => {
+          document.getElementById('settingsApiBase')?.focus();
+        }, 50);
+      } else {
+        const toggleBtn = document.getElementById('btnSettingsToggle');
+        if (toggleBtn) toggleBtn.focus();
+      }
     }
 
     function saveSettingsAndRefresh() {
@@ -3138,6 +5380,10 @@
       if (newBase) {
         STATE.apiBase = newBase;
         localStorage.setItem('captax_api_base', newBase);
+      } else {
+        localStorage.removeItem('captax_api_base');
+        STATE.apiBase = resolveDefaultApiBase();
+        document.getElementById('settingsApiBase').value = STATE.apiBase;
       }
       toggleSettingsDrawer(false);
       checkBackendHealth(true);
@@ -3195,6 +5441,721 @@
         toast.style.transform = 'translateY(-10px)';
         setTimeout(() => toast.remove(), 300);
       }, 3500);
+    }
+
+    // =========================================================================
+    // PORTFOLIO INSIGHTS MODULE
+    // =========================================================================
+    const INS = {
+      realizedGains: [],   // raw /data/realized-gains
+      holdings: [],        // raw /data/holdings
+      selectedBrokers: new Set(),   // empty = All
+      selectedStocks: new Set(),    // empty = All
+      selectedFY: new Set(),        // empty = All
+      donGroupBy: 'broker',         // 'broker' or 'stock'
+      lineGroupBy: 'monthly',       // 'monthly' or 'quarterly'
+      loaded: false,
+      loading: false,
+      allBrokers: [],
+      allStocks: [],
+      allFYs: [],
+    };
+
+    // Colour palette matching existing design tokens
+    const INS_PALETTE = [
+      '#6366f1','#22d3ee','#a78bfa','#34d399','#f97316',
+      '#f43f5e','#eab308','#8b5cf6','#ec4899','#14b8a6'
+    ];
+
+    function insFmt(val, currency) {
+      const c = currency || STATE.currency || 'INR';
+      const sym = c === 'USD' ? '$' : '₹';
+      const rate = STATE.usdInrRate || 83;
+      let v = Number(val) || 0;
+      if (c === 'USD') v = v / rate;
+      if (Math.abs(v) >= 1e7) return sym + (v / 1e7).toFixed(2) + ' Cr';
+      if (Math.abs(v) >= 1e5) return sym + (v / 1e5).toFixed(2) + ' L';
+      return sym + v.toLocaleString('en-IN', { maximumFractionDigits: 0 });
+    }
+
+    function insShortNum(v) {
+      v = Number(v) || 0;
+      if (Math.abs(v) >= 1e7) return (v / 1e7).toFixed(2) + 'Cr';
+      if (Math.abs(v) >= 1e5) return (v / 1e5).toFixed(1) + 'L';
+      if (Math.abs(v) >= 1e3) return (v / 1e3).toFixed(1) + 'K';
+      return v.toFixed(0);
+    }
+
+    async function insInit() {
+      if (INS.loading) return;
+      INS.loading = true;
+      try {
+        const [gainsRes, holdingsRes] = await Promise.all([
+          apiFetch('/data/realized-gains'),
+          apiFetch('/data/holdings')
+        ]);
+        if (!gainsRes.ok || !holdingsRes.ok) throw new Error('API error');
+        INS.realizedGains = await gainsRes.json();
+        INS.holdings = await holdingsRes.json();
+
+        // Derive unique sorted lists from actual data
+        const validGains = INS.realizedGains.filter(r => r.realized_gain_inr !== '' && r.realized_gain_inr !== null);
+        INS.allBrokers = [...new Set([
+          ...INS.holdings.map(r => r.broker),
+          ...INS.realizedGains.map(r => r.broker)
+        ])].filter(Boolean).sort();
+        INS.allStocks = [...new Set([
+          ...INS.holdings.map(r => r.symbol),
+          ...INS.realizedGains.map(r => r.symbol)
+        ])].filter(Boolean).sort();
+        // FYs: derive from sell dates
+        const fys = new Set();
+        validGains.forEach(r => {
+          const sd = r.sell_date;
+          if (!sd) return;
+          const d = new Date(sd);
+          if (isNaN(d)) return;
+          const m = d.getMonth(); // 0=Jan, 2=Mar
+          const y = d.getFullYear();
+          // Indian FY: Apr–Mar; Apr 2022–Mar 2023 = FY2022-23
+          const fyStart = m >= 3 ? y : y - 1;
+          fys.add(`FY${fyStart}-${String(fyStart + 1).slice(2)}`);
+        });
+        INS.allFYs = [...fys].sort();
+
+        INS.loaded = true;
+        insRenderFilterChips();
+        if (STATE.activeTab === 'insights') insRender();
+      } catch (e) {
+        console.warn('[Insights] Load failed:', e);
+      } finally {
+        INS.loading = false;
+      }
+    }
+
+    function insRenderFilterChips() {
+      // FY chips
+      const fyEl = document.getElementById('insFyChips');
+      if (fyEl) {
+        const allActive = INS.selectedFY.size === 0;
+        fyEl.innerHTML = `
+          <span class="fy-chip ${allActive ? 'active' : ''}" onclick="insFYToggle('ALL')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')insFYToggle('ALL')">All Years</span>
+          ${INS.allFYs.map(fy => `
+            <span class="fy-chip ${INS.selectedFY.has(fy) ? 'active' : ''}" onclick="insFYToggle('${fy}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')insFYToggle('${fy}')">${fy}</span>
+          `).join('')}
+        `;
+      }
+
+      // Broker chips
+      const brEl = document.getElementById('insBrokerChips');
+      if (brEl) {
+        const allActive = INS.selectedBrokers.size === 0;
+        brEl.innerHTML = `
+          <span class="filter-chip chip-all ${allActive ? 'active' : ''}" onclick="insBrokerToggle('ALL')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')insBrokerToggle('ALL')">All</span>
+          ${INS.allBrokers.map(b => `
+            <span class="filter-chip ${INS.selectedBrokers.has(b) ? 'active' : ''}" onclick="insBrokerToggle('${b}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')insBrokerToggle('${b}')">${b}</span>
+          `).join('')}
+          ${INS.selectedBrokers.size > 0 ? '<span class="filter-chip chip-clear" onclick="insBrokerToggle(\'ALL\')" role="button" tabindex="0">Clear ×</span>' : ''}
+        `;
+        const cnt = document.getElementById('insBrokerCount');
+        if (cnt) cnt.textContent = INS.selectedBrokers.size > 0 ? `(${INS.selectedBrokers.size} selected)` : '';
+      }
+
+      // Stock chips (show search if > 10)
+      const stEl = document.getElementById('insStockChips');
+      const srEl = document.getElementById('insStockSearch');
+      if (stEl) {
+        if (INS.allStocks.length > 10 && srEl) srEl.style.display = '';
+        const searchTerm = document.getElementById('insStockSearchInput')?.value?.toLowerCase() || '';
+        const filtered = searchTerm ? INS.allStocks.filter(s => s.toLowerCase().includes(searchTerm)) : INS.allStocks;
+        const allActive = INS.selectedStocks.size === 0;
+        stEl.innerHTML = `
+          <span class="filter-chip chip-all ${allActive ? 'active' : ''}" onclick="insStockToggle('ALL')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')insStockToggle('ALL')">All</span>
+          ${filtered.map(s => `
+            <span class="filter-chip ${INS.selectedStocks.has(s) ? 'active' : ''}" onclick="insStockToggle('${s}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')insStockToggle('${s}')">${s}</span>
+          `).join('')}
+          ${INS.selectedStocks.size > 0 ? '<span class="filter-chip chip-clear" onclick="insStockToggle(\'ALL\')" role="button" tabindex="0">Clear ×</span>' : ''}
+        `;
+        const cnt = document.getElementById('insStockCount');
+        if (cnt) cnt.textContent = INS.selectedStocks.size > 0 ? `(${INS.selectedStocks.size} selected)` : '';
+      }
+
+      // Active bar
+      insRenderActiveBar();
+    }
+
+    function insRenderActiveBar() {
+      const bar = document.getElementById('insActiveBar');
+      const chips = document.getElementById('insActiveChips');
+      if (!bar || !chips) return;
+      const parts = [];
+      INS.selectedFY.forEach(fy => parts.push({ label: fy, type: 'fy' }));
+      INS.selectedBrokers.forEach(b => parts.push({ label: b, type: 'broker' }));
+      INS.selectedStocks.forEach(s => parts.push({ label: s, type: 'stock' }));
+      if (parts.length === 0) {
+        bar.style.display = 'none';
+        return;
+      }
+      bar.style.display = 'flex';
+      chips.innerHTML = parts.map(p => `
+        <span class="active-filter-pill" onclick="insRemoveFilter('${p.type}','${p.label}')" title="Remove filter" role="button" tabindex="0">
+          ${p.label} ×
+        </span>
+      `).join('');
+    }
+
+    function insRemoveFilter(type, label) {
+      if (type === 'fy') INS.selectedFY.delete(label);
+      else if (type === 'broker') INS.selectedBrokers.delete(label);
+      else if (type === 'stock') INS.selectedStocks.delete(label);
+      insRenderFilterChips();
+      insRender();
+    }
+
+    function insFYToggle(fy) {
+      if (fy === 'ALL') { INS.selectedFY.clear(); }
+      else {
+        if (INS.selectedFY.has(fy)) INS.selectedFY.delete(fy);
+        else INS.selectedFY.add(fy);
+      }
+      insRenderFilterChips();
+      insRender();
+    }
+
+    function insBrokerToggle(broker) {
+      if (broker === 'ALL') { INS.selectedBrokers.clear(); }
+      else {
+        if (INS.selectedBrokers.has(broker)) INS.selectedBrokers.delete(broker);
+        else INS.selectedBrokers.add(broker);
+      }
+      insRenderFilterChips();
+      insRender();
+    }
+
+    function insStockToggle(stock) {
+      if (stock === 'ALL') { INS.selectedStocks.clear(); }
+      else {
+        if (INS.selectedStocks.has(stock)) INS.selectedStocks.delete(stock);
+        else INS.selectedStocks.add(stock);
+      }
+      insRenderFilterChips();
+      insRender();
+    }
+
+    function insFilterStockSearch(val) {
+      insRenderFilterChips(); // re-render with filtered chips
+    }
+
+    function insResetAllFilters() {
+      INS.selectedFY.clear();
+      INS.selectedBrokers.clear();
+      INS.selectedStocks.clear();
+      const inp = document.getElementById('insStockSearchInput');
+      if (inp) inp.value = '';
+      insRenderFilterChips();
+      insRender();
+    }
+
+    function insDonSwitch(mode) {
+      INS.donGroupBy = mode;
+      document.getElementById('insDonTogBroker').classList.toggle('active', mode === 'broker');
+      document.getElementById('insDonTogStock').classList.toggle('active', mode === 'stock');
+      document.getElementById('insDonSub').textContent =
+        mode === 'broker' ? 'Invested value share by broker' : 'Invested value share by stock';
+      insRenderDonut();
+    }
+
+    function insLineSwitch(mode) {
+      INS.lineGroupBy = mode;
+      document.getElementById('insLineTogM').classList.toggle('active', mode === 'monthly');
+      document.getElementById('insLineTogQ').classList.toggle('active', mode === 'quarterly');
+      insRenderLine();
+    }
+
+    // Apply all active filters to a data array; each row must have .broker and .symbol
+    function insApplyFilters(rows) {
+      return rows.filter(r => {
+        // Broker filter
+        if (INS.selectedBrokers.size > 0 && !INS.selectedBrokers.has(r.broker)) return false;
+        // Stock filter
+        if (INS.selectedStocks.size > 0 && !INS.selectedStocks.has(r.symbol)) return false;
+        // FY filter — based on sell_date (realized gains) or last_trade_date (holdings)
+        if (INS.selectedFY.size > 0) {
+          const dateStr = r.sell_date || r.last_trade_date || '';
+          const d = new Date(dateStr);
+          if (isNaN(d)) return false;
+          const m = d.getMonth();
+          const y = d.getFullYear();
+          const fyStart = m >= 3 ? y : y - 1;
+          const fy = `FY${fyStart}-${String(fyStart + 1).slice(2)}`;
+          if (!INS.selectedFY.has(fy)) return false;
+        }
+        return true;
+      });
+    }
+
+    // Holdings don't have sell_date — apply FY filter only by broker/stock for holdings
+    function insApplyHoldingsFilters(rows) {
+      return rows.filter(r => {
+        if (INS.selectedBrokers.size > 0 && !INS.selectedBrokers.has(r.broker)) return false;
+        if (INS.selectedStocks.size > 0 && !INS.selectedStocks.has(r.symbol)) return false;
+        return true;
+      });
+    }
+
+    function insChartEmpty(containerId, msg) {
+      const el = document.getElementById(containerId);
+      if (!el) return;
+      el.innerHTML = `
+        <div class="ins-chart-state">
+          <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+          <span>${msg}</span>
+        </div>`;
+    }
+
+    function insRender() {
+      if (!INS.loaded) return;
+      insRenderSummary();
+      insRenderDonut();
+      insRenderBar();
+      insRenderLine();
+      insRenderBrokerBar();
+    }
+
+    function insRenderSummary() {
+      const validGains = INS.realizedGains.filter(r => r.realized_gain_inr !== '' && r.realized_gain_inr !== null);
+      const filtered = insApplyFilters(validGains);
+      const hFiltered = insApplyHoldingsFilters(INS.holdings);
+
+      const totalInvested = hFiltered.reduce((s, r) => s + (Number(r.invested_amount_inr) || 0), 0);
+      const totalGain = filtered.reduce((s, r) => s + (Number(r.realized_gain_inr) || 0), 0);
+      const ltcg = filtered.filter(r => Number(r.holding_period_days) > 365).reduce((s, r) => s + Number(r.realized_gain_inr), 0);
+      const stcg = filtered.filter(r => Number(r.holding_period_days) <= 365).reduce((s, r) => s + Number(r.realized_gain_inr), 0);
+
+      const setVal = (id, val, cls) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.textContent = val;
+        if (cls) { el.classList.remove('gain', 'loss'); el.classList.add(cls); }
+      };
+
+      setVal('insM_invested', insFmt(totalInvested));
+      setVal('insM_holdingsCount', `${hFiltered.length} position${hFiltered.length !== 1 ? 's' : ''}`);
+      setVal('insM_totalGain', insFmt(totalGain), totalGain >= 0 ? 'gain' : 'loss');
+      setVal('insM_gainSub', `From ${filtered.length} trade${filtered.length !== 1 ? 's' : ''}`);
+      setVal('insM_ltcg', insFmt(ltcg), ltcg >= 0 ? 'gain' : 'loss');
+      setVal('insM_stcg', insFmt(stcg), stcg >= 0 ? 'gain' : 'loss');
+      setVal('insM_trades', filtered.length);
+    }
+
+    function insRenderDonut() {
+      const hFiltered = insApplyHoldingsFilters(INS.holdings);
+      const groupBy = INS.donGroupBy;
+      const groupKey = groupBy === 'broker' ? 'broker' : 'symbol';
+
+      // Aggregate invested_amount_inr
+      const agg = {};
+      hFiltered.forEach(r => {
+        const k = r[groupKey] || 'Unknown';
+        agg[k] = (agg[k] || 0) + (Number(r.invested_amount_inr) || 0);
+      });
+      const entries = Object.entries(agg).sort((a, b) => b[1] - a[1]);
+      const total = entries.reduce((s, e) => s + e[1], 0);
+
+      const container = document.getElementById('insDonWrap');
+      const legendEl = document.getElementById('insDonLegend');
+      if (!container) return;
+
+      if (entries.length === 0 || total === 0) {
+        insChartEmpty('insDonWrap', 'No holdings match the current filters.');
+        if (legendEl) legendEl.innerHTML = '';
+        // Clear table alt
+        const tbl = document.getElementById('insDonut-table');
+        if (tbl) tbl.innerHTML = '';
+        return;
+      }
+
+      // Build donut SVG
+      const W = 220, H = 220, cx = 110, cy = 110, R = 90, r = 54;
+      let paths = '';
+      let angle = -Math.PI / 2;
+      entries.slice(0, 10).forEach((e, i) => {
+        const pct = e[1] / total;
+        const sweep = pct * 2 * Math.PI;
+        const x1 = cx + R * Math.cos(angle);
+        const y1 = cy + R * Math.sin(angle);
+        const x2 = cx + R * Math.cos(angle + sweep);
+        const y2 = cy + R * Math.sin(angle + sweep);
+        const xi1 = cx + r * Math.cos(angle + sweep);
+        const yi1 = cy + r * Math.sin(angle + sweep);
+        const xi2 = cx + r * Math.cos(angle);
+        const yi2 = cy + r * Math.sin(angle);
+        const lf = sweep > Math.PI ? 1 : 0;
+        const color = INS_PALETTE[i % INS_PALETTE.length];
+        const label = e[0];
+        const fmtVal = insFmt(e[1]);
+        const pctStr = (pct * 100).toFixed(1);
+        paths += `<path d="M${x1.toFixed(2)},${y1.toFixed(2)} A${R},${R} 0 ${lf},1 ${x2.toFixed(2)},${y2.toFixed(2)} L${xi1.toFixed(2)},${yi1.toFixed(2)} A${r},${r} 0 ${lf},0 ${xi2.toFixed(2)},${yi2.toFixed(2)} Z"
+          fill="${color}" stroke="var(--bg-card)" stroke-width="2"
+          data-label="${label}" data-val="${fmtVal}" data-pct="${pctStr}%"
+          style="cursor:pointer; transition: opacity 0.15s;"
+          onmouseenter="insShowTooltip(event,'${label}','${fmtVal} (${pctStr}%)')"
+          onmouseleave="insHideTooltip()"
+          onfocus="insShowTooltipEl(this,'${label}','${fmtVal} (${pctStr}%)')" onblur="insHideTooltip()"
+          tabindex="0" role="img" aria-label="${label}: ${fmtVal} ${pctStr}%"/>`;
+        angle += sweep;
+      });
+
+      // Centre label
+      const topEntry = entries[0];
+      const topPct = ((topEntry[1] / total) * 100).toFixed(1);
+      const svgCentre = `
+        <text x="${cx}" y="${cy - 8}" text-anchor="middle" font-size="11" fill="var(--text-muted)" font-family="var(--font-sans)">Top</text>
+        <text x="${cx}" y="${cy + 10}" text-anchor="middle" font-size="13" font-weight="800" fill="var(--text-primary)" font-family="var(--font-sans)">${topEntry[0].length > 10 ? topEntry[0].slice(0, 9) + '…' : topEntry[0]}</text>
+        <text x="${cx}" y="${cy + 28}" text-anchor="middle" font-size="11" fill="var(--accent)" font-family="var(--font-sans)">${topPct}%</text>
+      `;
+
+      container.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Portfolio contribution donut chart">${paths}${svgCentre}</svg>`;
+
+      // Legend
+      if (legendEl) {
+        legendEl.innerHTML = entries.slice(0, 10).map((e, i) => {
+          const pct = ((e[1] / total) * 100).toFixed(1);
+          return `<div class="ins-legend-item">
+            <div class="ins-legend-dot" style="background:${INS_PALETTE[i % INS_PALETTE.length]};"></div>
+            <span>${e[0]} <strong>${pct}%</strong></span>
+          </div>`;
+        }).join('');
+      }
+
+      // Table alt
+      const tbl = document.getElementById('insDonut-table');
+      if (tbl) {
+        tbl.innerHTML = `<table class="data-table" style="margin-top: 0.5rem;">
+          <thead><tr><th>${groupBy === 'broker' ? 'Broker' : 'Stock'}</th><th class="num">Invested Value</th><th class="num">Share %</th></tr></thead>
+          <tbody>${entries.map((e, i) => `<tr>
+            <td><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${INS_PALETTE[i % INS_PALETTE.length]};margin-right:5px;"></span>${e[0]}</td>
+            <td class="num">${insFmt(e[1])}</td>
+            <td class="num">${((e[1] / total) * 100).toFixed(1)}%</td>
+          </tr>`).join('')}</tbody>
+        </table>`;
+      }
+    }
+
+    function insRenderBar() {
+      const validGains = INS.realizedGains.filter(r => r.realized_gain_inr !== '' && r.realized_gain_inr !== null);
+      const filtered = insApplyFilters(validGains);
+
+      // Aggregate by symbol
+      const agg = {};
+      filtered.forEach(r => {
+        const k = r.symbol || 'Unknown';
+        agg[k] = (agg[k] || 0) + Number(r.realized_gain_inr);
+      });
+      const entries = Object.entries(agg).sort((a, b) => b[1] - a[1]);
+
+      const container = document.getElementById('insBarWrap');
+      if (!container) return;
+
+      if (entries.length === 0) {
+        insChartEmpty('insBarWrap', 'No realized gains data for the selected filters.');
+        const tbl = document.getElementById('insBar-table');
+        if (tbl) tbl.innerHTML = '';
+        return;
+      }
+
+      const BAR_H = 28, PAD_L = 70, PAD_R = 70, PAD_T = 10, PAD_B = 20;
+      const svgH = entries.length * (BAR_H + 6) + PAD_T + PAD_B;
+      const svgW = 480;
+      const maxAbs = Math.max(...entries.map(e => Math.abs(e[1])));
+      const scale = (svgW - PAD_L - PAD_R) / 2 / (maxAbs || 1);
+      const midX = PAD_L + (svgW - PAD_L - PAD_R) / 2;
+
+      let bars = '';
+      entries.forEach((e, i) => {
+        const y = PAD_T + i * (BAR_H + 6);
+        const val = e[1];
+        const isGain = val >= 0;
+        const barW = Math.abs(val) * scale;
+        const barX = isGain ? midX : midX - barW;
+        const color = isGain ? 'var(--profit)' : 'var(--negative)';
+        const fmtVal = insFmt(val);
+        bars += `
+          <text x="${PAD_L - 6}" y="${y + BAR_H / 2 + 4}" text-anchor="end" font-size="10" fill="var(--text-secondary)" font-family="var(--font-sans)">${e[0]}</text>
+          <rect x="${barX.toFixed(1)}" y="${y}" width="${Math.max(barW, 2).toFixed(1)}" height="${BAR_H}"
+            fill="${color}" rx="3" opacity="0.88"
+            onmouseenter="insShowTooltip(event,'${e[0]}','${fmtVal}')"
+            onmouseleave="insHideTooltip()"
+            style="cursor:pointer; transition: opacity 0.15s;"
+            tabindex="0" role="img" aria-label="${e[0]}: ${fmtVal}"
+            onfocus="insShowTooltipEl(this,'${e[0]}','${fmtVal}')" onblur="insHideTooltip()"/>
+          <text x="${isGain ? barX + barW + 4 : barX - 4}" y="${y + BAR_H / 2 + 4}"
+            text-anchor="${isGain ? 'start' : 'end'}" font-size="9.5" fill="${isGain ? 'var(--profit)' : 'var(--negative)'}"
+            font-weight="700" font-family="var(--font-sans)">${insShortNum(val)}</text>
+        `;
+      });
+
+      // Centre line
+      bars += `<line x1="${midX}" y1="${PAD_T - 4}" x2="${midX}" y2="${svgH - PAD_B}" stroke="var(--border-hover)" stroke-width="1" stroke-dasharray="3,3"/>`;
+
+      container.innerHTML = `<svg viewBox="0 0 ${svgW} ${svgH}" style="overflow: visible;" role="img" aria-label="Realized gain ranking bar chart">${bars}</svg>`;
+
+      // Table alt
+      const tbl = document.getElementById('insBar-table');
+      if (tbl) {
+        tbl.innerHTML = `<table class="data-table" style="margin-top: 0.5rem;">
+          <thead><tr><th>Stock</th><th class="num">Realized Gain</th></tr></thead>
+          <tbody>${entries.map(e => `<tr>
+            <td>${e[0]}</td>
+            <td class="num" style="color:${e[1] >= 0 ? 'var(--profit)' : 'var(--negative)'}">${insFmt(e[1])}</td>
+          </tr>`).join('')}</tbody>
+        </table>`;
+      }
+    }
+
+    function insRenderLine() {
+      const validGains = INS.realizedGains.filter(r => r.realized_gain_inr !== '' && r.realized_gain_inr !== null && r.sell_date);
+      const filtered = insApplyFilters(validGains);
+
+      // Group by period
+      const agg = {};
+      filtered.forEach(r => {
+        const d = new Date(r.sell_date);
+        if (isNaN(d)) return;
+        let key;
+        if (INS.lineGroupBy === 'quarterly') {
+          const q = Math.floor(d.getMonth() / 3) + 1;
+          key = `${d.getFullYear()}-Q${q}`;
+        } else {
+          key = r.sell_date.slice(0, 7); // YYYY-MM
+        }
+        agg[key] = (agg[key] || 0) + Number(r.realized_gain_inr);
+      });
+
+      const periods = Object.keys(agg).sort();
+      const container = document.getElementById('insLineWrap');
+      if (!container) return;
+
+      if (periods.length === 0) {
+        insChartEmpty('insLineWrap', 'No time-series data for the selected filters.');
+        const tbl = document.getElementById('insLine-table');
+        if (tbl) tbl.innerHTML = '';
+        return;
+      }
+
+      const vals = periods.map(p => agg[p]);
+      // Cumulative
+      const cumVals = vals.reduce((acc, v, i) => { acc.push((acc[i - 1] || 0) + v); return acc; }, []);
+      const allVals = [...vals, ...cumVals];
+      const minV = Math.min(...allVals);
+      const maxV = Math.max(...allVals);
+      const range = maxV - minV || 1;
+
+      const W = 600, H = 180, PAD_L = 60, PAD_R = 20, PAD_T = 15, PAD_B = 30;
+      const plotW = W - PAD_L - PAD_R;
+      const plotH = H - PAD_T - PAD_B;
+      const n = periods.length;
+      const xStep = n > 1 ? plotW / (n - 1) : plotW / 2;
+
+      const toX = i => PAD_L + (n > 1 ? i * xStep : plotW / 2);
+      const toY = v => PAD_T + plotH - ((v - minV) / range) * plotH;
+
+      // Bars for each period (gain/loss)
+      let barsSvg = '';
+      const barW = Math.max(2, Math.min(20, xStep * 0.6));
+      vals.forEach((v, i) => {
+        const x = toX(i) - barW / 2;
+        const zeroY = toY(0);
+        const valY = toY(v);
+        const bH = Math.abs(valY - zeroY);
+        const bY = v >= 0 ? valY : zeroY;
+        const color = v >= 0 ? 'var(--profit)' : 'var(--negative)';
+        barsSvg += `<rect x="${x.toFixed(1)}" y="${bY.toFixed(1)}" width="${barW.toFixed(1)}" height="${Math.max(bH, 2).toFixed(1)}"
+          fill="${color}" opacity="0.5" rx="1"
+          onmouseenter="insShowTooltip(event,'${periods[i]}','${insFmt(v)}')"
+          onmouseleave="insHideTooltip()" style="cursor:pointer;"
+          tabindex="0" role="img" aria-label="${periods[i]}: ${insFmt(v)}"
+          onfocus="insShowTooltipEl(this,'${periods[i]}','${insFmt(v)}')" onblur="insHideTooltip()"/>`;
+      });
+
+      // Cumulative line
+      let linePts = cumVals.map((v, i) => `${toX(i).toFixed(1)},${toY(v).toFixed(1)}`).join(' ');
+      let cumLineSvg = `<polyline points="${linePts}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
+      let dotsSvg = cumVals.map((v, i) => `
+        <circle cx="${toX(i).toFixed(1)}" cy="${toY(v).toFixed(1)}" r="3" fill="var(--accent)"
+          onmouseenter="insShowTooltip(event,'${periods[i]} cumulative','${insFmt(v)}')"
+          onmouseleave="insHideTooltip()" style="cursor:pointer;"
+          tabindex="0" role="img" aria-label="${periods[i]} cumulative: ${insFmt(v)}"
+          onfocus="insShowTooltipEl(this,'${periods[i]} cumulative','${insFmt(v)}')" onblur="insHideTooltip()"/>
+      `).join('');
+
+      // Zero line
+      const zeroLineSvg = minV < 0 && maxV > 0
+        ? `<line x1="${PAD_L}" y1="${toY(0).toFixed(1)}" x2="${W - PAD_R}" y2="${toY(0).toFixed(1)}" stroke="var(--border-hover)" stroke-width="1" stroke-dasharray="3,3"/>`
+        : '';
+
+      // Y axis labels
+      const yTicks = [minV, minV + range / 2, maxV].map(v => `
+        <text x="${PAD_L - 5}" y="${toY(v).toFixed(1) + 4}" text-anchor="end" font-size="9" fill="var(--text-muted)" font-family="var(--font-sans)">${insShortNum(v)}</text>
+      `).join('');
+
+      // X axis labels (show every Nth)
+      const showEvery = n > 24 ? 6 : n > 12 ? 3 : n > 6 ? 2 : 1;
+      const xLabels = periods.map((p, i) => {
+        if (i % showEvery !== 0 && i !== n - 1) return '';
+        const label = INS.lineGroupBy === 'quarterly' ? p : p.replace(/^\d{4}-/, '').replace(/^0/, '');
+        return `<text x="${toX(i).toFixed(1)}" y="${H - 4}" text-anchor="middle" font-size="8.5" fill="var(--text-muted)" font-family="var(--font-sans)">${label}</text>`;
+      }).join('');
+
+      container.innerHTML = `<svg viewBox="0 0 ${W} ${H}" style="overflow:visible;" role="img" aria-label="Profit over time line chart">
+        ${zeroLineSvg}${barsSvg}${cumLineSvg}${dotsSvg}${yTicks}${xLabels}
+      </svg>`;
+
+      // Table alt
+      const tbl = document.getElementById('insLine-table');
+      if (tbl) {
+        tbl.innerHTML = `<table class="data-table" style="margin-top: 0.5rem;">
+          <thead><tr><th>Period</th><th class="num">Realized Gain</th><th class="num">Cumulative</th></tr></thead>
+          <tbody>${periods.map((p, i) => `<tr>
+            <td>${p}</td>
+            <td class="num" style="color:${vals[i] >= 0 ? 'var(--profit)' : 'var(--negative)'}">${insFmt(vals[i])}</td>
+            <td class="num">${insFmt(cumVals[i])}</td>
+          </tr>`).join('')}</tbody>
+        </table>`;
+      }
+    }
+
+    function insRenderBrokerBar() {
+      const validGains = INS.realizedGains.filter(r => r.realized_gain_inr !== '' && r.realized_gain_inr !== null);
+      const filtered = insApplyFilters(validGains);
+
+      // Aggregate per broker: LTCG (>365d), STCG (<=365d, positive), loss (negative)
+      const brokers = [...new Set(filtered.map(r => r.broker))].sort();
+      const aggLTCG = {}, aggSTCG = {}, aggLoss = {};
+      brokers.forEach(b => { aggLTCG[b] = 0; aggSTCG[b] = 0; aggLoss[b] = 0; });
+      filtered.forEach(r => {
+        const b = r.broker;
+        const v = Number(r.realized_gain_inr);
+        const days = Number(r.holding_period_days);
+        if (v < 0) aggLoss[b] += v;
+        else if (days > 365) aggLTCG[b] += v;
+        else aggSTCG[b] += v;
+      });
+
+      const container = document.getElementById('insBrokerBarWrap');
+      if (!container) return;
+
+      if (brokers.length === 0) {
+        insChartEmpty('insBrokerBarWrap', 'No broker comparison data for the selected filters.');
+        const tbl = document.getElementById('insBrokerBar-table');
+        if (tbl) tbl.innerHTML = '';
+        return;
+      }
+
+      const GRP_W = 160, GRP_PAD = 20, BAR_W = 36, BAR_GAP = 4;
+      const svgW = Math.max(brokers.length * (GRP_W + GRP_PAD) + 40, 380);
+      const PAD_L = 60, PAD_T = 15, PAD_B = 50, H_PLOT = 200;
+      const svgH = H_PLOT + PAD_T + PAD_B;
+      const allVals = brokers.flatMap(b => [aggLTCG[b], aggSTCG[b], Math.abs(aggLoss[b])]);
+      const maxV = Math.max(...allVals, 1);
+      const toY = v => PAD_T + H_PLOT - (v / maxV) * H_PLOT;
+      const toH = v => (v / maxV) * H_PLOT;
+
+      let svgContent = '';
+      brokers.forEach((b, bi) => {
+        const gx = PAD_L + bi * (GRP_W + GRP_PAD);
+        const ltcg = aggLTCG[b];
+        const stcg = aggSTCG[b];
+        const loss = Math.abs(aggLoss[b]);
+
+        const barsData = [
+          { v: ltcg, color: 'var(--profit)', label: 'LTCG', offsetX: 0 },
+          { v: stcg, color: 'var(--chart-4)', label: 'STCG', offsetX: BAR_W + BAR_GAP },
+          { v: loss, color: 'var(--negative)', label: 'Loss', offsetX: (BAR_W + BAR_GAP) * 2 },
+        ];
+
+        barsData.forEach(bd => {
+          const bh = toH(bd.v);
+          const by = toY(bd.v);
+          svgContent += `<rect x="${(gx + bd.offsetX).toFixed(1)}" y="${by.toFixed(1)}" width="${BAR_W}" height="${Math.max(bh, 2).toFixed(1)}"
+            fill="${bd.color}" rx="3" opacity="0.85"
+            onmouseenter="insShowTooltip(event,'${b} — ${bd.label}','${insFmt(bd.v)}')"
+            onmouseleave="insHideTooltip()" style="cursor:pointer;"
+            tabindex="0" role="img" aria-label="${b} ${bd.label}: ${insFmt(bd.v)}"
+            onfocus="insShowTooltipEl(this,'${b} — ${bd.label}','${insFmt(bd.v)}')" onblur="insHideTooltip()"/>`;
+          if (bd.v > 0) {
+            svgContent += `<text x="${(gx + bd.offsetX + BAR_W / 2).toFixed(1)}" y="${(by - 3).toFixed(1)}"
+              text-anchor="middle" font-size="8.5" fill="${bd.color}" font-weight="700" font-family="var(--font-sans)">${insShortNum(bd.v)}</text>`;
+          }
+          svgContent += `<text x="${(gx + bd.offsetX + BAR_W / 2).toFixed(1)}" y="${svgH - PAD_B + 14}"
+            text-anchor="middle" font-size="8" fill="var(--text-muted)" font-family="var(--font-sans)">${bd.label}</text>`;
+        });
+        // Broker label
+        const brokerShort = b.length > 12 ? b.slice(0, 11) + '…' : b;
+        svgContent += `<text x="${(gx + (BAR_W + BAR_GAP) * 1.5 - BAR_GAP / 2).toFixed(1)}" y="${svgH - PAD_B + 30}"
+          text-anchor="middle" font-size="10" font-weight="700" fill="var(--text-secondary)" font-family="var(--font-sans)">${brokerShort}</text>`;
+      });
+
+      // Y axis ticks
+      [0, maxV / 2, maxV].forEach(v => {
+        const y = toY(v);
+        svgContent += `<text x="${PAD_L - 5}" y="${y + 4}" text-anchor="end" font-size="9" fill="var(--text-muted)" font-family="var(--font-sans)">${insShortNum(v)}</text>
+          <line x1="${PAD_L - 3}" y1="${y}" x2="${svgW - 10}" y2="${y}" stroke="var(--border-subtle)" stroke-width="0.5"/>`;
+      });
+
+      container.innerHTML = `<svg viewBox="0 0 ${svgW} ${svgH}" role="img" aria-label="Broker comparison LTCG vs STCG bar chart">${svgContent}</svg>`;
+
+      // Table alt
+      const tbl = document.getElementById('insBrokerBar-table');
+      if (tbl) {
+        tbl.innerHTML = `<table class="data-table" style="margin-top: 0.5rem;">
+          <thead><tr><th>Broker</th><th class="num">LTCG</th><th class="num">STCG</th><th class="num">Loss</th></tr></thead>
+          <tbody>${brokers.map(b => `<tr>
+            <td>${b}</td>
+            <td class="num" style="color:var(--profit)">${insFmt(aggLTCG[b])}</td>
+            <td class="num" style="color:var(--chart-4)">${insFmt(aggSTCG[b])}</td>
+            <td class="num" style="color:var(--negative)">${insFmt(-aggLoss[b])}</td>
+          </tr>`).join('')}</tbody>
+        </table>`;
+      }
+    }
+
+    // Tooltip helpers
+    function insShowTooltip(event, label, value) {
+      let tip = document.getElementById('insTooltipEl');
+      if (!tip) return;
+      tip.style.display = 'block';
+      tip.innerHTML = `<div class="ins-tooltip-label">${label}</div><div>${value}</div>`;
+      insMoveTooltip(event);
+    }
+    function insShowTooltipEl(el, label, value) {
+      const rect = el.getBoundingClientRect();
+      const fakeEvt = { clientX: rect.left + rect.width / 2, clientY: rect.top };
+      insShowTooltip(fakeEvt, label, value);
+    }
+    function insMoveTooltip(event) {
+      const tip = document.getElementById('insTooltipEl');
+      if (!tip) return;
+      tip.style.left = (event.clientX + 14) + 'px';
+      tip.style.top  = (event.clientY - 10) + 'px';
+    }
+    function insHideTooltip() {
+      const tip = document.getElementById('insTooltipEl');
+      if (tip) tip.style.display = 'none';
+    }
+    document.addEventListener('mousemove', e => {
+      const tip = document.getElementById('insTooltipEl');
+      if (tip && tip.style.display === 'block') insMoveTooltip(e);
+    });
+
+    function insToggleTable(chartId) {
+      const tbl = document.getElementById(`${chartId}-table`);
+      if (!tbl) return;
+      const isVisible = tbl.style.display === 'block';
+      tbl.style.display = isVisible ? 'none' : 'block';
+      // Update button text
+      const btn = tbl.previousElementSibling?.querySelector('.ins-show-table-btn');
+      if (btn) btn.textContent = isVisible ? 'Show as table' : 'Hide table';
     }
   </script>
 </body>

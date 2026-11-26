@@ -440,7 +440,7 @@
 
 <!-- ── TRUST STRIP ── -->
 <div class="trust-strip">
-  <p class="trust-label">Works with statements from brokers your backend supports</p>
+  <p class="trust-label">Pre-configured adapters for leading brokers, plus custom statement import</p>
   <div class="brokers-row" role="list">
     <div class="broker-chip" role="listitem">
       <div class="broker-icon">Z</div>
@@ -457,6 +457,10 @@
     <div class="broker-chip" role="listitem">
       <div class="broker-icon">IB</div>
       <span>Interactive Brokers</span>
+    </div>
+    <div class="broker-chip" role="listitem">
+      <div class="broker-icon">+</div>
+      <span>Custom CSV / Excel / PDF / OCR</span>
     </div>
   </div>
 </div>
@@ -515,8 +519,8 @@
     <div class="step-card reveal">
       <span class="step-number" aria-hidden="true">01</span>
       <div class="step-icon" aria-hidden="true">📂</div>
-      <h3 class="step-title">Connect & upload statements</h3>
-      <p class="step-desc">Upload trade statements from Zerodha, Groww, ICICI Direct and Interactive Brokers. The pipeline normalises all formats into a unified schema.</p>
+      <h3 class="step-title">Upload & map statements</h3>
+      <p class="step-desc">Upload statements in CSV, Excel (XLSX/XLS), PDF, TXT, or photos/scans via OCR. The guided wizard auto-detects schemas, validates rows, and normalizes everything into a unified format.</p>
     </div>
     <div class="step-card reveal">
       <span class="step-number" aria-hidden="true">02</span>
@@ -698,10 +702,10 @@
     <div class="faq-list" id="faqList">
       <div class="faq-item">
         <button class="faq-q" aria-expanded="false">
-          What brokers does CapTax AI support?
+          What brokers and file formats does CapTax AI support?
           <svg class="faq-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
         </button>
-        <div class="faq-a" role="region"><div class="faq-a-inner">CapTax AI supports Zerodha, Groww, ICICI Direct and Interactive Brokers — the four brokers whose statement formats the pipeline normalises. No other broker integrations exist in this version.</div></div>
+        <div class="faq-a" role="region"><div class="faq-a-inner">CapTax AI includes built-in recognition for Zerodha, Groww, ICICI Direct and Interactive Brokers, and supports user uploads in CSV, Excel (.xlsx and legacy .xls), PDF, plain text, and mobile photos/scans via OCR. An interactive column mapper lets you reconcile statements from any other broker.</div></div>
       </div>
       <div class="faq-item">
         <button class="faq-q" aria-expanded="false">
@@ -798,9 +802,19 @@
   });
 
   // Derive stats dynamically from config / backend
+  const getLandingApiBase = () => {
+    const saved = localStorage.getItem('captax_api_base');
+    if (saved && saved.trim()) return saved.trim();
+    if (window.location.port === '3000') {
+      return `${window.location.protocol}//${window.location.hostname}:8001`;
+    }
+    return '';
+  };
+
   const updateHeroStats = async () => {
+    const apiBase = getLandingApiBase();
     try {
-      const resSummary = await fetch('/data/tax-summary', { credentials: 'include' });
+      const resSummary = await fetch(`${apiBase}/data/tax-summary`, { credentials: 'include' });
       if (resSummary.ok) {
         const rows = await resSummary.json();
         if (Array.isArray(rows) && rows.length > 0) {
@@ -811,7 +825,7 @@
     } catch {}
 
     try {
-      const resBrokers = await fetch('/data/brokers', { credentials: 'include' });
+      const resBrokers = await fetch(`${apiBase}/data/brokers`, { credentials: 'include' });
       if (resBrokers.ok) {
         const brokers = await resBrokers.json();
         if (Array.isArray(brokers) && brokers.length > 0) {
