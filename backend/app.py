@@ -19,14 +19,17 @@ Dev credentials (change before any real deployment):
 Run: uvicorn app:app --reload --port 8001   (from inside backend/)
 """
 
+import asyncio
+import logging
 import os
 import time
 import json
 import uuid
 import subprocess
 import sys
+import uuid
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 
 import bcrypt
 from fastapi import FastAPI, HTTPException, Request, Depends, Cookie
@@ -71,15 +74,36 @@ except ImportError:
         UNIFIED_COLUMNS,
     )
 
+# Setup structured logger
+logger = logging.getLogger("captax.backend")
+if not logger.handlers:
+    _handler = logging.StreamHandler(sys.stdout)
+    _handler.setFormatter(logging.Formatter("[%(asctime)s] [%(levelname)s] [%(name)s] %(message)s"))
+    logger.addHandler(_handler)
+logger.setLevel(logging.INFO)
+
 # ---------------------------------------------------------------------------
-# Paths
+# Paths with dynamic fallback
 # ---------------------------------------------------------------------------
 BACKEND_DIR = Path(__file__).resolve().parent
 PROJECT_DIR = BACKEND_DIR.parent
-AIML_DIR    = PROJECT_DIR / "aiml"
-DATA_DIR    = BACKEND_DIR / "data"
-IMPORT_DIR  = DATA_DIR / "import_batches"
-FRONTEND_DIR = PROJECT_DIR / "frontend"
+# Check if in unified monorepo OR separate branch sibling directories
+if (PROJECT_DIR / "aiml").exists():
+    AIML_DIR = PROJECT_DIR / "aiml"
+elif (PROJECT_DIR.parent / "AIML" / "aiml").exists():
+    AIML_DIR = PROJECT_DIR.parent / "AIML" / "aiml"
+else:
+    AIML_DIR = PROJECT_DIR / "aiml"
+
+DATA_DIR = BACKEND_DIR / "data"
+IMPORT_DIR = DATA_DIR / "import_batches"
+
+if (PROJECT_DIR / "frontend").exists():
+    FRONTEND_DIR = PROJECT_DIR / "frontend"
+elif (PROJECT_DIR.parent / "Frontend_UI" / "frontend").exists():
+    FRONTEND_DIR = PROJECT_DIR.parent / "Frontend_UI" / "frontend"
+else:
+    FRONTEND_DIR = PROJECT_DIR / "frontend"
 
 # ---------------------------------------------------------------------------
 # Auth configuration (read from environment; safe dev defaults)
@@ -229,6 +253,21 @@ if FRONTEND_DIR.exists():
         return JSONResponse(status_code=404, content={"detail": exc.detail or "Not Found"})
 
 # ---------------------------------------------------------------------------
+# Health & Status endpoints
+# ---------------------------------------------------------------------------
+@app.get("/api/health")
+def health_check():
+    """Service health and readiness probe."""
+    return {
+        "status": "healthy",
+        "app": "CapTax AI API",
+        "version": "0.2.0",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "environment": "production" if os.environ.get("ENV") == "production" else "development",
+    }
+
+
+# ---------------------------------------------------------------------------
 # Auth endpoints
 # ---------------------------------------------------------------------------
 class LoginRequest(BaseModel):
@@ -237,7 +276,7 @@ class LoginRequest(BaseModel):
 
 
 @app.post("/auth/login")
-def auth_login(body: LoginRequest, response: JSONResponse = None):
+def auth_login(body: LoginRequest):
     user_id = body.id.strip()
     _check_rate_limit(user_id)
 
@@ -305,6 +344,13 @@ PIPELINE = [
 
 
 def _run_script(script_path: Path) -> None:
+    if not script_path.exists():
+        logger.error(f"Pipeline script not found: {script_path}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Required pipeline script '{script_path.name}' is missing on server",
+        )
+
     result = subprocess.run(
         [sys.executable, str(script_path)],
         cwd=script_path.parent,
@@ -312,9 +358,15 @@ def _run_script(script_path: Path) -> None:
         text=True,
     )
     if result.returncode != 0:
+        incident_id = uuid.uuid4().hex[:8]
+        logger.error(
+            f"[Incident {incident_id}] Pipeline stage '{script_path.name}' failed:\n"
+            f"STDOUT: {result.stdout}\n"
+            f"STDERR: {result.stderr}"
+        )
         raise HTTPException(
             status_code=500,
-            detail=f"{script_path.name} failed:\n{result.stdout}\n{result.stderr}",
+            detail=f"Pipeline stage '{script_path.name}' failed (Incident Ref: {incident_id}): {result.stderr.strip() or result.stdout.strip()}",
         )
 
 
@@ -868,8 +920,8 @@ def confirm_import_batch(batch_id: str, user_id: str = Depends(require_auth)):
 
 
 @app.post("/pipeline/run")
-def run_pipeline(user_id: str = Depends(require_auth)):
-    """Runs every stage of the pipeline in order and returns a step log."""
+async def run_pipeline(user_id: str = Depends(require_auth)):
+    """Runs every stage of the pipeline in order without blocking the event loop."""
     log = []
     imported_batch_active = False
     if IMPORT_DIR.exists():
@@ -886,7 +938,7 @@ def run_pipeline(user_id: str = Depends(require_auth)):
         if imported_batch_active and script_path.name in {"generate_datasets.py", "ingest.py"}:
             log.append({"step": script_path.name, "owner": owner, "status": "skipped", "reason": "confirmed import batch is active"})
             continue
-        _run_script(script_path)
+        await asyncio.to_thread(_run_script, script_path)
         log.append({"step": script_path.name, "owner": owner, "status": "completed"})
     return {"status": "completed", "steps": log}
 
@@ -940,7 +992,7 @@ def get_disclosure_summary(user_id: str = Depends(require_auth)):
             status_code=404,
             detail="disclosure_summary.txt not found — run /pipeline/run first",
         )
-    return {"report": path.read_text()}
+    return {"report": path.read_text(encoding="utf-8")}
 
 
 @app.get("/data/brokers")
