@@ -64,6 +64,12 @@
   --blue: #38BDF8;
   --blue-subtle: rgba(56, 189, 248, 0.15);
 
+  /* Global Colour Semantics — Step 5 */
+  --brand-name: #4DA3FF;      /* broker / platform / security / company names */
+  --profit:     #3DDC97;      /* gains, dividends received, credits */
+  --loss:       #FF4D5E;      /* losses, negative STCG/LTCG */
+  --neutral:    #FFFFFF;      /* zero / informational values */
+
   /* Charts & Visualizations */
   --chart-1: #F0502D;          /* STCG / Accent Orange */
   --chart-2: #FBBF24;          /* DTAA / Yellow */
@@ -131,6 +137,12 @@
 
   --blue: #0369A1;             /* 5.0:1 on light surface */
   --blue-subtle: rgba(3, 105, 161, 0.1);
+
+  /* Global Colour Semantics — Step 5 */
+  --brand-name: #1F6FEB;      /* broker / platform / security / company names */
+  --profit:     #12A150;      /* gains, dividends received, credits */
+  --loss:       #D93025;      /* losses, negative STCG/LTCG */
+  --neutral:    #15151A;      /* zero / informational — same as --text-primary */
 
   /* Charts & Visualizations */
   --chart-1: #F0502D;          /* STCG / Orange */
