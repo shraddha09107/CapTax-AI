@@ -14,6 +14,14 @@ Sources:
   5. Corporate Actions (splits, bonuses, dividends affecting cost basis)
   6. Foreign Dividends (for DTAA relief / Schedule FSI computation)
 
+Reproducibility:
+  Both ``random`` and ``numpy.random`` are seeded with 42 at module load time.
+  Re-running this script always produces the same CSVs, making the synthetic
+  dataset deterministic and safe to use in automated tests and demos.
+
+Output column naming is deliberately inconsistent across brokers to exercise
+the normalisation logic in ``ingest.py``.
+
 Run: python generate_datasets.py
 Output: ./data/*.csv
 """
@@ -24,8 +32,8 @@ from pathlib import Path
 import pandas as pd
 import numpy as np
 
-random.seed(42)
-np.random.seed(42)
+random.seed(42)       # Seed stdlib random for reproducible data generation
+np.random.seed(42)    # Seed numpy random independently (some generators use np.random)
 
 OUT_DIR = Path(__file__).parent / "data"
 OUT_DIR.mkdir(exist_ok=True)
@@ -56,11 +64,13 @@ US_STOCKS = [
 ]
 
 def random_date(start, end):
+    """Return a random date between *start* (inclusive) and *end* (inclusive)."""
     delta = end - start
     return start + dt.timedelta(days=random.randint(0, delta.days))
 
+# Date range covering FY2022-23, FY2023-24, and FY2024-25 (1 Apr 2022 – 31 Mar 2025)
 FY_START = dt.date(2022, 4, 1)
-FY_END = dt.date(2025, 3, 31)
+FY_END   = dt.date(2025, 3, 31)
 
 
 def gen_zerodha(n=180):
@@ -221,6 +231,12 @@ def gen_foreign_dividends(n=40):
 
 
 def main():
+    """Generate all six synthetic CSV datasets and write them to ./data/.
+
+    Prints a per-file summary (filename, row count, column names) and a
+    grand total of rows written.  All files are overwritten on each run,
+    so the output is always deterministic given the fixed random seed.
+    """
     datasets = {
         "zerodha_trades.csv": gen_zerodha(),
         "groww_trades.csv": gen_groww(),
@@ -229,10 +245,13 @@ def main():
         "corporate_actions.csv": gen_corporate_actions(),
         "foreign_dividends.csv": gen_foreign_dividends(),
     }
+    total_rows = 0
     for fname, df in datasets.items():
         path = OUT_DIR / fname
         df.to_csv(path, index=False)
         print(f"Generated {fname}: {len(df)} rows, columns={list(df.columns)}")
+        total_rows += len(df)
+    print(f"\nTotal rows written across {len(datasets)} files: {total_rows}")
 
 
 if __name__ == "__main__":
