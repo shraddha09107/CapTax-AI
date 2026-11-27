@@ -31,4 +31,146 @@ intentionally simple so it's easy to deepen before Round 3.
 | Week 2 | Architecture & DB | Architecture review | Schema & migrations | UI kit | ERD, API spec v1 | Planned |
 | Week 3 | Ingestion module | Risk review, unblock | Broker adapters (Zerodha, Groww, Upstox) | Auth screens | Ingestion service v1 | **Done — this codebase** |
 | Week 4 | Reconciliation engine | Rule-engine design | Corporate action & FX logic | Dashboard shell | Reconciliation module | **Done — this codebase** |
-| Week 5 | AI interpretation layer | LLM integration for LTCG/STCG | Cost-basis (FIFO) matching | Gainsgit 
+| Week 5 | AI interpretation layer | LLM integration for LTCG/STCG | Cost-basis (FIFO) matching | Gains reconciliation & UI | Working prototype | **Done — this codebase** |
+
+---
+
+## 6. How to Run Locally
+
+### Prerequisites
+- Python 3.10+
+- Dependencies: `fastapi`, `uvicorn`, `pandas`, `numpy`, `pydantic`, `bcrypt`, `itsdangerous`, `pytest` (specified in `requirements.txt`)
+
+### Start Backend & Frontend
+Run from the project root:
+```bash
+# 1. Activate virtual environment
+# On macOS / Linux:
+source .venv/bin/activate
+# On Windows (PowerShell):
+.\.venv\Scripts\Activate.ps1
+
+# 2. Install dependencies (if setting up fresh)
+pip install -r requirements.txt
+
+# 3. Start the FastAPI + Uvicorn server on port 8001
+cd backend
+uvicorn app:app --host 0.0.0.0 --port 8001 --reload
+```
+
+### Access URLs
+- **Public Landing Site**: [http://localhost:8001/](http://localhost:8001/)
+- **Sign In Page**: [http://localhost:8001/login](http://localhost:8001/login)
+- **Protected Dashboard**: [http://localhost:8001/app](http://localhost:8001/app) (or `/dashboard`)
+- **Health Check Probe**: [http://localhost:8001/api/health](http://localhost:8001/api/health)
+- **Interactive API Docs (Swagger)**: [http://localhost:8001/docs](http://localhost:8001/docs)
+
+---
+
+## 7. Run, Log In, and Change Credentials
+
+### Default Development Credentials
+| Role | Account ID | Default Password | Session TTL |
+|---|---|---|---|
+| Admin | `admin` | `@Admin123` | 8 Hours (Signed `httpOnly` Cookie) |
+
+- **Rate Limiting**: 5 failed consecutive attempts trigger an automatic 60-second lockout per ID.
+- **Security Guarantee**: Passwords are never stored in plaintext. The backend evaluates bcrypt salted hashes (`ADMIN_PASSWORD_HASH`), and frontend assets do not contain credentials.
+
+### Changing Credentials for Production Deployment
+Before deploying or sharing access beyond development, set environment variables:
+```bash
+# Generate a new bcrypt hash for your secret password
+python3 -c "import bcrypt; print(bcrypt.hashpw(b'YourSecurePasswordHere', bcrypt.gensalt()).decode())"
+
+# Export custom environment variables
+export ADMIN_ID="your_custom_admin_id"
+export ADMIN_PASSWORD_HASH="<generated_bcrypt_hash>"
+export SESSION_SECRET="<generate_a_random_32_byte_secret>"
+
+# Start the server
+uvicorn app:app --host 0.0.0.0 --port 8001
+```
+
+### Running the Verification Suite
+To verify the complete pipeline, authentication barriers, and DTAA calculation outputs:
+```bash
+python3 scripts/verify_pipeline.py
+```
+
+---
+
+## 8. Frontend Architecture (Datara Theme)
+Reconstructed according to the Datara reference design:
+- **Design Tokens**: Near-black canvas (`#0c0c0e`), dark glass cards (`#121214`), orange-red active pill accent (`#F0502D`), 24px-28px radius, vector 3D asset graphic.
+- **Top Pill Navigation**:
+  - `Dashboard`: Portfolio hero card, dual Market Overview charts (spline line chart with negative zero-axis & stacked bar chart with highlighted active FY), date-grouped recent transactions, insights, and 5-segment tax exposure gauge.
+  - `Investments`: Live scrip holdings, invested capital, and domestic vs. foreign currency breakdown.
+  - `Brokers`: Status of connected accounts (Zerodha, Groww, ICICI Direct, Interactive Brokers).
+  - `Tax & ITR`: Multi-year Schedule CG, grouped Schedule FSI (DTAA Article 25) with expandable drill-down & calculation breakdown, and complete Monospace Disclosure Report (all 3 FYs) with Copy/Download.
+  - `Activity`: 7-step pipeline visual stepper and execution audit logs.
+- **Zero Fake Data**: Every metric, table cell, and chart node is wired dynamically to real endpoints on `:8001`.
+- For detailed route-to-component mappings, see [`docs/ui-data-map.md`](docs/ui-data-map.md).
+
+---
+
+## 9. System Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      Frontend (Static HTML/JS)               │
+│  landing.html  →  login.html  →  index.html (SPA dashboard)  │
+│  frontend/js/auth.js — session, route guard, authFetch       │
+└───────────────────────┬─────────────────────────────────────┘
+                        │ HTTP (fetch, credentials: 'include')
+                        ▼
+┌─────────────────────────────────────────────────────────────┐
+│                  Backend: FastAPI / Uvicorn (:8001)          │
+│  app.py — auth (bcrypt + signed cookie), 7-step pipeline,   │
+│           /api/health, /api/run-pipeline, /api/tax-summary,  │
+│           /api/dtaa-relief, /api/disclosure-summary          │
+└──┬──────────────┬──────────────┬────────────────────────────┘
+   │              │              │
+   ▼              ▼              ▼
+ingest.py   fifo_matcher.py  corporate_actions_adjuster.py
+(normalize  (FIFO cost-basis  (split/bonus lot adjustment,
+ 4 brokers)  matching)         cost-basis preserved)
+                │
+                ▼
+┌─────────────────────────────────────────────────────────────┐
+│                      AI/ML Layer (aiml/)                     │
+│  tax_classifier.py      — LTCG/STCG classification + FY tax │
+│  dtaa_relief.py         — India-US DTAA Article 10(2) relief │
+│  disclosure_generator.py — ITR Schedule CG/FA/FSI text dump  │
+└─────────────────────────────────────────────────────────────┘
+                │
+                ▼
+        backend/data/*.csv   (normalized_trades, realized_gains,
+                              classified_gains, tax_summary, …)
+```
+
+### Data Flow (per pipeline run)
+1. `ingest.py` reads raw broker CSVs → `normalized_trades.csv`
+2. `corporate_actions_adjuster.py` adjusts BUY lots → `adjusted_trades.csv`
+3. `fifo_matcher.py` matches sells against adjusted lots → `realized_gains.csv`
+4. `tax_classifier.py` labels LTCG/STCG → `classified_gains.csv`, `tax_summary.csv`
+5. `dtaa_relief.py` computes DTAA relief on foreign dividends → `dtaa_relief.csv`
+6. `disclosure_generator.py` generates full ITR disclosure text → `disclosure_summary.txt`
+
+---
+
+## 10. Known Limitations (v1 — Academic Scope)
+
+These are intentional simplifications for the Round 2 prototype.
+Each is flagged as a v2 / Round 3 item:
+
+| # | Limitation | Impact | Planned Fix |
+|---|---|---|---|
+| 1 | **No grandfathering (31-Jan-2018 FMV)** | LTCG on pre-2018 lots is overstated | Apply FMV from NSE/BSE data in v2 |
+| 2 | **LTCG exemption applied annually, not lot-by-lot** | Minor under-tax for mixed LTCG lots across FYs | Lot-by-lot exemption waterfall in v2 |
+| 3 | **FIFO is global, not per-Demat account** | If the user holds the same scrip in multiple Demat accounts, cost basis may be incorrect | Per-Demat account FIFO in v2 |
+| 4 | **STCG losses not offset against LTCG** | Total tax may be overstated when STCG losses exist | Set-off and carry-forward logic in v2 |
+| 5 | **Rights issue applications ignored** | Cost basis of rights shares is not tracked | Treat as fresh BUY lot in v2 |
+| 6 | **Single admin user, no multi-tenant** | Only one set of credentials; no per-user data isolation | JWT-based multi-user auth in v2 |
+| 7 | **Flat DTAA withholding rate (25%)** | India-US DTAA rate varies by holding % and treaty article | Article-specific rate lookup in v2 |
+| 8 | **No surcharge / health & education cess** | Actual tax liability is slightly higher than computed | Add 4% cess and applicable surcharge in v2 |
